@@ -89,7 +89,10 @@ public class GUI extends JFrame {
 		    		   c.setFileLocation(fc.getSelectedFile().getAbsolutePath());
 		    		   leftLabel.setText(fc.getSelectedFile().getAbsolutePath());
 		    		   String result = c.computeCRC16();
-		    		   if (result.length() > 0) { // checksums modified
+		    		   if (result.substring(0, 6).equals("Error:")) {
+			    			rightLabel.setText(result);
+			    		}
+		    		   else if (result.length() > 0) { // checksums modified
 		    			   rightLabel.setText("Sections Fixed: " + result.substring(0, result.length() - 3));
 		    		   }
 		    		   else { // savefile was not modified
@@ -100,7 +103,10 @@ public class GUI extends JFrame {
 	    		case "Fix Checksums":
 	    			clearText();
 	    			String result = c.computeCRC16();
-		    		if (result.length() > 0) { // checksums modified
+	    			if (result.substring(0, 6).equals("Error:")) {
+		    			rightLabel.setText(result);
+		    		}
+	    			else if (result.length() > 0) { // checksums modified
 		    			rightLabel.setText("Sections Fixed: " + result.substring(0, result.length() - 3));
 		    		}
 		    		else { // savefile was not modified

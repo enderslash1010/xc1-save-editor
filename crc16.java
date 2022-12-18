@@ -54,7 +54,7 @@ public class crc16 {
 		}
 		catch (Exception e) {
 			System.out.println("Error: " + e); // if read file method throws error
-			return "";
+			return "Error: " + e.getMessage();
 		}
 
 		/// crc16 polynomial: 1 + x^2 + x^15 + x^16 -> 0x8005 (1000 0000 0000 0101) 
@@ -119,6 +119,7 @@ public class crc16 {
 			}
 			catch (Exception e) {
 				System.out.println("Error writing to file: " + e);
+				return "Error: " + e.getMessage();
 			}
 		}
 		return result;
