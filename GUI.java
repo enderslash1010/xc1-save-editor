@@ -82,37 +82,33 @@ public class GUI extends JFrame {
 	class CustomActionListener implements ActionListener {
 	    public void actionPerformed(ActionEvent e) {
 	    
+	    	String result = "";
 	    	switch (((JMenuItem)e.getSource()).getText()) {
 	    		case "Open": 
 	    			if (fc.showOpenDialog(fc) == 0) {
 		    		   clearText();
 		    		   c.setFileLocation(fc.getSelectedFile().getAbsolutePath());
 		    		   leftLabel.setText(fc.getSelectedFile().getAbsolutePath());
-		    		   String result = c.computeCRC16();
-		    		   if (result.substring(0, 6).equals("Error:")) {
-			    			rightLabel.setText(result);
-			    		}
-		    		   else if (result.length() > 0) { // checksums modified
-		    			   rightLabel.setText("Sections Fixed: " + result.substring(0, result.length() - 3));
-		    		   }
-		    		   else { // savefile was not modified
-		    			   rightLabel.setText("Sections Already Fixed");
-		    		   }
+		    		   result = c.computeCRC16();
 	    			}
 	    			break;
 	    		case "Fix Checksums":
 	    			clearText();
-	    			String result = c.computeCRC16();
-	    			if (result.substring(0, 6).equals("Error:")) {
-		    			rightLabel.setText(result);
-		    		}
-	    			else if (result.length() > 0) { // checksums modified
-		    			rightLabel.setText("Sections Fixed: " + result.substring(0, result.length() - 3));
-		    		}
-		    		else { // savefile was not modified
-		    			rightLabel.setText("Sections Already Fixed");
-		    		}
+	    			result = c.computeCRC16();
 	    			break;
+	    	}
+	    	
+	    	// handle result
+	    	if (result.length() > 0) { 
+	    		if (result.substring(0, 6).equals("Error:")) { // error occurred
+	    			rightLabel.setText(result);
+	    		}
+	    		else {
+	    			rightLabel.setText("Sections Fixed: " + result.substring(0, result.length() - 3)); // checksums modified
+	    		}
+	    	}
+	    	else { // savefile was not modified
+	    		rightLabel.setText("Sections Already Fixed");
 	    	}
 	    }
 	}
