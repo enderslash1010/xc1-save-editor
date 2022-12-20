@@ -1,61 +1,11 @@
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 
 public class crc16 {
 
-	private GUI gui;
-
-	public crc16(GUI gui) {
-		this.gui = gui;
-	}
-
-	static String fileLocation = "C:\\Users\\enderk2\\Documents\\Dolphin Emulator\\Wii\\title\\00010000\\53583445\\data\\monado03";
-
-	final static int[][] sections = 
-		{{0x20, 0x9CA0},     // THUM 0
-				{0xA030, 0xB244},    // FLAG 1
-				{0xB260, 0x11E88},   // GAME 2
-				{0x11EB0, 0x11EBC},  // TIME 3
-				{0x11EE0, 0x11F14},  // PCPM 4
-				{0x11F30, 0x11F40},  // CAMD 5
-				{0x11F60, 0x24080},  // ITEM 6
-				{0x24090, 0x240A0},  // WTHR 7
-				{0x240C0, 0x240D0},  // SNDS 8
-				{0x240F0, 0x24474},  // MINE 9
-				{0x244A0, 0x246D4},  // TBOX 10
-				{0x248B0, 0x248F0}}; // OPTD 11
-
-	final static int[] checksums = {0x1E, 0xA02E, 0xB25E, 0x11EAE, 0x11EDE, 0x11F2E, 0x11F5E, 0x2408E, 0x240BE, 0x240EE, 0x2449E, 0x248AE};
-	final static String[] sectionNames = {"THUM", "FLAG", "GAME", "TIME", "PCPM", "CAMD", "ITEM", "WTHR", "SNDS", "MINE", "TBOX", "OPTD"};
-
-	static byte[] saveFile = new byte[0x28000];
-
-	public void readFile(String fileLocation) throws Exception {
-		FileInputStream fin = new FileInputStream(fileLocation);
-
-		fin.read(saveFile);
-		if (saveFile[0] != 'U' || saveFile[1] != 'S' || saveFile[2] != 'R' || saveFile[3] != 'D') { // Check if the file has the correct header, throw an exception if invalid
-			gui.setText("Invalid File");
-			fin.close();
-			throw new FileNotFoundException("Invalid File");
-		} 
-		fin.close();
-	}
-
-	public String computeCRC16() {
+	public String computeCRC16(SaveFile saveFile) {
 
 		String result = "";
 
 		boolean isModified = false;
-
-		try {
-			readFile(fileLocation); // read file and save into byte array
-		}
-		catch (Exception e) {
-			System.out.println("Error: " + e); // if read file method throws error
-			return "Error: " + e.getMessage();
-		}
 
 		/// crc16 polynomial: 1 + x^2 + x^15 + x^16 -> 0x8005 (1000 0000 0000 0101) 
 		int[] table = {
@@ -93,29 +43,26 @@ public class crc16 {
 				0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040,
 		};
 
-		for (int k = 0; k < sectionNames.length; k++) {
+		for (int k = 0; k < SaveFile.sectionNames.length; k++) {
 
 			int crc = 0x0000;
-			for (int b = sections[k][0]; b < sections[k][1]; b++) {
-				crc = (crc >>> 8) ^ table[(crc ^ saveFile[b]) & 0xff];
+			for (int b = SaveFile.sections[k][0]; b < SaveFile.sections[k][1]; b++) {
+				crc = (crc >>> 8) ^ table[(crc ^ saveFile.getByteAt(b)) & 0xff];
 			}
 
-			String outputText = sectionNames[k] + " Computed CRC16 = " + String.format("%02X", crc) + " | Checksum in File = " + String.format("%02X%02X", saveFile[checksums[k]], saveFile[checksums[k] + 1]);
+			String outputText = SaveFile.sectionNames[k] + " Computed CRC16 = " + String.format("%02X", crc) + " | Checksum in File = " + String.format("%02X%02X", saveFile.getByteAt(SaveFile.checksums[k]), saveFile.getByteAt(SaveFile.checksums[k] + 1));
 			System.out.println(outputText);
-			gui.addText(outputText + "\n");
 
-			if (saveFile[checksums[k]] != (byte) (crc >> 8) || saveFile[checksums[k] + 1] != (byte) (crc)) { // if checksums are different, change saveFile
+			if (saveFile.getByteAt(SaveFile.checksums[k]) != (byte) (crc >> 8) || saveFile.getByteAt(SaveFile.checksums[k] + 1) != (byte) (crc)) { // if checksums are different, change saveFile
 				isModified = true;
-				System.out.println("Bad checksum in " + sectionNames[k] + "\n");
-				gui.addText("Fixed Checksum in " + sectionNames[k] + "\n");
-				result += sectionNames[k] + ", ";
-				saveFile[checksums[k]] = (byte) (crc >> 8);
-				saveFile[checksums[k] + 1] = (byte) (crc);
+				System.out.println("Bad checksum in " + SaveFile.sectionNames[k] + "\n");
+				result += SaveFile.sectionNames[k] + ", ";
+				saveFile.setBytesAt(SaveFile.checksums[k], new byte[] {(byte) (crc >> 8), (byte) (crc)});
 			}
 		}
 		if (isModified) {
 			try {
-				writeToFile();
+				saveFile.writeToFile();
 			}
 			catch (Exception e) {
 				System.out.println("Error writing to file: " + e);
@@ -124,16 +71,6 @@ public class crc16 {
 		}
 		return result;
 
-	}
-
-	public void writeToFile() throws Exception {
-		FileOutputStream o = new FileOutputStream(fileLocation);
-		o.write(saveFile);
-		o.close();
-	}
-
-	public void setFileLocation(String f) { 
-		fileLocation = f;
 	}
 
 }
