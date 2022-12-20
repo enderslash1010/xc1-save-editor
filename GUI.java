@@ -3,141 +3,129 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
-@SuppressWarnings("serial")
 public class GUI extends JFrame {
 	
-	JFrame frame = new JFrame();
-	JFileChooser fc = new JFileChooser();
-	JTextArea text = new JTextArea();
-	
-	JLabel leftLabel = new JLabel("No File Selected");
-	JLabel rightLabel = new JLabel("");
-	
-	JMenuBar menuBar = new JMenuBar();
-	
-	JSplitPane splitPane;
-	
-	JList<String> sections;
-	JPanel[] sectionPanels = new JPanel[crc16.sectionNames.length];
-	int currSectionPanel = 0;
-	
-	crc16 c;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-	public GUI() {		
-        frame.setTitle("Xenoblade Chronicles (Wii) Save Modifier");
+	private JMenuBar menuBar = new JMenuBar();
+	
+	// Instance of crc16 class for checksum computation
+	private crc16 c = new crc16();
+	
+	private JLabel currFile;
+	private JLabel statusMessage;
+
+	public GUI(SaveFile saveFile) {		
+		
+		JFrame frame = new JFrame(); // top-level container, what every GUI element goes into
+		JFileChooser fc = new JFileChooser(); 
+		
+		currFile = new JLabel("No File Selected");
+		statusMessage = new JLabel("");
+		
+        frame.setTitle("Xenoblade Chronicles (Wii) Save Editor");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(800, 600);
         
-        text.setEditable(false);
-        
-        // section panel views
-        for (int i = 0; i < sectionPanels.length; i++) { // init panels
-        	sectionPanels[i] = new JPanel(new BorderLayout());
-        	JLabel sectionLabel = new JLabel(crc16.sectionNames[i]);
-        	sectionPanels[i].add(sectionLabel);
-        }
-        
-        // section list
-        sections = new JList<String>(crc16.sectionNames);
-        sections.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        sections.addListSelectionListener(new CustomListSelectionListener());
-        //sections.setSelectedIndex(currSectionPanel);
-        
-        // menu
-        CustomActionListener handler = new CustomActionListener();
         JMenu fileMenu = new JMenu("File");
         
         JMenuItem open = new JMenuItem("Open");
-        open.addActionListener(handler);
-        JMenuItem computeAgain = new JMenuItem("Fix Checksums");
-        computeAgain.addActionListener(handler);
+        open.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (fc.showOpenDialog(fc) == 0) {
+		    		   String result = saveFile.setFileLocation(fc.getSelectedFile().getAbsolutePath());
+		    		   if (!result.equals("")) { // Error with loading file
+		    			   setStatusMessage(result);
+		    			   return;
+		    		   }
+		    		   setCurrFile(fc.getSelectedFile().getAbsolutePath());
+		    		   setStatusMessage(c.fixChecksums(saveFile, true));
+	    		}
+			}
+        	
+        });
         
         fileMenu.add(open);
-        fileMenu.add(computeAgain);
         menuBar.add(fileMenu);
         
-        // panels
-        JPanel north = new JPanel(new BorderLayout());
-        north.add(menuBar);
-      
-        JPanel middle = new JPanel(new BorderLayout());
-        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sections, sectionPanels[currSectionPanel]);
-        middle.add(splitPane);
+        JMenuItem save = new JMenuItem("Save");
+        save.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		setStatusMessage(c.fixChecksums(saveFile, true));
+        	}
+        });
+        fileMenu.add(save);
         
-        JPanel south = new JPanel(new BorderLayout());
-        south.add(BorderLayout.WEST, leftLabel);
-        south.add(BorderLayout.EAST, rightLabel);
+        JPanel menuPanel = new JPanel(new BorderLayout());
+        menuPanel.add(menuBar);
         
-        //Adding Components to the frame.
-        frame.getContentPane().add(BorderLayout.NORTH, north);
-        frame.getContentPane().add(BorderLayout.CENTER, middle);
-        frame.getContentPane().add(BorderLayout.SOUTH, south);
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        JTabbedPane tabbedPane = new JTabbedPane();
+        contentPanel.add(tabbedPane);
+        
+        JPanel THUMPanel = new JPanel(new BorderLayout());
+        tabbedPane.addTab("THUM", null, THUMPanel, null);
+        
+        JPanel FLAGPanel = new JPanel(new BorderLayout());
+        tabbedPane.addTab("FLAG", null, FLAGPanel, null);
+        
+        JPanel GAMEPanel = new JPanel(new BorderLayout());
+        tabbedPane.addTab("GAME", null, GAMEPanel, null);
+        
+        JPanel TIMEPanel = new JPanel(new BorderLayout());
+        tabbedPane.addTab("TIME", null, TIMEPanel, null);
+        
+        JPanel PCPMPanel = new JPanel(new BorderLayout());
+        tabbedPane.addTab("PCPM", null, PCPMPanel, null);
+        
+        JPanel CAMDPanel = new JPanel(new BorderLayout());
+        tabbedPane.addTab("CAMD", null, CAMDPanel, null);
+        
+        JPanel ITEMPanel = new JPanel(new BorderLayout());
+        tabbedPane.addTab("ITEM", null, ITEMPanel, null);
+        
+        JPanel WTHRPanel = new JPanel(new BorderLayout());
+        tabbedPane.addTab("WTHR", null, WTHRPanel, null);
+        
+        JPanel SNDSPanel = new JPanel(new BorderLayout());
+        tabbedPane.addTab("SNDS", null, SNDSPanel, null);
+        
+        JPanel MINEPanel = new JPanel(new BorderLayout());
+        tabbedPane.addTab("MINE", null, MINEPanel, null);
+        
+        JPanel TBOXPanel = new JPanel(new BorderLayout());
+        tabbedPane.addTab("TBOX", null, TBOXPanel, null);
+        
+        JPanel OPTDPanel = new JPanel(new BorderLayout());
+        tabbedPane.addTab("OPTD", null, OPTDPanel, null);
+        
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.add(BorderLayout.WEST, currFile);
+        bottomPanel.add(BorderLayout.EAST, statusMessage);
+        
+        // Adding all the panels to the frame.
+        frame.getContentPane().add(BorderLayout.NORTH, menuPanel);
+        frame.getContentPane().add(BorderLayout.CENTER, contentPanel);
+        frame.getContentPane().add(BorderLayout.SOUTH, bottomPanel);
         frame.setVisible(true);
         
 	}
 	
-	class CustomActionListener implements ActionListener {
-	    public void actionPerformed(ActionEvent e) {
-	    
-	    	String result = "";
-	    	switch (((JMenuItem)e.getSource()).getText()) {
-	    		case "Open": 
-	    			if (fc.showOpenDialog(fc) == 0) {
-		    		   clearText();
-		    		   c.setFileLocation(fc.getSelectedFile().getAbsolutePath());
-		    		   leftLabel.setText(fc.getSelectedFile().getAbsolutePath());
-		    		   result = c.computeCRC16();
-	    			}
-	    			break;
-	    		case "Fix Checksums":
-	    			clearText();
-	    			result = c.computeCRC16();
-	    			break;
-	    	}
-	    	
-	    	// handle result
-	    	if (result.length() > 0) { 
-	    		if (result.substring(0, 6).equals("Error:")) { // error occurred
-	    			rightLabel.setText(result);
-	    		}
-	    		else {
-	    			rightLabel.setText("Sections Fixed: " + result.substring(0, result.length() - 3)); // checksums modified
-	    		}
-	    	}
-	    	else { // savefile was not modified
-	    		rightLabel.setText("Sections Already Fixed");
-	    	}
-	    }
+	public String getCurrFile() {
+		return currFile.getText();
 	}
-	
-	class CustomListSelectionListener implements ListSelectionListener {
-
-		@Override
-		public void valueChanged(ListSelectionEvent arg0) {
-			//splitPane.remove(sectionPanels[currSectionPanel]);
-			splitPane.add(sectionPanels[arg0.getFirstIndex()]);
-		}
-		
+	public void setCurrFile(String s) {
+		currFile.setText(s);
 	}
-	
-	public void setText(String s) {
-		text.setText(s);
+	public String getStatusMessage() {
+		return statusMessage.getText();
 	}
-	
-	public void addText(String s) {
-		text.setText(text.getText() + s);
+	public void setStatusMessage(String s) {
+		statusMessage.setText(s);
 	}
-	
-	public void clearText() {
-		text.setText("");
-	}
-	
-	
-	public void addcrc16(crc16 c) {
-		this.c = c;
-	}
-	
 }
