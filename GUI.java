@@ -38,10 +38,13 @@ public class GUI extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (fc.showOpenDialog(fc) == 0) {
-		    		   saveFile.setFileLocation(fc.getSelectedFile().getAbsolutePath());
+		    		   String result = saveFile.setFileLocation(fc.getSelectedFile().getAbsolutePath());
+		    		   if (!result.equals("")) { // Error with loading file
+		    			   setStatusMessage(result);
+		    			   return;
+		    		   }
 		    		   setCurrFile(fc.getSelectedFile().getAbsolutePath());
-		    		   String result = c.computeCRC16(saveFile);
-		    		   // TODO: handle result
+		    		   setStatusMessage(c.fixChecksums(saveFile, true));
 	    		}
 			}
         	
@@ -53,25 +56,13 @@ public class GUI extends JFrame {
         JMenuItem save = new JMenuItem("Save");
         save.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		// TODO: add code for "Save" action
+        		setStatusMessage(c.fixChecksums(saveFile, true));
         	}
         });
         fileMenu.add(save);
         
         JPanel menuPanel = new JPanel(new BorderLayout());
         menuPanel.add(menuBar);
-        
-        JMenu editMenu = new JMenu("Edit");
-        menuBar.add(editMenu);
-        
-        JMenuItem fixChecksums = new JMenuItem("Fix Checksums");
-        fixChecksums.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent e) {
-        		String result = c.computeCRC16(saveFile);
-        		// TODO: handle result
-        	}
-        });
-        editMenu.add(fixChecksums);
         
         JPanel contentPanel = new JPanel(new BorderLayout());
         JTabbedPane tabbedPane = new JTabbedPane();

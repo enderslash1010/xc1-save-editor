@@ -1,8 +1,13 @@
 
 public class crc16 {
 
-	public String computeCRC16(SaveFile saveFile) {
+	/*	Computes the checksum for each section and compares to the stored checksum
+	 * 
+	 */
+	public String fixChecksums(SaveFile saveFile, boolean canModify) {
 
+		if (!saveFile.isValid()) return "Error: Invalid File";
+		
 		String result = "";
 
 		boolean isModified = false;
@@ -56,21 +61,18 @@ public class crc16 {
 			if (saveFile.getByteAt(SaveFile.checksums[k]) != (byte) (crc >> 8) || saveFile.getByteAt(SaveFile.checksums[k] + 1) != (byte) (crc)) { // if checksums are different, change saveFile
 				isModified = true;
 				System.out.println("Bad checksum in " + SaveFile.sectionNames[k] + "\n");
-				result += SaveFile.sectionNames[k] + ", ";
 				saveFile.setBytesAt(SaveFile.checksums[k], new byte[] {(byte) (crc >> 8), (byte) (crc)});
+				result = "Fixed Checksums";
 			}
 		}
-		if (isModified) {
-			try {
-				saveFile.writeToFile();
-			}
-			catch (Exception e) {
-				System.out.println("Error writing to file: " + e);
-				return "Error: " + e.getMessage();
+		if (isModified && canModify) {
+			String s = saveFile.saveToFile();
+			if (s.length() > 0 && s.substring(0, 5).equals("Error")) {
+				return s;
 			}
 		}
-		return result;
-
+		
+		return result.equals("") ? "Already Correct Checksums" : result;
+		
 	}
-
 }

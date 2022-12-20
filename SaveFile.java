@@ -6,7 +6,8 @@ public class SaveFile {
 	
 	private String fileLocation;
 	private byte[] saveFile = new byte[0x28000];
-	private boolean dirty;
+	private boolean dirty; // True if saveFile data structure is not same as save file on disk
+	private boolean valid; // True if valid saveFile (correct format)
 	
 	final static int[][] sections = 
 				{{0x20, 0x9CA0},     // THUM 0
@@ -27,11 +28,7 @@ public class SaveFile {
 	
 	public SaveFile() {
 		this.fileLocation = null;
-	}
-	
-	public SaveFile(String fileLocation) {
-		this.fileLocation = fileLocation;
-		dirty = false;
+		valid = false;
 	}
 	
 	public byte getByteAt(int x) {
@@ -56,25 +53,44 @@ public class SaveFile {
 		if (saveFile[0] != 'U' || saveFile[1] != 'S' || saveFile[2] != 'R' || saveFile[3] != 'D') { // Check if the file has the correct header, throw an exception if invalid
 			fin.close();
 			throw new FileNotFoundException("Invalid File");
-		} 
+		}
+		valid = true;
 		fin.close();
 	}
-	
-	public void writeToFile() throws Exception {
-		FileOutputStream o = new FileOutputStream(fileLocation);
-		o.write(saveFile);
-		o.close();
-		dirty = false;
-	}
 
-	public void setFileLocation(String f) { 
-		this.fileLocation = f;
+	public String saveToFile() {
+		if (!valid) return "Error writing to file: Invalid File";
 		try {
-			readFromFile(); // read file and save into byte array
+			FileOutputStream o = new FileOutputStream(fileLocation);
+			o.write(saveFile);
+			o.close();
 			dirty = false;
 		}
 		catch (Exception e) {
-			System.out.println("Error: " + e); // if read file method throws error
+			System.out.println("Error writing to file: " + e);
+			return "Error writing to file: " + e;
 		}
+		return "";
+	}
+
+	public String setFileLocation(String f) { 
+		this.fileLocation = f;
+		try {
+			readFromFile();
+			dirty = false;
+		}
+		catch (Exception e) {
+			System.out.println("Error reading from file: " + e);
+			return "Error reading from file: " + e.getMessage();
+		}
+		return "";
+	}
+	
+	public String getFileLocation() {
+		return this.fileLocation;
+	}
+	
+	public boolean isValid() {
+		return this.valid;
 	}
 }
