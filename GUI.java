@@ -6,9 +6,6 @@ import javax.swing.*;
 
 public class GUI extends JFrame {
 	
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	private JMenuBar menuBar = new JMenuBar();
@@ -18,6 +15,7 @@ public class GUI extends JFrame {
 	
 	private JLabel currFile;
 	private JLabel statusMessage;
+	private JFormattedTextField THUMLevelTextField;
 
 	public GUI(SaveFile saveFile) {		
 		
@@ -68,8 +66,18 @@ public class GUI extends JFrame {
         JTabbedPane tabbedPane = new JTabbedPane();
         contentPanel.add(tabbedPane);
         
-        JPanel THUMPanel = new JPanel(new BorderLayout());
+        JPanel THUMPanel = new JPanel();
         tabbedPane.addTab("THUM", null, THUMPanel, null);
+        THUMPanel.setLayout(new BorderLayout(0, 0));
+        
+        JSplitPane splitPane = new JSplitPane();
+        THUMPanel.add(splitPane, BorderLayout.NORTH);
+        
+        JLabel lblNewLabel = new JLabel("Level");
+        splitPane.setLeftComponent(lblNewLabel);
+        
+        THUMLevelTextField = new JFormattedTextField();
+        splitPane.setRightComponent(THUMLevelTextField);
         
         JPanel FLAGPanel = new JPanel(new BorderLayout());
         tabbedPane.addTab("FLAG", null, FLAGPanel, null);
