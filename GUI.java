@@ -3,6 +3,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
+import java.awt.Color;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.EmptyBorder;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
 
 public class GUI extends JFrame {
 	
@@ -10,14 +19,13 @@ public class GUI extends JFrame {
 
 	private JMenuBar menuBar = new JMenuBar();
 	
-	// Instance of crc16 class for checksum computation
-	private crc16 c = new crc16();
-	
 	private JLabel currFile;
 	private JLabel statusMessage;
-	private JFormattedTextField THUMLevelTextField;
+	
+	private SaveFile saveFile = null;
+	private JFormattedTextField THUMLevel;
 
-	public GUI(SaveFile saveFile) {		
+	public GUI() {		
 		
 		JFrame frame = new JFrame(); // top-level container, what every GUI element goes into
 		JFileChooser fc = new JFileChooser(); 
@@ -30,31 +38,33 @@ public class GUI extends JFrame {
         frame.setSize(800, 600);
         
         JMenu fileMenu = new JMenu("File");
-        
+
         JMenuItem open = new JMenuItem("Open");
         open.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (fc.showOpenDialog(fc) == 0) {
-		    		   String result = saveFile.setFileLocation(fc.getSelectedFile().getAbsolutePath());
-		    		   if (!result.equals("")) { // Error with loading file
-		    			   setStatusMessage(result);
-		    			   return;
-		    		   }
-		    		   setCurrFile(fc.getSelectedFile().getAbsolutePath());
-		    		   setStatusMessage(c.fixChecksums(saveFile, true));
-	    		}
-			}
-        	
+        	@Override
+        	public void actionPerformed(ActionEvent e) {
+        		if (fc.showOpenDialog(fc) == 0) {
+        			try {
+        				String fileLocation = fc.getSelectedFile().getAbsolutePath();
+        				saveFile = new SaveFile(fileLocation);
+            			setCurrFile(fileLocation);
+            			setStatusMessage("Successfully loaded file");
+        			}
+        			catch (Exception ex) {
+        				setStatusMessage("Error with loading file");
+        			}
+        		}
+        	}
+
         });
-        
+
         fileMenu.add(open);
         menuBar.add(fileMenu);
         
         JMenuItem save = new JMenuItem("Save");
         save.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		setStatusMessage(c.fixChecksums(saveFile, true));
+        		// TODO: save changes made in editor to actual file
         	}
         });
         fileMenu.add(save);
@@ -68,19 +78,36 @@ public class GUI extends JFrame {
         
         JPanel THUMPanel = new JPanel();
         tabbedPane.addTab("THUM", null, THUMPanel, null);
-        THUMPanel.setLayout(new BorderLayout(0, 0));
-        
-        JSplitPane splitPane = new JSplitPane();
-        THUMPanel.add(splitPane, BorderLayout.NORTH);
+        GridBagLayout gbl_THUMPanel = new GridBagLayout();
+        gbl_THUMPanel.columnWidths = new int[]{0, 0, 0};
+        gbl_THUMPanel.rowHeights = new int[]{0, 0};
+        gbl_THUMPanel.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
+        gbl_THUMPanel.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+        THUMPanel.setLayout(gbl_THUMPanel);
         
         JLabel lblNewLabel = new JLabel("Level");
-        splitPane.setLeftComponent(lblNewLabel);
+        GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+        gbc_lblNewLabel.insets = new Insets(0, 0, 0, 5);
+        gbc_lblNewLabel.anchor = GridBagConstraints.EAST;
+        gbc_lblNewLabel.gridx = 0;
+        gbc_lblNewLabel.gridy = 0;
+        THUMPanel.add(lblNewLabel, gbc_lblNewLabel);
         
-        THUMLevelTextField = new JFormattedTextField();
-        splitPane.setRightComponent(THUMLevelTextField);
+        THUMLevel = new JFormattedTextField();
+        GridBagConstraints gbc_THUMLevel = new GridBagConstraints();
+        gbc_THUMLevel.fill = GridBagConstraints.HORIZONTAL;
+        gbc_THUMLevel.gridx = 1;
+        gbc_THUMLevel.gridy = 0;
+        THUMPanel.add(THUMLevel, gbc_THUMLevel);
         
-        JPanel FLAGPanel = new JPanel(new BorderLayout());
+        JPanel FLAGPanel = new JPanel();
         tabbedPane.addTab("FLAG", null, FLAGPanel, null);
+        GridBagLayout gbl_FLAGPanel = new GridBagLayout();
+        gbl_FLAGPanel.columnWidths = new int[]{0};
+        gbl_FLAGPanel.rowHeights = new int[]{0};
+        gbl_FLAGPanel.columnWeights = new double[]{Double.MIN_VALUE};
+        gbl_FLAGPanel.rowWeights = new double[]{Double.MIN_VALUE};
+        FLAGPanel.setLayout(gbl_FLAGPanel);
         
         JPanel GAMEPanel = new JPanel(new BorderLayout());
         tabbedPane.addTab("GAME", null, GAMEPanel, null);
@@ -135,5 +162,11 @@ public class GUI extends JFrame {
 	}
 	public void setStatusMessage(String s) {
 		statusMessage.setText(s);
+	}
+	public String getTHUMLevelText() {
+		return THUMLevel.getText();
+	}
+	public void setTHUMLevelText(String text) {
+		THUMLevel.setText(text);
 	}
 }

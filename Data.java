@@ -1,6 +1,6 @@
 
-public class Data {
-	private int start, end;
+public class Data extends Pointer {
+
 	private DataType type;
 	
 	public Data(int start, int end, DataType type) {
@@ -12,8 +12,5 @@ public class Data {
 	public DataType getType() {
 		return type;
 	}
-	
-	public int[] getLocation() {
-		return new int[] {start, end};
-	}
+
 }

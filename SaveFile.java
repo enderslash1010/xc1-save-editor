@@ -8,8 +8,8 @@ public class SaveFile {
 
 	private String fileLocation;
 	private byte[] saveFile = new byte[0x28000];
+	
 	private boolean dirty; // True if saveFile data structure is not same as save file on disk
-	private boolean valid; // True if valid saveFile (correct format)
 
 	final static int[][] sections = 
 		{{0x20, 0x9CA0},     // THUM 0
@@ -28,7 +28,7 @@ public class SaveFile {
 	final static int[] checksums = {0x1E, 0xA02E, 0xB25E, 0x11EAE, 0x11EDE, 0x11F2E, 0x11F5E, 0x2408E, 0x240BE, 0x240EE, 0x2449E, 0x248AE};
 	final static String[] sectionNames = {"THUM", "FLAG", "GAME", "TIME", "PCPM", "CAMD", "ITEM", "WTHR", "SNDS", "MINE", "TBOX", "OPTD"};
 	
-	final static HashMap<String, Data> THUMData = new HashMap<String, Data>() {{
+	final static HashMap<String, Pointer> THUMData = new HashMap<String, Pointer>() {{
 		put("level", new Data(0x84, 0x86, DataType.Int));
 		put("playTimeHours", new Data(0x2A, 0x2C, DataType.Int));
 		put("playTimeMins", new Data(0x2C, 0x2E, DataType.Int));
@@ -50,10 +50,10 @@ public class SaveFile {
 		put("ng+Flag", new Data(0x87, 0x88, DataType.Boolean));
 		put("saveImage", new Data(0xE0, 0x9580, DataType.TPL));
 	}};
-	final static HashMap<String, Data> FLAGData = new HashMap<String, Data>() {{
+	final static HashMap<String, Pointer> FLAGData = new HashMap<String, Pointer>() {{
 		put("scenarioNum", new Data(0xA0B2, 0xA0B4, DataType.Int));
 	}};
-	final static HashMap<String, Data> GAMEData = new HashMap<String, Data>() {{
+	final static HashMap<String, Pointer> GAMEData = new HashMap<String, Pointer>() {{
 		put("mapNum1", new Data(0xB263, 0xB264, DataType.Int));
 		put("mapNum2", new Data(0xB261, 0xB262, DataType.Int));
 		put("player1", new Data(0xD1FE, 0xD200, DataType.Int));
@@ -76,11 +76,11 @@ public class SaveFile {
 		put("alvisLevel", new Data(0x116F8, 0x116FC, DataType.Int));
 		put("prologueDunbanLevel", new Data(0x119FC, 0x11A00, DataType.Int));
 	}};
-	final static HashMap<String, Data> TIMEData = new HashMap<String, Data>() {{
+	final static HashMap<String, Pointer> TIMEData = new HashMap<String, Pointer>() {{
 		put("playTime", new Data(0x11EB0, 0x11EB4, DataType.Int));
 		put("numDays", new Data(0x11EB8, 0x11EBA, DataType.Int));
 	}};
-	final static HashMap<String, Data> PCPMData = new HashMap<String, Data>() {{
+	final static HashMap<String, Pointer> PCPMData = new HashMap<String, Pointer>() {{
 		put("p1x", new Data(0x11EE0, 0x11EE4, DataType.Float));
 		put("p1y", new Data(0x11EE4, 0x11EE8, DataType.Float));
 		put("p1z", new Data(0x11EE8, 0x11EEC, DataType.Float));
@@ -94,28 +94,42 @@ public class SaveFile {
 		put("p3z", new Data(0x11F08, 0x11F0C, DataType.Float));
 		put("p3Angle", new Data(0x11F0C, 0x11F10, DataType.Float));
 	}};
-	final static HashMap<String, Data> CAMDData = new HashMap<String, Data>() {{
+	final static HashMap<String, Pointer> CAMDData = new HashMap<String, Pointer>() {{
 		put("cameraPosVertical", new Data(0x11F30, 0x11F34, DataType.Float));
 		put("cameraPosHorizontal", new Data(0x11F34, 0x11F38, DataType.Float));
 		put("cameraDistance", new Data(0x11F3C, 0x11F40, DataType.Float));
 	}};
-	final static HashMap<String, Data> ITEMData = new HashMap<String, Data>() {{
+	final static HashMap<String, Pointer> ITEMPointer = new HashMap<String, Pointer>() {{
 		put("money", new Data(0x2404A, 0x2404C, DataType.Int));
 	}};
-	final static HashMap<String, Data> WTHRData = new HashMap<String, Data>() {{
+	final static HashMap<String, Pointer> WTHRPointer = new HashMap<String, Pointer>() {{
 
 	}};
-	final static HashMap<String, Data> SNDSData = new HashMap<String, Data>() {{
+	final static HashMap<String, Pointer> SNDSPointer = new HashMap<String, Pointer>() {{
 
 	}};
-	final static HashMap<String, Data> MINEData = new HashMap<String, Data>() {{
-		put("mineArray", new Data(0x240F0, 0x24474, DataType.Array));
+	final static HashMap<String, Pointer> MINEPointer = new HashMap<String, Pointer>() {{
+		put("mineArray", new Array(0x240F0, 0x24474, new Element[] {
+				new Element("mineCooldown", 2, DataType.Int),
+				new Element("numHarvests", 1, DataType.Int),
+				new Element("minelistID", 1, DataType.Int),
+				new Element("mapID", 2, DataType.Int)
+		}));
 	}};
-	final static HashMap<String, Data> TBOXData = new HashMap<String, Data>() {{
+	final static HashMap<String, Pointer> TBOXPointer = new HashMap<String, Pointer>() {{
 		put("numBoxes", new Data(0x244A3, 0x244A4, DataType.Int));
-		put("boxArray", new Data(0x244A8, 0x246D8, DataType.Array));
+		put("boxArray", new Array(0x244A4, 0x246D8, new Element[] {
+				new Element("blank", 4, DataType.Int),
+				new Element("xBox", 4, DataType.Float),
+				new Element("yBox", 4, DataType.Float),
+				new Element("zBox", 4, DataType.Float),
+				new Element("boxAngle", 4, DataType.Float),
+				new Element("boxRank", 4, DataType.Int),
+				new Element("boxDropTable", 2, DataType.Int),
+				new Element("boxMapID", 2, DataType.Int)
+		}));
 	}};
-	final static HashMap<String, Data> OPTDData = new HashMap<String, Data>() {{
+	final static HashMap<String, Pointer> OPTDData = new HashMap<String, Pointer>() {{
 		put("nonInvertedYAxis", new Data(0x248B0, 0x248B1, DataType.Boolean));
 		put("nonInvertedXAxis", new Data(0x248B1, 0x248B2, DataType.Boolean));
 		put("yAxisSpeed", new Data(0x248B2, 0x248B3, DataType.Int));
@@ -139,11 +153,10 @@ public class SaveFile {
 		put("showSubtitles", new Data(0x248E2, 0x248E3, DataType.Boolean));
 	}};
 
-	public SaveFile() {
-		this.fileLocation = null;
-		valid = false;
-		
-		// TODO: read from file here
+	public SaveFile(String fileLocation) throws Exception {
+		this.fileLocation = fileLocation;
+		readFromFile();
+		CRC16.fixChecksums(this, true);
 	}
 
 	public byte getByteAt(int x) {
@@ -157,6 +170,48 @@ public class SaveFile {
 			result[i-start] = saveFile[i];
 		}
 		return result;
+	}
+
+	public byte[] getRawData(Data data) {
+		int[] location = data.getLocation();
+		return getBytesAt(location[0], location[1]);
+	}
+
+	public Object getData(Data data) {
+		// TODO: get raw data, then transform into the DataType specified in the data object
+		byte[] rawData = getRawData(data);
+		switch (data.getType()) {
+			case String:
+				return getString(rawData);
+			case Int:
+				return getInt(rawData);
+			case Float:
+				return getFloat(rawData);
+			case Boolean: // assumes boolean is one byte
+				return rawData[0] == 0x0 ? false : true;
+			case TPL:
+				return rawData;
+		}
+		return null;
+	}
+	
+	private String getString(byte[] rawData) {
+		String result = "";
+		return result;
+	}
+	
+	private int getInt(byte[] rawData) {
+		int result = 0;
+		return result;
+	}
+	
+	private float getFloat(byte[] rawData) {
+		float result = 0;
+		return result;
+	}
+	
+	public void setData(Data data, Object value) {
+		// TODO: transform Object value into a byte array, then put it at specified location in the data object
 	}
 
 	public void setByteAt(int x, byte b) {
@@ -178,12 +233,11 @@ public class SaveFile {
 			fin.close();
 			throw new FileNotFoundException("Invalid File");
 		}
-		valid = true;
 		fin.close();
+		dirty = false;
 	}
 
 	public String saveToFile() {
-		if (!valid) return "Error writing to file: Invalid File";
 		try {
 			FileOutputStream o = new FileOutputStream(fileLocation);
 			o.write(saveFile);
@@ -197,25 +251,8 @@ public class SaveFile {
 		return "";
 	}
 
-	public String setFileLocation(String f) { 
-		this.fileLocation = f;
-		try {
-			readFromFile();
-			dirty = false;
-		}
-		catch (Exception e) {
-			System.out.println("Error reading from file: " + e);
-			return "Error reading from file: " + e.getMessage();
-		}
-		return "";
-	}
-
 	public String getFileLocation() {
 		return this.fileLocation;
-	}
-
-	public boolean isValid() {
-		return this.valid;
 	}
 
 }
