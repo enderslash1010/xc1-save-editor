@@ -12,5 +12,10 @@ public class Data extends Pointer {
 	public DataType getType() {
 		return type;
 	}
+	
+	// returns size in bytes
+	public int size() {
+		return this.end - this.start;
+	}
 
 }
