@@ -12,7 +12,7 @@ public class SaveFile {
 	private boolean dirty; // True if saveFile data structure is not same as save file on disk
 
 	final static int[][] sections = 
-		{{0x20, 0x9CA0},     // THUM 0
+				{{0x20, 0x9CA0},     // THUM 0
 				{0xA030, 0xB244},    // FLAG 1
 				{0xB260, 0x11E88},   // GAME 2
 				{0x11EB0, 0x11EBC},  // TIME 3
@@ -156,7 +156,7 @@ public class SaveFile {
 	public SaveFile(String fileLocation) throws Exception {
 		this.fileLocation = fileLocation;
 		readFromFile();
-		CRC16.fixChecksums(this, true);
+		saveToFile();
 	}
 
 	public byte getByteAt(int x) {
@@ -178,7 +178,6 @@ public class SaveFile {
 	}
 
 	public Object getData(Data data) {
-		// TODO: get raw data, then transform into the DataType specified in the data object
 		byte[] rawData = getRawData(data);
 		switch (data.getType()) {
 			case String:
@@ -197,26 +196,70 @@ public class SaveFile {
 	
 	private String getString(byte[] rawData) {
 		String result = "";
+		for (int i = 0; i < rawData.length; i++) {
+			result += ((char) rawData[i]);
+		}
 		return result;
 	}
 	
 	private int getInt(byte[] rawData) {
 		int result = 0;
+		for (byte b: rawData) {
+			result = (result << 8) + (b & 0xFF);
+		}
 		return result;
 	}
 	
 	private float getFloat(byte[] rawData) {
-		float result = 0;
-		return result;
+		return (float) getInt(rawData);
 	}
 	
-	public void setData(Data data, Object value) {
-		// TODO: transform Object value into a byte array, then put it at specified location in the data object
+	public void setData(Data data, Object value) throws Exception {	
+		// check if type of Object value matches data.getType, throw exception if not
+		// transform Object value into a byte array
+		byte[] result = new byte[data.size()];
+		switch (data.getType()) {
+			case String:
+				if (!(value instanceof String)) throw new Exception("Expecting String, got " + value.getClass());
+				for (int i = 0; i < ((String) value).length() && i < result.length; i++) {
+					result[i] = (byte) ((String) value).charAt(i);
+				}
+				break;
+			case Int:
+				if (!(Integer.class.isInstance(value))) throw new Exception("Expecting Integer, got " + value.getClass());
+				result[0] = (byte)(((int) value >> 24) & 0xFF);
+				result[1] = (byte)(((int) value >> 16) & 0xFF);
+				result[2] = (byte)(((int) value >> 8) & 0xFF);
+				result[3] = (byte)(((int) value >> 0) & 0xFF);
+				break;
+			case Float:
+				if (!(Float.class.isInstance(value))) throw new Exception("Expecting Float, got " + value.getClass());
+				int tempInt = Float.floatToRawIntBits((float) value); // floatToRawIntBits() preserves NaN values
+				result[0] = (byte)((tempInt >> 24) & 0xFF);
+				result[1] = (byte)((tempInt >> 16) & 0xFF);
+				result[2] = (byte)((tempInt >> 8) & 0xFF);
+				result[3] = (byte)((tempInt >> 0) & 0xFF);
+				break;
+			case Boolean:
+				if (!(Boolean.class.isInstance(value))) throw new Exception("Expecting Boolean, got " + value.getClass());
+				if ((boolean) value) {
+					result[0] = 1;
+				}
+				else result[0] = 0;
+				break;
+			case TPL:
+				// TODO: handle TPL Images
+				break;
+		}
+
+		// put this array of bytes into the saveFile at location specified in data
+		setBytesAt(data.start, result);
+
 	}
 
 	public void setByteAt(int x, byte b) {
+		if (saveFile[x] != b) dirty = true;
 		saveFile[x] = b;
-		dirty = true;
 	}
 
 	public void setBytesAt(int x, byte[] b) {
@@ -238,6 +281,7 @@ public class SaveFile {
 	}
 
 	public String saveToFile() {
+		CRC16.fixChecksums(this); // fix checksums on saving
 		try {
 			FileOutputStream o = new FileOutputStream(fileLocation);
 			o.write(saveFile);

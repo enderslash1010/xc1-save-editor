@@ -64,7 +64,9 @@ public class GUI extends JFrame {
         JMenuItem save = new JMenuItem("Save");
         save.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		// TODO: save changes made in editor to actual file
+        		// save changes made in editor to actual file
+        		String result = saveFile.saveToFile();
+        		setStatusMessage(result);
         	}
         });
         fileMenu.add(save);

@@ -4,7 +4,7 @@ public class CRC16 {
 	/*	Computes the checksum for each section and compares to the stored checksum
 	 * 
 	 */
-	public static String fixChecksums(SaveFile saveFile, boolean canModify) {
+	public static String fixChecksums(SaveFile saveFile) {
 		
 		String result = "";
 
@@ -61,12 +61,6 @@ public class CRC16 {
 				System.out.println("Bad checksum in " + SaveFile.sectionNames[k] + "\n");
 				saveFile.setBytesAt(SaveFile.checksums[k], new byte[] {(byte) (crc >> 8), (byte) (crc)});
 				result = "Fixed Checksums";
-			}
-		}
-		if (isModified && canModify) {
-			String s = saveFile.saveToFile();
-			if (s.length() > 0 && s.substring(0, 5).equals("Error")) {
-				return s;
 			}
 		}
 		
