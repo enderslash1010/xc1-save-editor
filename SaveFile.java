@@ -1,6 +1,7 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 @SuppressWarnings("serial")
@@ -99,16 +100,16 @@ public class SaveFile {
 		put("cameraPosHorizontal", new Data(0x11F34, 0x11F38, DataType.Float));
 		put("cameraDistance", new Data(0x11F3C, 0x11F40, DataType.Float));
 	}};
-	final static HashMap<String, Pointer> ITEMPointer = new HashMap<String, Pointer>() {{
+	final static HashMap<String, Pointer> ITEMData = new HashMap<String, Pointer>() {{
 		put("money", new Data(0x2404A, 0x2404C, DataType.Int));
 	}};
-	final static HashMap<String, Pointer> WTHRPointer = new HashMap<String, Pointer>() {{
+	final static HashMap<String, Pointer> WTHRData = new HashMap<String, Pointer>() {{
 
 	}};
-	final static HashMap<String, Pointer> SNDSPointer = new HashMap<String, Pointer>() {{
+	final static HashMap<String, Pointer> SNDSData = new HashMap<String, Pointer>() {{
 
 	}};
-	final static HashMap<String, Pointer> MINEPointer = new HashMap<String, Pointer>() {{
+	final static HashMap<String, Pointer> MINEData = new HashMap<String, Pointer>() {{
 		put("mineArray", new Array(0x240F0, 0x24474, new Element[] {
 				new Element("mineCooldown", 2, DataType.Int),
 				new Element("numHarvests", 1, DataType.Int),
@@ -116,7 +117,7 @@ public class SaveFile {
 				new Element("mapID", 2, DataType.Int)
 		}));
 	}};
-	final static HashMap<String, Pointer> TBOXPointer = new HashMap<String, Pointer>() {{
+	final static HashMap<String, Pointer> TBOXData = new HashMap<String, Pointer>() {{
 		put("numBoxes", new Data(0x244A3, 0x244A4, DataType.Int));
 		put("boxArray", new Array(0x244A4, 0x246D8, new Element[] {
 				new Element("blank", 4, DataType.Int),
@@ -172,14 +173,17 @@ public class SaveFile {
 		return result;
 	}
 
-	public byte[] getRawData(Data data) {
+	public byte[] getRawData(Pointer data) {
 		int[] location = data.getLocation();
 		return getBytesAt(location[0], location[1]);
 	}
 
-	public Object getData(Data data) {
+	public Object getData(Pointer data) {
+		// get raw data, then transform into the DataType specified in the data object
 		byte[] rawData = getRawData(data);
-		switch (data.getType()) {
+		
+		if (data instanceof Data) {
+			switch (((Data) data).getType()) {
 			case String:
 				return getString(rawData);
 			case Int:
@@ -190,6 +194,10 @@ public class SaveFile {
 				return rawData[0] == 0x0 ? false : true;
 			case TPL:
 				return rawData;
+			}
+		}
+		else { // TODO: data is instance of Array
+			
 		}
 		return null;
 	}
@@ -197,6 +205,7 @@ public class SaveFile {
 	private String getString(byte[] rawData) {
 		String result = "";
 		for (int i = 0; i < rawData.length; i++) {
+			if (rawData[i] == 0x0) return result; // null char is end of string
 			result += ((char) rawData[i]);
 		}
 		return result;
@@ -211,14 +220,16 @@ public class SaveFile {
 	}
 	
 	private float getFloat(byte[] rawData) {
-		return (float) getInt(rawData);
+		return ByteBuffer.wrap(rawData).getFloat();
 	}
 	
-	public void setData(Data data, Object value) throws Exception {	
+	public void setData(Pointer data, Object value) throws Exception {	
 		// check if type of Object value matches data.getType, throw exception if not
 		// transform Object value into a byte array
 		byte[] result = new byte[data.size()];
-		switch (data.getType()) {
+		
+		if (data instanceof Data) {
+			switch (((Data)data).getType()) {
 			case String:
 				if (!(value instanceof String)) throw new Exception("Expecting String, got " + value.getClass());
 				for (int i = 0; i < ((String) value).length() && i < result.length; i++) {
@@ -230,15 +241,15 @@ public class SaveFile {
 				result[0] = (byte)(((int) value >> 24) & 0xFF);
 				result[1] = (byte)(((int) value >> 16) & 0xFF);
 				result[2] = (byte)(((int) value >> 8) & 0xFF);
-				result[3] = (byte)(((int) value >> 0) & 0xFF);
+				result[3] = (byte)(((int) value) & 0xFF);
 				break;
 			case Float:
 				if (!(Float.class.isInstance(value))) throw new Exception("Expecting Float, got " + value.getClass());
-				int tempInt = Float.floatToRawIntBits((float) value); // floatToRawIntBits() preserves NaN values
-				result[0] = (byte)((tempInt >> 24) & 0xFF);
-				result[1] = (byte)((tempInt >> 16) & 0xFF);
-				result[2] = (byte)((tempInt >> 8) & 0xFF);
-				result[3] = (byte)((tempInt >> 0) & 0xFF);
+				int bits = Float.floatToIntBits((float) value);
+				result[0] = (byte)(bits >> 24);
+				result[1] = (byte)(bits >> 16);
+				result[2] = (byte)(bits >> 8);
+				result[3] = (byte)(bits);
 				break;
 			case Boolean:
 				if (!(Boolean.class.isInstance(value))) throw new Exception("Expecting Boolean, got " + value.getClass());
@@ -250,6 +261,10 @@ public class SaveFile {
 			case TPL:
 				// TODO: handle TPL Images
 				break;
+			}
+		}
+		else { // TODO: handle arrays
+			
 		}
 
 		// put this array of bytes into the saveFile at location specified in data
@@ -281,6 +296,7 @@ public class SaveFile {
 	}
 
 	public String saveToFile() {
+		if (!this.dirty) return ""; // if file was not changed, no need to save
 		CRC16.fixChecksums(this); // fix checksums on saving
 		try {
 			FileOutputStream o = new FileOutputStream(fileLocation);
