@@ -54,7 +54,7 @@ public class CRC16 {
 			}
 
 			String outputText = SaveFile.sectionNames[k] + " Computed CRC16 = " + String.format("%02X", crc) + " | Checksum in File = " + String.format("%02X%02X", saveFile.getByteAt(SaveFile.checksums[k]), saveFile.getByteAt(SaveFile.checksums[k] + 1));
-			System.out.println(outputText);
+			// System.out.println(outputText);
 
 			if (saveFile.getByteAt(SaveFile.checksums[k]) != (byte) (crc >> 8) || saveFile.getByteAt(SaveFile.checksums[k] + 1) != (byte) (crc)) { // if checksums are different, change saveFile
 				isModified = true;
