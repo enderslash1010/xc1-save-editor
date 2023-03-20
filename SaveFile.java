@@ -9,11 +9,11 @@ public class SaveFile {
 
 	private String fileLocation;
 	private byte[] saveFile = new byte[0x28000];
-	
+
 	private boolean dirty; // True if saveFile data structure is not same as save file on disk
 
 	final static int[][] sections = 
-				{{0x20, 0x9CA0},     // THUM 0
+		{{0x20, 0x9CA0},     // THUM 0
 				{0xA030, 0xB244},    // FLAG 1
 				{0xB260, 0x11E88},   // GAME 2
 				{0x11EB0, 0x11EBC},  // TIME 3
@@ -28,7 +28,7 @@ public class SaveFile {
 
 	final static int[] checksums = {0x1E, 0xA02E, 0xB25E, 0x11EAE, 0x11EDE, 0x11F2E, 0x11F5E, 0x2408E, 0x240BE, 0x240EE, 0x2449E, 0x248AE};
 	final static String[] sectionNames = {"THUM", "FLAG", "GAME", "TIME", "PCPM", "CAMD", "ITEM", "WTHR", "SNDS", "MINE", "TBOX", "OPTD"};
-	
+
 	final static HashMap<String, Pointer> THUMData = new HashMap<String, Pointer>() {{
 		put("level", new Data(0x84, 0x86, DataType.Int));
 		put("playTimeHours", new Data(0x2A, 0x2C, DataType.Int));
@@ -119,7 +119,7 @@ public class SaveFile {
 	}};
 	final static HashMap<String, Pointer> TBOXData = new HashMap<String, Pointer>() {{
 		put("numBoxes", new Data(0x244A3, 0x244A4, DataType.Int));
-		put("boxArray", new Array(0x244A4, 0x246D8, new Element[] {
+		put("boxArray", new Array(0x244A4, 0x246F4, new Element[] {
 				new Element("blank", 4, DataType.Int),
 				new Element("xBox", 4, DataType.Float),
 				new Element("yBox", 4, DataType.Float),
@@ -181,7 +181,7 @@ public class SaveFile {
 	public Object getData(Pointer data) {
 		// get raw data, then transform into the DataType specified in the data object
 		byte[] rawData = getRawData(data);
-		
+
 		if (data instanceof Data) {
 			switch (((Data) data).getType()) {
 			case String:
@@ -196,12 +196,12 @@ public class SaveFile {
 				return rawData;
 			}
 		}
-		else { // TODO: data is instance of Array
-			
+		else if (data instanceof Array){ // data is instance of Array
+			return getArray((Array) data);
 		}
 		return null;
 	}
-	
+
 	private String getString(byte[] rawData) {
 		String result = "";
 		for (int i = 0; i < rawData.length; i++) {
@@ -210,7 +210,7 @@ public class SaveFile {
 		}
 		return result;
 	}
-	
+
 	private int getInt(byte[] rawData) {
 		int result = 0;
 		for (byte b: rawData) {
@@ -218,16 +218,35 @@ public class SaveFile {
 		}
 		return result;
 	}
-	
+
 	private float getFloat(byte[] rawData) {
 		return ByteBuffer.wrap(rawData).getFloat();
 	}
 	
+	public ValuePair[] getArrayAt(Array arr, int index) {
+		DataPair[] pairArray = arr.getPairArray(index);
+		ValuePair[] result = new ValuePair[arr.getEntryOutlineLength()];
+		for (int i = 0; i < pairArray.length; i++) {
+			result[i] = new ValuePair(pairArray[i].getName(), getData(pairArray[i].getData()));
+		}
+		return result;
+	}
+
+	public ValuePair[][] getArray(Array arr) {
+		ValuePair[][] result = new ValuePair[arr.getNumEntries()][arr.getEntryOutlineLength()];
+		
+		for (int i = 0; i < result.length; i++) {
+			result[i] = getArrayAt(arr, i);
+		}
+		return result;
+		
+	}
+
 	public void setData(Pointer data, Object value) throws Exception {	
 		// check if type of Object value matches data.getType, throw exception if not
 		// transform Object value into a byte array
 		byte[] result = new byte[data.size()];
-		
+
 		if (data instanceof Data) {
 			switch (((Data)data).getType()) {
 			case String:
@@ -238,10 +257,9 @@ public class SaveFile {
 				break;
 			case Int:
 				if (!(Integer.class.isInstance(value))) throw new Exception("Expecting Integer, got " + value.getClass());
-				result[0] = (byte)(((int) value >> 24) & 0xFF);
-				result[1] = (byte)(((int) value >> 16) & 0xFF);
-				result[2] = (byte)(((int) value >> 8) & 0xFF);
-				result[3] = (byte)(((int) value) & 0xFF);
+				for (int i = 0, shift = result.length*8 - 8; i < result.length && shift >= 0; i++, shift-=8) {
+					result[i] = (byte)(((int) value >> shift) & 0xFF);
+				}	
 				break;
 			case Float:
 				if (!(Float.class.isInstance(value))) throw new Exception("Expecting Float, got " + value.getClass());
@@ -263,13 +281,30 @@ public class SaveFile {
 				break;
 			}
 		}
-		else { // TODO: handle arrays
-			
-		}
+		else return; // Arrays shouldn't be passed into data parameter
 
 		// put this array of bytes into the saveFile at location specified in data
 		setBytesAt(data.start, result);
 
+	}
+
+	// Sets an entry within an array at index to an array of values
+	// Only values in ValuePair[] values are changed	
+	public void setArrayEntryAt(Array arr, int index, ValuePair[] values) throws Exception {
+		DataPair[] pairArr = arr.getPairArray(index);
+		for (int i = 0; i < pairArr.length; i++) {
+			if (values[i] == null) continue; // skip if there is not a ValuePair
+			setData(pairArr[i].getData(), values[i].getData());
+		}
+	}
+
+	// Set entire array to ValuePair[][], null entries are not changed
+	// ValuePair[] requires same length as Array arr
+	public void setArray(Array arr, ValuePair[][] values) throws Exception {
+		if (arr.getRowLength() != values.length || arr.getColLength() != values[0].length) throw new Exception("size of Array doesn't match size of ValuePair Array");
+		for (int i = 0; i < values.length; i++) {
+			setArrayEntryAt(arr, i, values[i]);
+		}
 	}
 
 	public void setByteAt(int x, byte b) {
