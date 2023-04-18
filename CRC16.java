@@ -58,7 +58,7 @@ public class CRC16 {
 
 			if (saveFile.getByteAt(SaveFile.checksums[k]) != (byte) (crc >> 8) || saveFile.getByteAt(SaveFile.checksums[k] + 1) != (byte) (crc)) { // if checksums are different, change saveFile
 				isModified = true;
-				System.out.println("Bad checksum in " + SaveFile.sectionNames[k] + "\n");
+				// System.out.println("Bad checksum in " + SaveFile.sectionNames[k] + "\n");
 				saveFile.setBytesAt(SaveFile.checksums[k], new byte[] {(byte) (crc >> 8), (byte) (crc)});
 				result = "Fixed Checksums";
 			}
