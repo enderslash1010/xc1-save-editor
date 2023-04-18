@@ -13,7 +13,7 @@ public class SaveFile {
 	private boolean dirty; // True if saveFile data structure is not same as save file on disk
 
 	final static int[][] sections = 
-		{{0x20, 0x9CA0},     // THUM 0
+				{{0x20, 0x9CA0},     // THUM 0
 				{0xA030, 0xB244},    // FLAG 1
 				{0xB260, 0x11E88},   // GAME 2
 				{0x11EB0, 0x11EBC},  // TIME 3
@@ -30,40 +30,43 @@ public class SaveFile {
 	final static String[] sectionNames = {"THUM", "FLAG", "GAME", "TIME", "PCPM", "CAMD", "ITEM", "WTHR", "SNDS", "MINE", "TBOX", "OPTD"};
 
 	final static HashMap<String, Pointer> THUMData = new HashMap<String, Pointer>() {{
-		put("level", new Data(0x84, 0x86, DataType.Int));
-		put("playTimeHours", new Data(0x2A, 0x2C, DataType.Int));
-		put("playTimeMins", new Data(0x2C, 0x2E, DataType.Int));
-		put("playTimeSeconds", new Data(0x23, 0x24, DataType.Int));
-		put("saveTimeDay", new Data(0x29, 0x2A, DataType.Int));
-		put("saveTimeMonth", new Data(0x29, 0x2A, DataType.Int));
-		put("saveTimeYear", new Data(0x24, 0x26, DataType.Int));
-		put("saveTimeHour", new Data(0x28, 0x29, DataType.Int));
-		put("saveTimeMinute", new Data(0x22, 0x23, DataType.Int));
-		put("picSlot1", new Data(0x37, 0x38, DataType.Int));
-		put("picSlot2", new Data(0x3B, 0x3C, DataType.Int));
-		put("picSlot3", new Data(0x3F, 0x40, DataType.Int));
-		put("picSlot4", new Data(0x43, 0x44, DataType.Int));
-		put("picSlot5", new Data(0x47, 0x48, DataType.Int));
-		put("picSlot6", new Data(0x4B, 0x4C, DataType.Int));
-		put("picSlot7", new Data(0x4F, 0x50, DataType.Int));
-		put("name", new Data(0x64, 0x84, DataType.String));
-		put("systemSaveFlag", new Data(0x86, 0x87, DataType.Boolean));
-		put("ng+Flag", new Data(0x87, 0x88, DataType.Boolean));
+		put("level", new Data(0x84, 0x86, DataType.Int)); //
+		put("playTimeHours", new Data(0x2A, 0x2C, DataType.Int)); //
+		put("playTimeMins", new Data(0x2C, 0x2E, DataType.Int)); //
+		put("playTimeSeconds", new Data(0x23, 0x24, DataType.Int)); 
+		put("saveTimeDay", new Data(0x29, 0x2A, DataType.Int)); //
+		put("saveTimeMonth", new Data(0x26, 0x28, DataType.Int)); //
+		put("saveTimeYear", new Data(0x24, 0x26, DataType.Int)); //
+		put("saveTimeHour", new Data(0x28, 0x29, DataType.Int)); //
+		put("saveTimeMinute", new Data(0x22, 0x23, DataType.Int)); //
+		put("picSlot1", new Data(0x37, 0x38, DataType.Int)); //
+		put("picSlot2", new Data(0x3B, 0x3C, DataType.Int)); //
+		put("picSlot3", new Data(0x3F, 0x40, DataType.Int)); //
+		put("picSlot4", new Data(0x43, 0x44, DataType.Int)); //
+		put("picSlot5", new Data(0x47, 0x48, DataType.Int)); //
+		put("picSlot6", new Data(0x4B, 0x4C, DataType.Int)); //
+		put("picSlot7", new Data(0x4F, 0x50, DataType.Int)); //
+		put("name", new Data(0x64, 0x84, DataType.String)); //
+		put("systemSaveFlag", new Data(0x86, 0x87, DataType.Boolean)); //
+		put("ng+Flag", new Data(0x87, 0x88, DataType.Boolean)); //
 		put("saveImage", new Data(0xE0, 0x9580, DataType.TPL));
 	}};
 	final static HashMap<String, Pointer> FLAGData = new HashMap<String, Pointer>() {{
-		put("scenarioNum", new Data(0xA0B2, 0xA0B4, DataType.Int));
+		put("scenarioNum", new Data(0xA0B2, 0xA0B4, DataType.Int)); //
 	}};
 	final static HashMap<String, Pointer> GAMEData = new HashMap<String, Pointer>() {{
-		put("mapNum1", new Data(0xB263, 0xB264, DataType.Int));
-		put("mapNum2", new Data(0xB261, 0xB262, DataType.Int));
-		put("player1", new Data(0xD1FE, 0xD200, DataType.Int));
-		put("player2", new Data(0xD202, 0xD204, DataType.Int));
-		put("player3", new Data(0xD206, 0xD208, DataType.Int));
-		put("player4", new Data(0xD20A, 0xD20C, DataType.Int));
-		put("player5", new Data(0xD20E, 0xD210, DataType.Int));
-		put("player6", new Data(0xD212, 0xD214, DataType.Int));
-		put("player7", new Data(0xD216, 0xD218, DataType.Int));
+		put("mapNum", new Data(0xB261, 0xB264, DataType.Int)); //
+		put("mapNum2", new Data(0xB264, 0xB268, DataType.String)); //
+		put("player1", new Data(0xD1FE, 0xD200, DataType.Int)); //
+		put("player2", new Data(0xD202, 0xD204, DataType.Int)); //
+		put("player3", new Data(0xD206, 0xD208, DataType.Int)); //
+		put("player4", new Data(0xD20A, 0xD20C, DataType.Int)); //
+		put("player5", new Data(0xD20E, 0xD210, DataType.Int)); //
+		put("player6", new Data(0xD212, 0xD214, DataType.Int)); //
+		put("player7", new Data(0xD216, 0xD218, DataType.Int)); //
+		put("guest1", new Data(0xD222, 0xD224, DataType.Int));
+		put("guest2", new Data(0xD226, 0xD228, DataType.Int));
+		put("guest3", new Data(0xD22A, 0xD22C, DataType.Int));
 		put("shulkLevel", new Data(0xF8D0, 0xF8D4, DataType.Int));
 		put("reynLevel", new Data(0xFBD4, 0xFBD8, DataType.Int));
 		put("fioraLevel", new Data(0xFEC8, 0xFECC, DataType.Int));
@@ -153,10 +156,21 @@ public class SaveFile {
 		put("fastDialogueText", new Data(0x248E1, 0x248E2, DataType.Boolean));
 		put("showSubtitles", new Data(0x248E2, 0x248E3, DataType.Boolean));
 	}};
+	
+	// Converts mapNum to how its represented in the save file (0201 -> 0x 01 00 02)
+	public static int getFormattedMapNum(String mapNum) {
+		if (mapNum.length() != 4) return -1;
+		int result = 0;
+		result += Integer.parseInt(mapNum.substring(2));
+		result = result << 16;
+		result += Integer.parseInt(mapNum.substring(0, 2));
+		return result;
+	}
 
 	public SaveFile(String fileLocation) throws Exception {
 		this.fileLocation = fileLocation;
 		readFromFile();
+		CRC16.fixChecksums(this); // fix checksums just in case user edited it themselves
 		saveToFile();
 	}
 
@@ -331,7 +345,7 @@ public class SaveFile {
 	}
 
 	public String saveToFile() {
-		if (!this.dirty) return ""; // if file was not changed, no need to save
+		if (!this.dirty) return "Nothing was modified, did not save"; // if file was not changed, no need to save
 		CRC16.fixChecksums(this); // fix checksums on saving
 		try {
 			FileOutputStream o = new FileOutputStream(fileLocation);
@@ -343,7 +357,7 @@ public class SaveFile {
 			System.out.println("Error writing to file: " + e);
 			return "Error writing to file: " + e;
 		}
-		return "";
+		return "Saved successfully";
 	}
 
 	public String getFileLocation() {
