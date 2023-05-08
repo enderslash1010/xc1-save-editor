@@ -8,8 +8,6 @@ public class CRC16 {
 		
 		String result = "";
 
-		boolean isModified = false;
-
 		/// crc16 polynomial: 1 + x^2 + x^15 + x^16 -> 0x8005 (1000 0000 0000 0101) 
 		int[] table = {
 				0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
@@ -53,11 +51,10 @@ public class CRC16 {
 				crc = (crc >>> 8) ^ table[(crc ^ saveFile.getByteAt(b)) & 0xff];
 			}
 
-			String outputText = SaveFile.sectionNames[k] + " Computed CRC16 = " + String.format("%02X", crc) + " | Checksum in File = " + String.format("%02X%02X", saveFile.getByteAt(SaveFile.checksums[k]), saveFile.getByteAt(SaveFile.checksums[k] + 1));
-			// System.out.println(outputText);
+//			 String outputText = SaveFile.sectionNames[k] + " Computed CRC16 = " + String.format("%02X", crc) + " | Checksum in File = " + String.format("%02X%02X", saveFile.getByteAt(SaveFile.checksums[k]), saveFile.getByteAt(SaveFile.checksums[k] + 1));
+//			 System.out.println(outputText);
 
 			if (saveFile.getByteAt(SaveFile.checksums[k]) != (byte) (crc >> 8) || saveFile.getByteAt(SaveFile.checksums[k] + 1) != (byte) (crc)) { // if checksums are different, change saveFile
-				isModified = true;
 				// System.out.println("Bad checksum in " + SaveFile.sectionNames[k] + "\n");
 				saveFile.setBytesAt(SaveFile.checksums[k], new byte[] {(byte) (crc >> 8), (byte) (crc)});
 				result = "Fixed Checksums";
