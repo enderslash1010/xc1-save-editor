@@ -3,6 +3,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import com.google.common.collect.HashBiMap;
 
 @SuppressWarnings("serial")
 public class SaveFile {
@@ -11,6 +12,8 @@ public class SaveFile {
 	private byte[] saveFile = new byte[0x28000];
 
 	private boolean dirty; // True if saveFile data structure is not same as save file on disk
+	
+	private ModelListener modelListener;
 
 	final static int[][] sections = 
 		{{0x20, 0x9CA0},     // THUM 0
@@ -29,13 +32,14 @@ public class SaveFile {
 	final static int[] checksums = {0x1E, 0xA02E, 0xB25E, 0x11EAE, 0x11EDE, 0x11F2E, 0x11F5E, 0x2408E, 0x240BE, 0x240EE, 0x2449E, 0x248AE};
 	final static String[] sectionNames = {"THUM", "FLAG", "GAME", "TIME", "PCPM", "CAMD", "ITEM", "WTHR", "SNDS", "MINE", "TBOX", "OPTD"};
 
-	final static HashMap<String, Pointer> THUMData = new HashMap<String, Pointer>() {{
+	final static HashBiMap<String, Pointer> DataMap = HashBiMap.create(new HashMap<String, Pointer>() {{
+		// THUM
 		put("level", new Data(0x84, 0x86, DataType.Int));
 		put("playTimeHours", new Data(0x2A, 0x2C, DataType.Int));
 		put("playTimeMins", new Data(0x2C, 0x2E, DataType.Int));
 		put("playTimeSeconds", new Data(0x23, 0x24, DataType.Int));
 		put("saveTimeDay", new Data(0x29, 0x2A, DataType.Int));
-		put("saveTimeMonth", new Data(0x29, 0x2A, DataType.Int));
+		put("saveTimeMonth", new Data(0x26, 0x28, DataType.Int));
 		put("saveTimeYear", new Data(0x24, 0x26, DataType.Int));
 		put("saveTimeHour", new Data(0x28, 0x29, DataType.Int));
 		put("saveTimeMinute", new Data(0x22, 0x23, DataType.Int));
@@ -50,13 +54,13 @@ public class SaveFile {
 		put("systemSaveFlag", new Data(0x86, 0x87, DataType.Boolean));
 		put("ng+Flag", new Data(0x87, 0x88, DataType.Boolean));
 		put("saveImage", new Data(0xE0, 0x9580, DataType.TPL));
-	}};
-	final static HashMap<String, Pointer> FLAGData = new HashMap<String, Pointer>() {{
+		
+		// FLAG
 		put("scenarioNum", new Data(0xA0B2, 0xA0B4, DataType.Int));
-	}};
-	final static HashMap<String, Pointer> GAMEData = new HashMap<String, Pointer>() {{
-		put("mapNum1", new Data(0xB263, 0xB264, DataType.Int));
-		put("mapNum2", new Data(0xB261, 0xB262, DataType.Int));
+		
+		// GAME
+		put("mapNum", new Data(0xB261, 0xB264, DataType.Int));
+		put("mapNum2", new Data(0xB264, 0xB268, DataType.String));
 		put("player1", new Data(0xD1FE, 0xD200, DataType.Int));
 		put("player2", new Data(0xD202, 0xD204, DataType.Int));
 		put("player3", new Data(0xD206, 0xD208, DataType.Int));
@@ -76,12 +80,12 @@ public class SaveFile {
 		put("mumkharLevel", new Data(0x113F4, 0x113F8, DataType.Int));
 		put("alvisLevel", new Data(0x116F8, 0x116FC, DataType.Int));
 		put("prologueDunbanLevel", new Data(0x119FC, 0x11A00, DataType.Int));
-	}};
-	final static HashMap<String, Pointer> TIMEData = new HashMap<String, Pointer>() {{
+		
+		// TIME
 		put("playTime", new Data(0x11EB0, 0x11EB4, DataType.Int));
 		put("numDays", new Data(0x11EB8, 0x11EBA, DataType.Int));
-	}};
-	final static HashMap<String, Pointer> PCPMData = new HashMap<String, Pointer>() {{
+		
+		// PCPM
 		put("p1x", new Data(0x11EE0, 0x11EE4, DataType.Float));
 		put("p1y", new Data(0x11EE4, 0x11EE8, DataType.Float));
 		put("p1z", new Data(0x11EE8, 0x11EEC, DataType.Float));
@@ -94,30 +98,28 @@ public class SaveFile {
 		put("p3y", new Data(0x11F04, 0x11F08, DataType.Float));
 		put("p3z", new Data(0x11F08, 0x11F0C, DataType.Float));
 		put("p3Angle", new Data(0x11F0C, 0x11F10, DataType.Float));
-	}};
-	final static HashMap<String, Pointer> CAMDData = new HashMap<String, Pointer>() {{
+		
+		// CAMD
 		put("cameraPosVertical", new Data(0x11F30, 0x11F34, DataType.Float));
 		put("cameraPosHorizontal", new Data(0x11F34, 0x11F38, DataType.Float));
 		put("cameraDistance", new Data(0x11F3C, 0x11F40, DataType.Float));
-	}};
-	final static HashMap<String, Pointer> ITEMData = new HashMap<String, Pointer>() {{
+		
+		// ITEM
 		put("money", new Data(0x2404A, 0x2404C, DataType.Int));
-	}};
-	final static HashMap<String, Pointer> WTHRData = new HashMap<String, Pointer>() {{
-
-	}};
-	final static HashMap<String, Pointer> SNDSData = new HashMap<String, Pointer>() {{
-
-	}};
-	final static HashMap<String, Pointer> MINEData = new HashMap<String, Pointer>() {{
+		
+		// WTHR
+		
+		// SNDS
+		
+		// MINE
 		put("mineArray", new Array(0x240F0, 0x24474, new Element[] {
 				new Element("mineCooldown", 2, DataType.Int),
 				new Element("numHarvests", 1, DataType.Int),
 				new Element("minelistID", 1, DataType.Int),
 				new Element("mapID", 2, DataType.Int)
 		}));
-	}};
-	final static HashMap<String, Pointer> TBOXData = new HashMap<String, Pointer>() {{
+		
+		// TBOX
 		put("numBoxes", new Data(0x244A3, 0x244A4, DataType.Int));
 		put("boxArray", new Array(0x244A4, 0x246F4, new Element[] {
 				new Element("blank", 4, DataType.Int),
@@ -129,8 +131,8 @@ public class SaveFile {
 				new Element("boxDropTable", 2, DataType.Int),
 				new Element("boxMapID", 2, DataType.Int)
 		}));
-	}};
-	final static HashMap<String, Pointer> OPTDData = new HashMap<String, Pointer>() {{
+		
+		// OPTD
 		put("nonInvertedYAxis", new Data(0x248B0, 0x248B1, DataType.Boolean));
 		put("nonInvertedXAxis", new Data(0x248B1, 0x248B2, DataType.Boolean));
 		put("yAxisSpeed", new Data(0x248B2, 0x248B3, DataType.Int));
@@ -152,10 +154,11 @@ public class SaveFile {
 		put("autoEventScrolling", new Data(0x248E0, 0x248E1, DataType.Boolean));
 		put("fastDialogueText", new Data(0x248E1, 0x248E2, DataType.Boolean));
 		put("showSubtitles", new Data(0x248E2, 0x248E3, DataType.Boolean));
-	}};
-
-	public SaveFile(String fileLocation) throws Exception {
+	}});
+	
+	public SaveFile(String fileLocation, ModelListener modelListener) throws Exception {
 		this.fileLocation = fileLocation;
+		this.modelListener = modelListener;
 		readFromFile();
 		saveToFile();
 	}
@@ -285,7 +288,8 @@ public class SaveFile {
 
 		// put this array of bytes into the saveFile at location specified in data
 		setBytesAt(data.start, result);
-
+		// fires model event to let controller know a field has changed
+		fireModelEvent(ModelEvent.SET_DATA, SaveFile.DataMap.inverse().get(data));
 	}
 
 	// Sets an entry within an array at index to an array of values
@@ -348,6 +352,10 @@ public class SaveFile {
 
 	public String getFileLocation() {
 		return this.fileLocation;
+	}
+	
+	private void fireModelEvent(int type, String param) {
+		this.modelListener.modelEventOccurred(new ModelEvent(this, type, param));
 	}
 
 }
