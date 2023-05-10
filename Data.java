@@ -1,4 +1,9 @@
 
+/*
+ *   class Data
+ *   
+ *   Builds upon Pointer class to add a data type to the specified location in a SaveFile
+ */
 public class Data extends Pointer {
 
 	private DataType type;
@@ -11,11 +16,6 @@ public class Data extends Pointer {
 	
 	public DataType getType() {
 		return type;
-	}
-	
-	// returns size in bytes
-	public int size() {
-		return this.end - this.start;
 	}
 	
 	public String toString() {

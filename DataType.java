@@ -1,8 +1,4 @@
 
 public enum DataType {
-	String, 
-	Int, 
-	Float, 
-	Boolean, 
-	TPL
+	String, Int, Float, Boolean, TPL
 }
