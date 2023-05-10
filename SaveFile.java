@@ -335,7 +335,7 @@ public class SaveFile {
 	}
 
 	public String saveToFile() {
-		if (!this.dirty) return ""; // if file was not changed, no need to save
+		if (!this.dirty) return "No changes made, nothing saved"; // if file was not changed, no need to save
 		CRC16.fixChecksums(this); // fix checksums on saving
 		try {
 			FileOutputStream o = new FileOutputStream(fileLocation);
@@ -347,7 +347,7 @@ public class SaveFile {
 			System.out.println("Error writing to file: " + e);
 			return "Error writing to file: " + e;
 		}
-		return "";
+		return "Changes Saved Sucessfully";
 	}
 
 	public String getFileLocation() {
