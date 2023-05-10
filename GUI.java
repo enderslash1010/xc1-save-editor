@@ -1,15 +1,11 @@
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.HashMap;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -19,32 +15,67 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSlider;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.SoftBevelBorder;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.DocumentFilter;
 import javax.swing.text.JTextComponent;
 
+import com.google.common.collect.HashBiMap;
+
+/*
+ *  class GUI
+ *  
+ *  main window for editor that contains:
+ *  	1)	JMenu for user options (Open, Save, etc.)
+ *    	2)  JTabbedPane to separate save partitions
+ *    	3)	Two JLabels for current file and status messages
+ *    
+ *  TODO: make the above actually true; make separate Views for each partition (THUMView, FLAGView, etc.)
+ */
 public class GUI extends JFrame {
 
 	private static final long serialVersionUID = 1L;
+	
+	private ViewListener viewListener;
 
 	private JMenuBar menuBar = new JMenuBar();
 
 	private JLabel currFile;
-	private JLabel statusMessage;
+	
+	/*
+	 *   Contains mappings for names to gui components
+	 *   
+	 *   Used to 'talk' with the controller/know what component the controller is 'talking' about,
+	 */
+	private HashBiMap<String, JComponent> componentMap = HashBiMap.create(new HashMap<String, JComponent>());
 
-	private SaveFile saveFile = null;
-	private HashMap<JComponent, Pointer> fieldMap = new HashMap<JComponent, Pointer>();
-
+	/*
+	 *   Declaration of all gui fields
+	 */
 	private JTextField THUMLevel, THUMName, THUMPlayTimeHours, THUMPlayTimeMinutes, THUMSaveTimeDay, THUMSaveTimeMonth, THUMSaveTimeYear, THUMSaveTimeHour, THUMSaveTimeMinute;
+	private JTextField FLAGScenarioNum;
+	private JTextField PCPMPlayer1x, PCPMPlayer1y, PCPMPlayer1z, PCPMPlayer2x, PCPMPlayer2y, PCPMPlayer2z, PCPMPlayer3x, PCPMPlayer3y, PCPMPlayer3z, PCPMPlayer1Angle, PCPMPlayer2Angle, PCPMPlayer3Angle;
+	private JTextField TIMEPlayTime, TIMEDayCounter, TIMEDayTime, TIMEYearCounter;
+	private JTextField CAMDVPos, CAMDHPos, CAMDDistance;
+	private JTextField ITEMMoney;
+	private JTable MINETable;
 
-	private FocusListener textNumberFocusListener = new FocusListener() {
+	/*
+	 *   FocusListeners for different types of data
+	 *   Needed to disallow intermediary strings (like a negative sign) to be kept in a text field upon saving to model
+	 */
+	
+	private FocusListener textIntFocusListener = new FocusListener() {
 
 		@Override
 		public void focusGained(FocusEvent e) { // do nothing
@@ -56,23 +87,68 @@ public class GUI extends JFrame {
 			JTextComponent src = (JTextComponent) e.getSource();
 			if (src.getText().equals("") || src.getText().equals("-")) {
 				// revert text back to what's in the save file
-				loadValue(src);
+				fireViewEvent(ViewEvent.GET_DATA, componentMap.inverse().get(src));
+			}
+			else {
+				fireViewEvent(ViewEvent.SET_DATA, componentMap.inverse().get(src) + ":" + getValue(src));
 			}
 		}
 
 	};
-	private JTextField FLAGScenarioNum;
-	private JTextField PCPMPlayer1x;
-	private JTextField PCPMPlayer1y;
-	private JTextField PCPMPlayer1z;
+	private FocusListener textFloatFocusListener = new FocusListener() {
+
+		@Override
+		public void focusGained(FocusEvent e) { // do nothing
+		}
+
+		// ensures value in text field is a valid float when focus is lost (so the user can input Infinity, NaN, etc.)
+		@Override
+		public void focusLost(FocusEvent e) {
+			JTextComponent src = (JTextComponent) e.getSource();
+			String text = src.getText();
+			
+			try {
+				float f;
+				if (text.length() > 2 && text.substring(0, 2).equals("0x")) { // check which format
+					f = Float.intBitsToFloat(Integer.parseInt(text.substring(2), 16));
+				}
+				else {
+					f = Float.parseFloat(text);
+				}
+				fireViewEvent(ViewEvent.SET_DATA, componentMap.inverse().get(src) + ":" + f);
+			}
+			catch (NumberFormatException ex) {
+				fireViewEvent(ViewEvent.GET_DATA, componentMap.inverse().get(src));
+			}
+			
+		}
+		
+	};
+	private FocusListener textStringFocusListener = new FocusListener() {
+
+		@Override
+		public void focusGained(FocusEvent e) { // do nothing
+		}
+
+		@Override
+		public void focusLost(FocusEvent e) {
+			JTextComponent src = (JTextComponent) e.getSource();
+			fireViewEvent(ViewEvent.SET_DATA, componentMap.inverse().get(src) + ":" + getValue(src));
+		}
+		
+	};
 
 	// TODO: write tool tips for fields that need more explanation
-	public GUI() {
+	// TODO: convert panels in JTabbedPane to MigLayout
+	public GUI(SaveFileController sfc) {
+		
+		this.viewListener = sfc;
 
+		IntFilter int4 = new IntFilter(4);
+		
 		UIntFilter uint1 = new UIntFilter(1);
 		UIntFilter uint2 = new UIntFilter(2);
 		UIntFilter uint4 = new UIntFilter(4);
-		FloatFilter floatFilter = new FloatFilter();
 
 		JFrame frame = new JFrame(); // top-level container, what every GUI element goes into
 		JFileChooser fc = new JFileChooser();
@@ -87,18 +163,12 @@ public class GUI extends JFrame {
 		open.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (fc.showOpenDialog(fc) == 0) {
-					try {
-						String fileLocation = fc.getSelectedFile().getAbsolutePath();
-						saveFile = new SaveFile(fileLocation);
-						setCurrFile(fileLocation);
-						loadValues();
-						setEnabled(true); // enable fields when a file is opened
-						setStatusMessage("Successfully loaded file");
-					}
-					catch (Exception ex) {
-						setStatusMessage("Error with loading file");
-					}
+				if (fc.showOpenDialog(fc) == JFileChooser.APPROVE_OPTION) {
+					String fileLocation = fc.getSelectedFile().getAbsolutePath();
+					fireViewEvent(ViewEvent.OPEN_FILE, fileLocation);
+					setCurrFile(fileLocation);
+					setEnabled(true); // enable fields when a file is opened
+					showMessage("Sucessfully Opened File");
 				}
 			}
 
@@ -110,14 +180,7 @@ public class GUI extends JFrame {
 		JMenuItem save = new JMenuItem("Save");
 		save.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				// TODO: handle null saveFile
-				if (saveFile == null) {
-					setStatusMessage("No save file is opened, cannot save");
-					return;
-				}
-				saveValues();
-				String result = saveFile.saveToFile();
-				setStatusMessage(result);
+				fireViewEvent(ViewEvent.SAVE_FILE);
 			}
 		});
 		fileMenu.add(save);
@@ -143,7 +206,7 @@ public class GUI extends JFrame {
 
 		THUMLevel = new JTextField();
 		THUMLevel.setColumns(4);
-		attach(THUMLevel, SaveFile.THUMData.get("level"), uint2, textNumberFocusListener);
+		set("level", THUMLevel, uint2, textIntFocusListener, false);
 		THUMLevelPanel.add(THUMLevel);
 
 		JPanel THUMNamePanel = new JPanel();
@@ -157,7 +220,7 @@ public class GUI extends JFrame {
 
 		THUMName = new JTextField();
 		THUMName.setColumns(32);
-		attach(THUMName, SaveFile.THUMData.get("name"), new StringFilter(32), null);
+		set("name", THUMName, new StringFilter(32), textStringFocusListener, false);
 		THUMNamePanel.add(THUMName);
 
 		JPanel THUMPlayTimePanel = new JPanel();
@@ -170,7 +233,7 @@ public class GUI extends JFrame {
 		THUMPlayTimeHours = new JTextField();
 		THUMPlayTimeHours.setHorizontalAlignment(SwingConstants.TRAILING);
 		THUMPlayTimeHours.setColumns(4);
-		attach(THUMPlayTimeHours, SaveFile.THUMData.get("playTimeHours"), uint2, textNumberFocusListener);
+		set("playTimeHours", THUMPlayTimeHours, uint2, textIntFocusListener, false);
 		THUMPlayTimePanel.add(THUMPlayTimeHours);
 
 		JLabel lblNewLabel_3 = new JLabel(":");
@@ -178,7 +241,7 @@ public class GUI extends JFrame {
 
 		THUMPlayTimeMinutes = new JTextField();
 		THUMPlayTimeMinutes.setColumns(4);
-		attach(THUMPlayTimeMinutes, SaveFile.THUMData.get("playTimeMins"), uint2, textNumberFocusListener);
+		set("playTimeMins", THUMPlayTimeMinutes, uint2, textIntFocusListener, false);
 		THUMPlayTimePanel.add(THUMPlayTimeMinutes);
 
 
@@ -193,7 +256,7 @@ public class GUI extends JFrame {
 		THUMSaveTimeDay = new JTextField();
 		THUMSaveTimeDay.setHorizontalAlignment(SwingConstants.TRAILING);
 		THUMSaveTimeDay.setColumns(3);
-		attach(THUMSaveTimeDay, SaveFile.THUMData.get("saveTimeDay"), uint1, textNumberFocusListener);
+		set("saveTimeDay", THUMSaveTimeDay, uint1, textIntFocusListener, false);
 		THUMSaveTimePanel.add(THUMSaveTimeDay);
 
 		JLabel lblNewLabel_5 = new JLabel(" / ");
@@ -202,7 +265,7 @@ public class GUI extends JFrame {
 		THUMSaveTimeMonth = new JTextField();
 		THUMSaveTimeMonth.setHorizontalAlignment(SwingConstants.TRAILING);
 		THUMSaveTimeMonth.setColumns(3);
-		attach(THUMSaveTimeMonth, SaveFile.THUMData.get("saveTimeMonth"), uint2, textNumberFocusListener);
+		set("saveTimeMonth", THUMSaveTimeMonth, uint2, textIntFocusListener, false);
 		THUMSaveTimePanel.add(THUMSaveTimeMonth);
 
 		JLabel lblNewLabel_5_1 = new JLabel(" / ");
@@ -210,7 +273,7 @@ public class GUI extends JFrame {
 
 		THUMSaveTimeYear = new JTextField();
 		THUMSaveTimeYear.setColumns(5);
-		attach(THUMSaveTimeYear, SaveFile.THUMData.get("saveTimeYear"), uint2, textNumberFocusListener);
+		set("saveTimeYear", THUMSaveTimeYear, uint2, textIntFocusListener, false);
 		THUMSaveTimePanel.add(THUMSaveTimeYear);
 
 		JLabel lblNewLabel_5_2 = new JLabel("     ");
@@ -219,7 +282,7 @@ public class GUI extends JFrame {
 		THUMSaveTimeHour = new JTextField();
 		THUMSaveTimeHour.setHorizontalAlignment(SwingConstants.TRAILING);
 		THUMSaveTimeHour.setColumns(3);
-		attach(THUMSaveTimeHour, SaveFile.THUMData.get("saveTimeHour"), uint1, textNumberFocusListener);
+		set("saveTimeHour", THUMSaveTimeHour, uint1, textIntFocusListener, false);
 		THUMSaveTimePanel.add(THUMSaveTimeHour);
 
 		JLabel lblNewLabel_5_3 = new JLabel(":");
@@ -227,7 +290,7 @@ public class GUI extends JFrame {
 
 		THUMSaveTimeMinute = new JTextField();
 		THUMSaveTimeMinute.setColumns(3);
-		attach(THUMSaveTimeMinute, SaveFile.THUMData.get("saveTimeMinute"), uint1, textNumberFocusListener);
+		set("saveTimeMinute", THUMSaveTimeMinute, uint1, textIntFocusListener, false);
 		THUMSaveTimePanel.add(THUMSaveTimeMinute);
 
 		JPanel THUMNGPanel = new JPanel();
@@ -238,11 +301,11 @@ public class GUI extends JFrame {
 		THUMPanel.add(THUMNGPanel);
 
 		JCheckBox THUMNgPlusCheckBox = new JCheckBox("New Game+");
-		attach(THUMNgPlusCheckBox, SaveFile.THUMData.get("ng+Flag"), null, null);
+		set("ng+Flag", THUMNgPlusCheckBox, null, null, true);
 		THUMNGPanel.add(THUMNgPlusCheckBox);
 
 		JCheckBox THUMSystemSaveCheckBox = new JCheckBox("System Save");
-		attach(THUMSystemSaveCheckBox, SaveFile.THUMData.get("systemSaveFlag"), null, null);
+		set("systemSaveFlag", THUMSystemSaveCheckBox, null, null, true);
 		THUMNGPanel.add(THUMSystemSaveCheckBox);
 		
 		JPanel THUMPicSlotPanel = new JPanel();
@@ -252,56 +315,34 @@ public class GUI extends JFrame {
 		JLabel lblNewLabel_6 = new JLabel("Picture Slots:");
 		THUMPicSlotPanel.add(lblNewLabel_6);
 		
-		IntegerMap[] pclist = {new IntegerMap(" ", 0), 
-				new IntegerMap("Shulk", 1), 
-				new IntegerMap("Reyn", 2),
-				new IntegerMap("Fiora", 3),
-				new IntegerMap("Dunban", 4),
-				new IntegerMap("Sharla", 5),
-				new IntegerMap("Riki", 6),
-				new IntegerMap("Melia", 7),
-				new IntegerMap("Seven", 8),
-				new IntegerMap("Dickson", 9),
-				new IntegerMap("Mumkhar", 10),
-				new IntegerMap("Alvis", 11),
-				new IntegerMap("Prologue Dunban", 12),
-				new IntegerMap("Other Dunban", 13)
-		};
+		String[] pclist = new String[] {" ", "Shulk", "Reyn", "Fiora", "Dunban", "Sharla", "Riki", "Melia", "Seven", "Dickson", "Mumkhar", "Alvis", "Prologue Dunban", "Other Dunban"};
 		
-		JComboBox<IntegerMap> THUMPicSlot1 = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(pclist));
-		ValueMapListCellRenderer renderer = new ValueMapListCellRenderer();
-		THUMPicSlot1.setRenderer(renderer);
-		attach(THUMPicSlot1, SaveFile.THUMData.get("picSlot1"), null, null);
+		JComboBox<String> THUMPicSlot1 = new JComboBox<String>(pclist);
+		set("picSlot1", THUMPicSlot1, null, null, true);
 		THUMPicSlotPanel.add(THUMPicSlot1);
 		
-		JComboBox<IntegerMap> THUMPicSlot2 = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(pclist));
-		THUMPicSlot2.setRenderer(renderer);
-		attach(THUMPicSlot2, SaveFile.THUMData.get("picSlot2"), null, null);
+		JComboBox<String> THUMPicSlot2 = new JComboBox<String>(pclist);
+		set("picSlot2", THUMPicSlot2, null, null, true);
 		THUMPicSlotPanel.add(THUMPicSlot2);
 		
-		JComboBox<IntegerMap> THUMPicSlot3 = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(pclist));
-		THUMPicSlot3.setRenderer(renderer);
-		attach(THUMPicSlot3, SaveFile.THUMData.get("picSlot3"), null, null);
+		JComboBox<String> THUMPicSlot3 = new JComboBox<String>(pclist);
+		set("picSlot3", THUMPicSlot3, null, null, true);
 		THUMPicSlotPanel.add(THUMPicSlot3);
 		
-		JComboBox<IntegerMap> THUMPicSlot4 = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(pclist));
-		THUMPicSlot4.setRenderer(renderer);
-		attach(THUMPicSlot4, SaveFile.THUMData.get("picSlot4"), null, null);
+		JComboBox<String> THUMPicSlot4 = new JComboBox<String>(pclist);
+		set("picSlot4", THUMPicSlot4, null, null, true);
 		THUMPicSlotPanel.add(THUMPicSlot4);
 		
-		JComboBox<IntegerMap> THUMPicSlot5 = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(pclist));
-		THUMPicSlot5.setRenderer(renderer);
-		attach(THUMPicSlot5, SaveFile.THUMData.get("picSlot5"), null, null);
+		JComboBox<String> THUMPicSlot5 = new JComboBox<String>(pclist);
+		set("picSlot5", THUMPicSlot5, null, null, true);
 		THUMPicSlotPanel.add(THUMPicSlot5);
 		
-		JComboBox<IntegerMap> THUMPicSlot6 = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(pclist));
-		THUMPicSlot6.setRenderer(renderer);
-		attach(THUMPicSlot6, SaveFile.THUMData.get("picSlot6"), null, null);
+		JComboBox<String> THUMPicSlot6 = new JComboBox<String>(pclist);
+		set("picSlot6", THUMPicSlot6, null, null, true);
 		THUMPicSlotPanel.add(THUMPicSlot6);
 		
-		JComboBox<IntegerMap> THUMPicSlot7 = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(pclist));
-		THUMPicSlot7.setRenderer(renderer);
-		attach(THUMPicSlot7, SaveFile.THUMData.get("picSlot7"), null, null);
+		JComboBox<String> THUMPicSlot7 = new JComboBox<String>(pclist);
+		set("picSlot7", THUMPicSlot7, null, null, true);
 		THUMPicSlotPanel.add(THUMPicSlot7);
 
 		JPanel FLAGPanel = new JPanel();
@@ -317,7 +358,7 @@ public class GUI extends JFrame {
 		
 		FLAGScenarioNum = new JTextField();
 		FLAGScenarioNum.setColumns(4);
-		attach(FLAGScenarioNum, SaveFile.FLAGData.get("scenarioNum"), uint2, textNumberFocusListener);
+		set("scenarioNum", FLAGScenarioNum, uint2, textIntFocusListener, false);
 		FLAGScenarioPanel.add(FLAGScenarioNum);
 
 		JPanel GAMEPanel = new JPanel();
@@ -331,40 +372,15 @@ public class GUI extends JFrame {
 		JLabel lblNewLabel_8 = new JLabel("Map:");
 		GAMEMapPanel.add(lblNewLabel_8);
 		
-		IntegerMap[] GAMEMapValues = {
-				new IntegerMap("Title Screen (ma0000)", SaveFile.getFormattedMapNum("0000")),
-				new IntegerMap("Colony 9 (ma0101)", SaveFile.getFormattedMapNum("0101")),
-				new IntegerMap("Tephra Cave (ma0201)", SaveFile.getFormattedMapNum("0201")),
-				new IntegerMap("Bionis' Leg (ma0301)", SaveFile.getFormattedMapNum("0301")),
-				new IntegerMap("Colony 6 (ma0401)", SaveFile.getFormattedMapNum("0401")),
-				new IntegerMap("Ether Mine (ma0402)", SaveFile.getFormattedMapNum("0402")),
-				new IntegerMap("Satorl Marsh (ma0501)", SaveFile.getFormattedMapNum("0501")),
-				new IntegerMap("Makna Forest (ma0601)", SaveFile.getFormattedMapNum("0601")),
-				new IntegerMap("Frontier Village (ma0701)", SaveFile.getFormattedMapNum("0701")),
-				new IntegerMap("Bionis' Shoulder (ma0801)", SaveFile.getFormattedMapNum("0801")),
-				new IntegerMap("High Entia Tomb (ma0901)", SaveFile.getFormattedMapNum("0901")),
-				new IntegerMap("Eryth Sea (ma1001)", SaveFile.getFormattedMapNum("1001")),
-				new IntegerMap("Alcamoth (ma1101)", SaveFile.getFormattedMapNum("1101")),
-				new IntegerMap("Prison Island (ma1201)", SaveFile.getFormattedMapNum("1201")),
-				new IntegerMap("Prison Island 2 (ma1202)", SaveFile.getFormattedMapNum("1202")),
-				new IntegerMap("Valak Mountain (ma1301)", SaveFile.getFormattedMapNum("1301")),
-				new IntegerMap("Sword Valley (ma1401)", SaveFile.getFormattedMapNum("1401")),
-				new IntegerMap("Galahad Fortress (ma1501)", SaveFile.getFormattedMapNum("1501")),
-				new IntegerMap("Fallen Arm (ma1601)", SaveFile.getFormattedMapNum("1601")),
-				new IntegerMap("Beta Fallen Arm (ma1602)", SaveFile.getFormattedMapNum("1602")),
-				new IntegerMap("Mechonis Field (ma1701)", SaveFile.getFormattedMapNum("1701")),
-				new IntegerMap("Agniratha (ma1901)", SaveFile.getFormattedMapNum("1901")),
-				new IntegerMap("Central Factory (ma2001)", SaveFile.getFormattedMapNum("2001")),
-				new IntegerMap("Bionis' Interior (ma2101)", SaveFile.getFormattedMapNum("2101")),
-				new IntegerMap("Memory Space (ma2201)", SaveFile.getFormattedMapNum("2201")),
-				new IntegerMap("Mechonis Core (ma2301)", SaveFile.getFormattedMapNum("2301")),
-				new IntegerMap("Junks (ma2401)", SaveFile.getFormattedMapNum("2401")),
-				new IntegerMap("Post-Game Colony 9 (ma0102)", SaveFile.getFormattedMapNum("0102"))
-		};
+		String[] GAMEMaps = {"Title Screen (ma0000)", "Colony 9 (ma0101)", "Tephra Cave (ma0201)", "Bionis' Leg (ma0301)", "Colony 6 (ma0401)",
+				"Ether Mine (ma0402)", "Satorl Marsh (ma0501)", "Makna Forest (ma0601)", "Frontier Village (ma0701)", "Bionis' Shoulder (ma0801)",
+				"High Entia Tomb (ma0901)", "Eryth Sea (ma1001)", "Alcamoth (ma1101)", "Prison Island (ma1201)", "Prison Island 2 (ma1202)",
+				"Valak Mountain (ma1301)", "Sword Valley (ma1401)", "Galahad Fortress (ma1501)", "Fallen Arm (ma1601)", "Beta Fallen Arm (ma1602)",
+				"Mechonis Field (ma1701)", "Agniratha (ma1901)", "Central Factory (ma2001)", "Bionis' Interior (ma2101)", "Memory Space (ma2201)",
+				"Mechonis Core (ma2301)", "Junks (ma2401)", "Post-Game Colony 9 (ma0102)"};
 		
-		JComboBox<IntegerMap> GAMEMapComboBox = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(GAMEMapValues));
-		GAMEMapComboBox.setRenderer(renderer);
-		attach(GAMEMapComboBox, SaveFile.GAMEData.get("mapNum"), null, null);
+		JComboBox<String> GAMEMapComboBox = new JComboBox<String>(GAMEMaps);
+		set("mapNum", GAMEMapComboBox, null, null, true);
 		GAMEMapPanel.add(GAMEMapComboBox);
 		
 		JPanel GAMEMap2Panel = new JPanel();
@@ -374,40 +390,8 @@ public class GUI extends JFrame {
 		JLabel lblNewLabel_9 = new JLabel("Map (for NPCs and music):");
 		GAMEMap2Panel.add(lblNewLabel_9);
 		
-		StringMap[] GAMEMap2Values = {
-				new StringMap("Title Screen (ma0000)", "0000"),
-				new StringMap("Colony 9 (ma0101)", "0101"),
-				new StringMap("Tephra Cave (ma0201)", "0201"),
-				new StringMap("Bionis' Leg (ma0301)", "0301"),
-				new StringMap("Colony 6 (ma0401)", "0401"),
-				new StringMap("Ether Mine (ma0402)", "0402"),
-				new StringMap("Satorl Marsh (ma0501)", "0501"),
-				new StringMap("Makna Forest (ma0601)", "0601"),
-				new StringMap("Frontier Village (ma0701)", "0701"),
-				new StringMap("Bionis' Shoulder (ma0801)", "0801"),
-				new StringMap("High Entia Tomb (ma0901)", "0901"),
-				new StringMap("Eryth Sea (ma1001)", "1001"),
-				new StringMap("Alcamoth (ma1101)", "1101"),
-				new StringMap("Prison Island (ma1201)", "1201"),
-				new StringMap("Prison Island 2 (ma1202)", "1202"),
-				new StringMap("Valak Mountain (ma1301)", "1301"),
-				new StringMap("Sword Valley (ma1401)", "1401"),
-				new StringMap("Galahad Fortress (ma1501)", "1501"),
-				new StringMap("Fallen Arm (ma1601)", "1601"),
-				new StringMap("Beta Fallen Arm (ma1602)", "1602"),
-				new StringMap("Mechonis Field (ma1701)", "1701"),
-				new StringMap("Agniratha (ma1901)", "1901"),
-				new StringMap("Central Factory (ma2001)", "2001"),
-				new StringMap("Bionis' Interior (ma2101)", "2101"),
-				new StringMap("Memory Space (ma2201)", "2201"),
-				new StringMap("Mechonis Core (ma2301)", "2301"),
-				new StringMap("Junks (ma2401)", "2401"),
-				new StringMap("Post-Game Colony 9 (ma0102)", "0102")
-		};
-		
-		JComboBox<StringMap> GAMEMap2ComboBox = new JComboBox<StringMap>(new DefaultComboBoxModel<StringMap>(GAMEMap2Values));
-		GAMEMap2ComboBox.setRenderer(renderer);
-		attach(GAMEMap2ComboBox, SaveFile.GAMEData.get("mapNum2"), null, null);
+		JComboBox<String> GAMEMap2ComboBox = new JComboBox<String>(GAMEMaps);
+		set("mapNum2", GAMEMap2ComboBox, null, null, true);
 		GAMEMap2Panel.add(GAMEMap2ComboBox);
 		
 		JPanel GAMECurrentPlayersPanel = new JPanel();
@@ -417,19 +401,16 @@ public class GUI extends JFrame {
 		JLabel lblNewLabel_10 = new JLabel("Current Players:");
 		GAMECurrentPlayersPanel.add(lblNewLabel_10);
 		
-		JComboBox<IntegerMap> GAMEPlayer1ComboBox = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(pclist));
-		GAMEPlayer1ComboBox.setRenderer(renderer);
-		attach(GAMEPlayer1ComboBox, SaveFile.GAMEData.get("player1"), null, null);
+		JComboBox<String> GAMEPlayer1ComboBox = new JComboBox<String>(pclist);
+		set("player1", GAMEPlayer1ComboBox, null, null, true);
 		GAMECurrentPlayersPanel.add(GAMEPlayer1ComboBox);
 		
-		JComboBox<IntegerMap> GAMEPlayer2ComboBox = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(pclist));
-		GAMEPlayer2ComboBox.setRenderer(renderer);
-		attach(GAMEPlayer2ComboBox, SaveFile.GAMEData.get("player2"), null, null);
+		JComboBox<String> GAMEPlayer2ComboBox = new JComboBox<String>(pclist);
+		set("player2", GAMEPlayer2ComboBox, null, null, true);
 		GAMECurrentPlayersPanel.add(GAMEPlayer2ComboBox);
 		
-		JComboBox<IntegerMap> GAMEPlayer3ComboBox = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(pclist));
-		GAMEPlayer3ComboBox.setRenderer(renderer);
-		attach(GAMEPlayer3ComboBox, SaveFile.GAMEData.get("player3"), null, null);
+		JComboBox<String> GAMEPlayer3ComboBox = new JComboBox<String>(pclist);
+		set("player3", GAMEPlayer3ComboBox, null, null, true);
 		GAMECurrentPlayersPanel.add(GAMEPlayer3ComboBox);
 		
 		JPanel GAMEReservePlayerPanel = new JPanel();
@@ -439,45 +420,92 @@ public class GUI extends JFrame {
 		JLabel lblNewLabel_11 = new JLabel("Reserve Players:");
 		GAMEReservePlayerPanel.add(lblNewLabel_11);
 		
-		JComboBox<IntegerMap> GAMEPlayer4ComboBox = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(pclist));
-		GAMEPlayer4ComboBox.setRenderer(renderer);
-		attach(GAMEPlayer4ComboBox, SaveFile.GAMEData.get("player4"), null, null);
+		JComboBox<String> GAMEPlayer4ComboBox = new JComboBox<String>(pclist);
+		set("player4", GAMEPlayer4ComboBox, null, null, true);
 		GAMEReservePlayerPanel.add(GAMEPlayer4ComboBox);
 		
-		JComboBox<IntegerMap> GAMEPlayer5ComboBox = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(pclist));
-		GAMEPlayer5ComboBox.setRenderer(renderer);
-		attach(GAMEPlayer5ComboBox, SaveFile.GAMEData.get("player5"), null, null);
+		JComboBox<String> GAMEPlayer5ComboBox = new JComboBox<String>(pclist);
+		set("player5", GAMEPlayer5ComboBox, null, null, true);
 		GAMEReservePlayerPanel.add(GAMEPlayer5ComboBox);
 		
-		JComboBox<IntegerMap> GAMEPlayer6ComboBox = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(pclist));
-		GAMEPlayer6ComboBox.setRenderer(renderer);
-		attach(GAMEPlayer6ComboBox, SaveFile.GAMEData.get("player6"), null, null);
+		JComboBox<String> GAMEPlayer6ComboBox = new JComboBox<String>(pclist);
+		set("player6", GAMEPlayer6ComboBox, null, null, true);
 		GAMEReservePlayerPanel.add(GAMEPlayer6ComboBox);
 		
-		JComboBox<IntegerMap> GAMEPlayer7ComboBox = new JComboBox<IntegerMap>(new DefaultComboBoxModel<IntegerMap>(pclist));
-		GAMEPlayer7ComboBox.setRenderer(renderer);
-		attach(GAMEPlayer7ComboBox, SaveFile.GAMEData.get("player7"), null, null);
+		JComboBox<String> GAMEPlayer7ComboBox = new JComboBox<String>(pclist);
+		set("player7", GAMEPlayer7ComboBox, null, null, true);
 		GAMEReservePlayerPanel.add(GAMEPlayer7ComboBox);
 
 		JPanel TIMEPanel = new JPanel();
 		tabbedPane.addTab("TIME", null, TIMEPanel, null);
-		TIMEPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		TIMEPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		
+		JPanel TIMEPlayTimePanel = new JPanel();
+		TIMEPlayTimePanel.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		TIMEPanel.add(TIMEPlayTimePanel);
+		
+		JLabel lblNewLabel_16 = new JLabel("Play Time:");
+		TIMEPlayTimePanel.add(lblNewLabel_16);
+		
+		TIMEPlayTime = new JTextField();
+		TIMEPlayTime.setToolTipText("Every 4096 (0x1000) units is equal to one hour");
+		TIMEPlayTimePanel.add(TIMEPlayTime);
+		TIMEPlayTime.setColumns(10);
+		set("playTime", TIMEPlayTime, uint4, textIntFocusListener, false);
+		
+		JPanel TIMEDayTimePanel = new JPanel();
+		TIMEDayTimePanel.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		TIMEPanel.add(TIMEDayTimePanel);
+		
+		JLabel lblNewLabel_18 = new JLabel("Time of Day:");
+		lblNewLabel_18.setVerticalAlignment(SwingConstants.BOTTOM);
+		TIMEDayTimePanel.add(lblNewLabel_18);
+		
+		TIMEDayTime = new JTextField();
+		TIMEDayTime.setToolTipText("Normal Range is [0, 43200)");
+		TIMEDayTimePanel.add(TIMEDayTime);
+		TIMEDayTime.setColumns(10);
+		set("dayTime", TIMEDayTime, null, textFloatFocusListener, false);
+		
+		JPanel TIMEDaysPanel = new JPanel();
+		TIMEDaysPanel.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		TIMEPanel.add(TIMEDaysPanel);
+		
+		JLabel lblNewLabel_17 = new JLabel("Day Counter:");
+		TIMEDaysPanel.add(lblNewLabel_17);
+		
+		TIMEDayCounter = new JTextField();
+		TIMEDaysPanel.add(TIMEDayCounter);
+		TIMEDayCounter.setColumns(10);
+		set("numDays", TIMEDayCounter, uint2, textIntFocusListener, false);
+		
+		JPanel TIMEYearCountPanel = new JPanel();
+		TIMEYearCountPanel.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		TIMEPanel.add(TIMEYearCountPanel);
+		
+		JLabel lblNewLabel_19 = new JLabel("Year Counter:");
+		TIMEYearCountPanel.add(lblNewLabel_19);
+		
+		TIMEYearCounter = new JTextField();
+		TIMEYearCountPanel.add(TIMEYearCounter);
+		TIMEYearCounter.setColumns(10);
+		set("numYears", TIMEYearCounter, uint2, textIntFocusListener, false);
 
 		JPanel PCPMPanel = new JPanel();
 		tabbedPane.addTab("PCPM", null, PCPMPanel, null);
-		PCPMPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		PCPMPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 		
 		JPanel PCPMPlayer1Panel = new JPanel();
 		PCPMPlayer1Panel.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		PCPMPanel.add(PCPMPlayer1Panel);
 		
-		JLabel lblNewLabel_12 = new JLabel("Player 1: x:");
+		JLabel lblNewLabel_12 = new JLabel("Player 1:    x:");
 		PCPMPlayer1Panel.add(lblNewLabel_12);
 		
 		PCPMPlayer1x = new JTextField();
 		PCPMPlayer1Panel.add(PCPMPlayer1x);
 		PCPMPlayer1x.setColumns(10);
-		attach(PCPMPlayer1x, SaveFile.PCPMData.get("p1x"), floatFilter, textNumberFocusListener);
+		set("p1x", PCPMPlayer1x, null, textFloatFocusListener, false);
 		
 		JLabel lblNewLabel_13 = new JLabel("y:");
 		PCPMPlayer1Panel.add(lblNewLabel_13);
@@ -485,7 +513,7 @@ public class GUI extends JFrame {
 		PCPMPlayer1y = new JTextField();
 		PCPMPlayer1Panel.add(PCPMPlayer1y);
 		PCPMPlayer1y.setColumns(10);
-		attach(PCPMPlayer1y, SaveFile.PCPMData.get("p1y"), floatFilter, textNumberFocusListener);
+		set("p1y", PCPMPlayer1y, null, textFloatFocusListener, false);
 		
 		JLabel lblNewLabel_14 = new JLabel("z:");
 		PCPMPlayer1Panel.add(lblNewLabel_14);
@@ -493,67 +521,183 @@ public class GUI extends JFrame {
 		PCPMPlayer1z = new JTextField();
 		PCPMPlayer1Panel.add(PCPMPlayer1z);
 		PCPMPlayer1z.setColumns(10);
-		attach(PCPMPlayer1z, SaveFile.PCPMData.get("p1z"), floatFilter, textNumberFocusListener);
+		set("p1z", PCPMPlayer1z, null, textFloatFocusListener, false);
 		
-		JLabel lblNewLabel_15 = new JLabel("Angle:");
+		JLabel lblNewLabel_15 = new JLabel("   Angle:   ");
 		PCPMPlayer1Panel.add(lblNewLabel_15);
 		
-		JSlider PCPMPlayer1Angle = new JSlider();
+		PCPMPlayer1Angle = new JTextField();
 		PCPMPlayer1Panel.add(PCPMPlayer1Angle);
-		// TODO: implement slider function
+		PCPMPlayer1Angle.setColumns(10);
+		set("p1Angle", PCPMPlayer1Angle, null, textFloatFocusListener, false);
+		
+		JPanel PCPMPlayer2Panel = new JPanel();
+		PCPMPlayer2Panel.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		PCPMPanel.add(PCPMPlayer2Panel);
+		
+		JLabel lblNewLabel_12_1 = new JLabel("Player 2:    x:");
+		PCPMPlayer2Panel.add(lblNewLabel_12_1);
+		
+		PCPMPlayer2x = new JTextField();
+		PCPMPlayer2x.setColumns(10);
+		PCPMPlayer2Panel.add(PCPMPlayer2x);
+		set("p2x", PCPMPlayer2x, null, textFloatFocusListener, false);
+		
+		JLabel lblNewLabel_13_1 = new JLabel("y:");
+		PCPMPlayer2Panel.add(lblNewLabel_13_1);
+		
+		PCPMPlayer2y = new JTextField();
+		PCPMPlayer2y.setColumns(10);
+		PCPMPlayer2Panel.add(PCPMPlayer2y);
+		set("p2y", PCPMPlayer2y, null, textFloatFocusListener, false);
+		
+		JLabel lblNewLabel_14_1 = new JLabel("z:");
+		PCPMPlayer2Panel.add(lblNewLabel_14_1);
+		
+		PCPMPlayer2z = new JTextField();
+		PCPMPlayer2z.setColumns(10);
+		PCPMPlayer2Panel.add(PCPMPlayer2z);
+		set("p2z", PCPMPlayer2z, null, textFloatFocusListener, false);
+		
+		JLabel lblNewLabel_15_1 = new JLabel("   Angle:   ");
+		PCPMPlayer2Panel.add(lblNewLabel_15_1);
+		
+		PCPMPlayer2Angle = new JTextField();
+		PCPMPlayer2Panel.add(PCPMPlayer2Angle);
+		PCPMPlayer2Angle.setColumns(10);
+		set("p2Angle", PCPMPlayer2Angle, null, textFloatFocusListener, false);
+		
+		JPanel PCPMPlayer3Panel = new JPanel();
+		PCPMPlayer3Panel.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		PCPMPanel.add(PCPMPlayer3Panel);
+		
+		JLabel lblNewLabel_12_1_1 = new JLabel("Player 2:    x:");
+		PCPMPlayer3Panel.add(lblNewLabel_12_1_1);
+		
+		PCPMPlayer3x = new JTextField();
+		PCPMPlayer3x.setColumns(10);
+		PCPMPlayer3Panel.add(PCPMPlayer3x);
+		set("p3x", PCPMPlayer3x, null, textFloatFocusListener, false);
+		
+		JLabel lblNewLabel_13_1_1 = new JLabel("y:");
+		PCPMPlayer3Panel.add(lblNewLabel_13_1_1);
+		
+		PCPMPlayer3y = new JTextField();
+		PCPMPlayer3y.setColumns(10);
+		PCPMPlayer3Panel.add(PCPMPlayer3y);
+		set("p3y", PCPMPlayer3y, null, textFloatFocusListener, false);
+		
+		JLabel lblNewLabel_14_1_1 = new JLabel("z:");
+		PCPMPlayer3Panel.add(lblNewLabel_14_1_1);
+		
+		PCPMPlayer3z = new JTextField();
+		PCPMPlayer3z.setColumns(10);
+		PCPMPlayer3Panel.add(PCPMPlayer3z);
+		set("p3z", PCPMPlayer3z, null, textFloatFocusListener, false);
+		
+		JLabel lblNewLabel_15_1_1 = new JLabel("   Angle:   ");
+		PCPMPlayer3Panel.add(lblNewLabel_15_1_1);
+		
+		PCPMPlayer3Angle = new JTextField();
+		PCPMPlayer3Panel.add(PCPMPlayer3Angle);
+		PCPMPlayer3Angle.setColumns(10);
+		set("p3Angle", PCPMPlayer3Angle, null, textFloatFocusListener, false);
 
 		JPanel CAMDPanel = new JPanel();
 		tabbedPane.addTab("CAMD", null, CAMDPanel, null);
-		CAMDPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		CAMDPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		
+		JPanel cameraVPosPanel = new JPanel();
+		cameraVPosPanel.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		CAMDPanel.add(cameraVPosPanel);
+		
+		JLabel lblNewLabel_20 = new JLabel("Camera Vertical Position:");
+		cameraVPosPanel.add(lblNewLabel_20);
+		
+		CAMDVPos = new JTextField();
+		cameraVPosPanel.add(CAMDVPos);
+		CAMDVPos.setColumns(10);
+		set("cameraPosVertical", CAMDVPos, null, textFloatFocusListener, false);
+		
+		JPanel cameraHPosPanel = new JPanel();
+		cameraHPosPanel.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		CAMDPanel.add(cameraHPosPanel);
+		
+		JLabel lblNewLabel_21 = new JLabel("Camera Horizontal Position:");
+		cameraHPosPanel.add(lblNewLabel_21);
+		
+		CAMDHPos = new JTextField();
+		cameraHPosPanel.add(CAMDHPos);
+		CAMDHPos.setColumns(10);
+		set("cameraPosHorizontal", CAMDHPos, null, textFloatFocusListener, false);
+		
+		JPanel CAMDDistancePanel = new JPanel();
+		CAMDDistancePanel.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		CAMDPanel.add(CAMDDistancePanel);
+		
+		JLabel lblNewLabel_22 = new JLabel("Camera Distance:");
+		CAMDDistancePanel.add(lblNewLabel_22);
+		
+		CAMDDistance = new JTextField();
+		CAMDDistancePanel.add(CAMDDistance);
+		CAMDDistance.setColumns(10);
+		set("cameraDistance", CAMDDistance, null, textFloatFocusListener, false);
 
 		JPanel ITEMPanel = new JPanel();
 		tabbedPane.addTab("ITEM", null, ITEMPanel, null);
-		ITEMPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		ITEMPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		
+		JPanel ITEMMoneyPanel = new JPanel();
+		ITEMMoneyPanel.setBorder(new SoftBevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		ITEMPanel.add(ITEMMoneyPanel);
+		
+		JLabel lblNewLabel_23 = new JLabel("Money:");
+		ITEMMoneyPanel.add(lblNewLabel_23);
+		
+		ITEMMoney = new JTextField();
+		ITEMMoneyPanel.add(ITEMMoney);
+		ITEMMoney.setText("");
+		ITEMMoney.setColumns(10);
+		set("money", ITEMMoney, int4, textIntFocusListener, false);
 
 		JPanel WTHRPanel = new JPanel();
 		tabbedPane.addTab("WTHR", null, WTHRPanel, null);
-		WTHRPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		WTHRPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
 		JPanel SNDSPanel = new JPanel();
 		tabbedPane.addTab("SNDS", null, SNDSPanel, null);
-		SNDSPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		SNDSPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
 		JPanel MINEPanel = new JPanel();
 		tabbedPane.addTab("MINE", null, MINEPanel, null);
-		MINEPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		MINEPanel.setLayout(new BorderLayout(5, 5));
+		
+		MINETable = new JTable();
+		MINETable.setModel(new DefaultTableModel(
+			new Object[] {"Map", "Mine ID", "Number of Harvests", "Cooldown"},
+			151 // number of rows
+		));
+		
+		JScrollPane scrollPane = new JScrollPane(MINETable);
+		MINEPanel.add(scrollPane);
+		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
 		JPanel TBOXPanel = new JPanel();
 		tabbedPane.addTab("TBOX", null, TBOXPanel, null);
-		TBOXPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		TBOXPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
 		JPanel OPTDPanel = new JPanel();
 		tabbedPane.addTab("OPTD", null, OPTDPanel, null);
-		OPTDPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		OPTDPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		
+		
 		JPanel bottomPanel = new JPanel();
-		GridBagLayout gbl_bottomPanel = new GridBagLayout();
-		gbl_bottomPanel.columnWidths = new int[] {0, 0};
-		gbl_bottomPanel.rowHeights = new int[] {0};
-		gbl_bottomPanel.columnWeights = new double[]{0.0, Double.MIN_VALUE};
-		gbl_bottomPanel.rowWeights = new double[]{0.0};
-		bottomPanel.setLayout(gbl_bottomPanel);
+		bottomPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
 		currFile = new JLabel("No File Selected");
 		currFile.setHorizontalAlignment(SwingConstants.LEFT);
-		GridBagConstraints gbc_currFile = new GridBagConstraints();
-		gbc_currFile.anchor = GridBagConstraints.WEST;
-		gbc_currFile.insets = new Insets(0, 5, 2, 5);
-		gbc_currFile.gridx = 0;
-		gbc_currFile.gridy = 0;
-		bottomPanel.add(currFile, gbc_currFile);
-		
-		statusMessage = new JLabel("");
-		statusMessage.setHorizontalAlignment(SwingConstants.RIGHT);
-		GridBagConstraints gbc_statusMessage = new GridBagConstraints();
-		gbc_statusMessage.anchor = GridBagConstraints.EAST;
-		gbc_statusMessage.insets = new Insets(0, 0, 2, 5);
-		gbc_statusMessage.gridx = 1;
-		gbc_statusMessage.gridy = 0;
-		bottomPanel.add(statusMessage, gbc_statusMessage);
+		bottomPanel.add(currFile);
 
 		// Adding all the panels to the frame.
 		frame.getContentPane().add(BorderLayout.NORTH, menuPanel);
@@ -565,140 +709,118 @@ public class GUI extends JFrame {
 		setEnabled(false);
 	}
 
-	public String getCurrFile() {
-		return currFile.getText();
-	}
-	public void setCurrFile(String s) {
+	private void setCurrFile(String s) {
 		currFile.setText(s);
 	}
-	public String getStatusMessage() {
-		return statusMessage.getText();
-	}
-	public void setStatusMessage(String s) {
-		statusMessage.setText(s);
-	}
-
-	// load one value into it's respective text field/etc.
-	private void loadValue(JComponent jc) {
-		if (jc instanceof JTextComponent) {
-			((JTextComponent) jc).setText(saveFile.getData(fieldMap.get(jc)).toString());
-		}
-		if (jc instanceof JCheckBox) {
-			if ((boolean) saveFile.getData(fieldMap.get(jc))) { // assumes a checkbox item is associated with a boolean var
+	
+	/*
+	 * 	sets JComponent component with specified name to specified data (that should come from a SaveFile)
+	 */
+	public void setValue(String name, Object data) {
+		JComponent jc = componentMap.get(name);
+		if (jc == null) return; // invalid name
+		
+		String[] temp = (jc.getClass().toString()).split("\\.");
+		String instance = temp[temp.length-1];
+		switch(instance) { // TODO: add more component types here as needed
+		case "JTextField":
+			((JTextField) jc).setText(data.toString());
+			break;
+		case "JCheckBox": // assumes a checkbox item is associated with a boolean var
+			if ((boolean) data) {
 				((JCheckBox) jc).setSelected(true);
 			}
 			else {
 				((JCheckBox) jc).setSelected(false);
 			}
-
-		}
-		if (jc instanceof JComboBox) {
-			Object saveFileValue = saveFile.getData(fieldMap.get(jc));
+			break;
+		case "JComboBox":
 			for (int i = 0; i < ((JComboBox<?>) jc).getItemCount(); i++) {
-				ValueMap<?> vp = (ValueMap<?>) ((JComboBox<?>) jc).getItemAt(i); // All Combo Boxes are of type JComboBox<ValueMap>
-				if (saveFileValue.equals(vp.getSaveFileValue())) {
-					((JComboBox<?>) jc).setSelectedItem(vp);
+				String curr = ((JComboBox<?>) jc).getItemAt(i).toString();
+				if (data.equals(curr)) {
+					((JComboBox<?>) jc).setSelectedIndex(i);
 					break;
 				}
 			}
-		}
-		// TODO: handle more field types after this; check box, progress bar, etc.
-	}
-
-	// load all values into respective text fields/etc.
-	private void loadValues() {
-		for (JComponent key : fieldMap.keySet()) {
-			loadValue(key);
+			break;
+		case "JTable":
+			// TODO: load array into table somehow
+			break;
 		}
 	}
-
-	// TODO: saves one value in actual file, handle more types
-	private void saveValue(JComponent jc) {
-		Pointer data = fieldMap.get(jc);
-		if (data instanceof Data) {
-			
-			if (jc instanceof JComboBox) { // JComboBoxes handle all different types with ValueMap<?>
-				try {
-					saveFile.setData(data, ((ValueMap<?>) ((JComboBox<?>) jc).getSelectedItem()).getSaveFileValue()); // Can do this cast because all ComboBox Items are type ValueMap
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-			
-			switch (((Data)data).getType()) {
-			case Boolean:
-				if (jc instanceof JCheckBox) {
-					try {
-						saveFile.setData(data, ((JCheckBox) jc).isSelected());
-					} catch (Exception e) {
-						// Shouldn't reach this because user input is checked through DocumentFilters and FocusListeners
-						e.printStackTrace();
-					}
-				}
-				break;
-			case Float:
-				if (jc instanceof JTextComponent) {
-					try {
-						saveFile.setData(data, Float.parseFloat(((JTextComponent) jc).getText()));
-					}
-					catch (Exception e) {
-						// Shouldn't reach this because user input is checked through DocumentFilters and FocusListeners
-						e.printStackTrace();
-					}
-				}
-				break;
-			case Int:
-				if (jc instanceof JTextComponent) {
-					try {
-						saveFile.setData(data, Integer.parseInt(((JTextComponent) jc).getText()));
-					} catch (Exception e) {
-						// Shouldn't reach this because user input is checked through DocumentFilters and FocusListeners
-						e.printStackTrace();
-					}
-				}
-				break;
-			case String:
-				if (jc instanceof JTextComponent) {
-					try {
-						saveFile.setData(data, ((JTextComponent) jc).getText());
-					} catch (Exception e) {
-						// Shouldn't reach this because user input is checked through DocumentFilters and FocusListeners
-						e.printStackTrace();
-					}
-				}
-				
-				break;
-			case TPL:
-
-				break;
-			}
+	
+	/*
+	 *   gets String representation of the value of provided JComponent (i.e. text in a JTextField)
+	 */
+	private String getValue(JComponent jc) {
+		String[] temp = (jc.getClass().toString()).split("\\.");
+		String instance = temp[temp.length-1];
+		
+		switch (instance) {
+		case "JTextField":
+			return ((JTextField) jc).getText();
+		case "JCheckBox":
+			return ((JCheckBox) jc).isSelected() ? "true" : "false"; // assumes a checkbox item is associated with a boolean var
+		case "JComboBox":
+			return ((JComboBox<?>) jc).getSelectedItem().toString();
 		}
-		else {
-			// TODO: handle arrays here???
-		}
-	}
-	// saves changes made in editor to actual file
-	private void saveValues() {		
-		for (JComponent key : fieldMap.keySet()) {
-			saveValue(key);
-		}
+		
+		return null;
 	}
 
 	// enables/disables all user input boxes
 	public void setEnabled(boolean b) {
-		for (JComponent key : fieldMap.keySet()) {
-			key.setEnabled(b);
+		for (String key : componentMap.keySet()) {
+			componentMap.get(key).setEnabled(b);
 		}
 	}
-
-	// associates a GUI object with a Pointer object that describes what the GUI object contains
-	public void attach(JComponent jc, Pointer p, DocumentFilter df, FocusListener fl) {
-		fieldMap.put(jc, p); // add to fieldMap
-
+	
+	/*
+	 *   associates a name string with a JComponent, and adds a DocumentFilter, FocusListener, and actionListener if specified
+	 *   
+	 *   TODO: can delete param actionListener if all JComboBox, JCheckBox, etc. only use it
+	 */
+	private void set(String name, JComponent jc, DocumentFilter df, FocusListener fl, boolean actionListener) {
+		componentMap.put(name, jc);
+		componentMap.inverse().put(jc, name);
 		if (df != null && jc instanceof JTextComponent) {
 			AbstractDocument doc = (AbstractDocument) ((JTextComponent) jc).getDocument();
 			doc.setDocumentFilter(df); // set document filter
 		}
-		if (fl != null) jc.addFocusListener(fl); // add FocusListener
+		if (fl != null) jc.addFocusListener(fl);
+		if (actionListener) {
+			// TODO: make these into switch statements
+			if (jc instanceof JComboBox) {
+				((JComboBox<?>) jc).addActionListener(new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						fireViewEvent(ViewEvent.SET_DATA, name + ":" + ((JComboBox<?>) jc).getSelectedItem());
+					}
+					
+				});
+			}
+			else if (jc instanceof JCheckBox) {
+				((JCheckBox) jc).addActionListener(new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						fireViewEvent(ViewEvent.SET_DATA, name + ":" + (((JCheckBox) jc).isSelected() ? "true" : "false"));
+					}
+					
+				});
+			}
+			// TODO: add more classes that use actionlisteners if needed
+		}
 	}
+	
+	public void showMessage(String msg) { JOptionPane.showMessageDialog(this, msg); }
+	
+	private void fireViewEvent(int type, String param) { 
+		this.viewListener.viewEventOccurred(new ViewEvent(this, type, param));
+	}
+	private void fireViewEvent(int type) {
+		this.viewListener.viewEventOccurred(new ViewEvent(this, type));
+	}
+	
 }
