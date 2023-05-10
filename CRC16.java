@@ -1,8 +1,8 @@
 
 public class CRC16 {
 
-	/*	Computes the checksum for each section and compares to the stored checksum
-	 * 
+	/*	
+	 *   Computes the checksum for each section and compares to the stored checksum
 	 */
 	public static String fixChecksums(SaveFile saveFile) {
 		
