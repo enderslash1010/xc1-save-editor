@@ -1,6 +1,13 @@
 import java.util.HashMap;
 
 // Child of Pair, associates String name with a value
+
+/*
+ *   class ValuePair
+ *   
+ *   Associates a name string with it's SaveFile value
+ *   Used in SaveFile to convert an Array's DataPair to ValuePair
+ */
 public class ValuePair extends Pair<Object> {
 
 	public ValuePair(String name, Object data) {

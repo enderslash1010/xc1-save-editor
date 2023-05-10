@@ -1,6 +1,11 @@
 import java.util.HashMap;
 
-// Child of Pair, associates String name with a Data object
+/*
+ *   class DataPair
+ *   
+ *   Associates a name string with a Data object
+ *   Used with an Array's Element objects to pair it's name to a data object to describe a single Element's data
+ */
 public class DataPair extends Pair<Data> {
 
 	public DataPair(String name, Data data) {

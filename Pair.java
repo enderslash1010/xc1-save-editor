@@ -1,4 +1,4 @@
-// Abstract class with children DataPair and ValuePair, to get rid of warnings
+// Abstract class with children DataPair and ValuePair
 public abstract class Pair<T extends Object> {
 
 	private String name;
