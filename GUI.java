@@ -6,6 +6,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.HashMap;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -317,31 +318,39 @@ public class GUI extends JFrame {
 		
 		String[] pclist = new String[] {" ", "Shulk", "Reyn", "Fiora", "Dunban", "Sharla", "Riki", "Melia", "Seven", "Dickson", "Mumkhar", "Alvis", "Prologue Dunban", "Other Dunban"};
 		
-		JComboBox<String> THUMPicSlot1 = new JComboBox<String>(pclist);
+		// We need these DefaultComboBoxModels because WindowBuilder doesn't like putting array (pclist) directly in JComboBox initialization for some reason
+		DefaultComboBoxModel<String> THUMPicSlot1Model = new DefaultComboBoxModel<String>(pclist);
+		JComboBox<String> THUMPicSlot1 = new JComboBox<String>(THUMPicSlot1Model);
 		set("picSlot1", THUMPicSlot1, null, null, true);
 		THUMPicSlotPanel.add(THUMPicSlot1);
 		
-		JComboBox<String> THUMPicSlot2 = new JComboBox<String>(pclist);
+		DefaultComboBoxModel<String> THUMPicSlot2Model = new DefaultComboBoxModel<String>(pclist);
+		JComboBox<String> THUMPicSlot2 = new JComboBox<String>(THUMPicSlot2Model);
 		set("picSlot2", THUMPicSlot2, null, null, true);
 		THUMPicSlotPanel.add(THUMPicSlot2);
 		
-		JComboBox<String> THUMPicSlot3 = new JComboBox<String>(pclist);
+		DefaultComboBoxModel<String> THUMPicSlot3Model = new DefaultComboBoxModel<String>(pclist);
+		JComboBox<String> THUMPicSlot3 = new JComboBox<String>(THUMPicSlot3Model);
 		set("picSlot3", THUMPicSlot3, null, null, true);
 		THUMPicSlotPanel.add(THUMPicSlot3);
 		
-		JComboBox<String> THUMPicSlot4 = new JComboBox<String>(pclist);
+		DefaultComboBoxModel<String> THUMPicSlot4Model = new DefaultComboBoxModel<String>(pclist);
+		JComboBox<String> THUMPicSlot4 = new JComboBox<String>(THUMPicSlot4Model);
 		set("picSlot4", THUMPicSlot4, null, null, true);
 		THUMPicSlotPanel.add(THUMPicSlot4);
 		
-		JComboBox<String> THUMPicSlot5 = new JComboBox<String>(pclist);
+		DefaultComboBoxModel<String> THUMPicSlot5Model = new DefaultComboBoxModel<String>(pclist);
+		JComboBox<String> THUMPicSlot5 = new JComboBox<String>(THUMPicSlot5Model);
 		set("picSlot5", THUMPicSlot5, null, null, true);
 		THUMPicSlotPanel.add(THUMPicSlot5);
 		
-		JComboBox<String> THUMPicSlot6 = new JComboBox<String>(pclist);
+		DefaultComboBoxModel<String> THUMPicSlot6Model = new DefaultComboBoxModel<String>(pclist);
+		JComboBox<String> THUMPicSlot6 = new JComboBox<String>(THUMPicSlot6Model);
 		set("picSlot6", THUMPicSlot6, null, null, true);
 		THUMPicSlotPanel.add(THUMPicSlot6);
 		
-		JComboBox<String> THUMPicSlot7 = new JComboBox<String>(pclist);
+		DefaultComboBoxModel<String> THUMPicSlot7Model = new DefaultComboBoxModel<String>(pclist);
+		JComboBox<String> THUMPicSlot7 = new JComboBox<String>(THUMPicSlot7Model);
 		set("picSlot7", THUMPicSlot7, null, null, true);
 		THUMPicSlotPanel.add(THUMPicSlot7);
 
@@ -379,7 +388,8 @@ public class GUI extends JFrame {
 				"Mechonis Field (ma1701)", "Agniratha (ma1901)", "Central Factory (ma2001)", "Bionis' Interior (ma2101)", "Memory Space (ma2201)",
 				"Mechonis Core (ma2301)", "Junks (ma2401)", "Post-Game Colony 9 (ma0102)"};
 		
-		JComboBox<String> GAMEMapComboBox = new JComboBox<String>(GAMEMaps);
+		DefaultComboBoxModel<String> GAMEMapComboBoxModel = new DefaultComboBoxModel<String>(GAMEMaps);
+		JComboBox<String> GAMEMapComboBox = new JComboBox<String>(GAMEMapComboBoxModel);
 		set("mapNum", GAMEMapComboBox, null, null, true);
 		GAMEMapPanel.add(GAMEMapComboBox);
 		
@@ -390,7 +400,8 @@ public class GUI extends JFrame {
 		JLabel lblNewLabel_9 = new JLabel("Map (for NPCs and music):");
 		GAMEMap2Panel.add(lblNewLabel_9);
 		
-		JComboBox<String> GAMEMap2ComboBox = new JComboBox<String>(GAMEMaps);
+		DefaultComboBoxModel<String> GAMEMap2ComboBoxModel = new DefaultComboBoxModel<String>(GAMEMaps);
+		JComboBox<String> GAMEMap2ComboBox = new JComboBox<String>(GAMEMap2ComboBoxModel);
 		set("mapNum2", GAMEMap2ComboBox, null, null, true);
 		GAMEMap2Panel.add(GAMEMap2ComboBox);
 		
@@ -401,15 +412,18 @@ public class GUI extends JFrame {
 		JLabel lblNewLabel_10 = new JLabel("Current Players:");
 		GAMECurrentPlayersPanel.add(lblNewLabel_10);
 		
-		JComboBox<String> GAMEPlayer1ComboBox = new JComboBox<String>(pclist);
+		DefaultComboBoxModel<String> GAMEPlayer1ComboBoxModel = new DefaultComboBoxModel<String>(pclist);
+		JComboBox<String> GAMEPlayer1ComboBox = new JComboBox<String>(GAMEPlayer1ComboBoxModel);
 		set("player1", GAMEPlayer1ComboBox, null, null, true);
 		GAMECurrentPlayersPanel.add(GAMEPlayer1ComboBox);
 		
-		JComboBox<String> GAMEPlayer2ComboBox = new JComboBox<String>(pclist);
+		DefaultComboBoxModel<String> GAMEPlayer2ComboBoxModel = new DefaultComboBoxModel<String>(pclist);
+		JComboBox<String> GAMEPlayer2ComboBox = new JComboBox<String>(GAMEPlayer2ComboBoxModel);
 		set("player2", GAMEPlayer2ComboBox, null, null, true);
 		GAMECurrentPlayersPanel.add(GAMEPlayer2ComboBox);
 		
-		JComboBox<String> GAMEPlayer3ComboBox = new JComboBox<String>(pclist);
+		DefaultComboBoxModel<String> GAMEPlayer3ComboBoxModel = new DefaultComboBoxModel<String>(pclist);
+		JComboBox<String> GAMEPlayer3ComboBox = new JComboBox<String>(GAMEPlayer3ComboBoxModel);
 		set("player3", GAMEPlayer3ComboBox, null, null, true);
 		GAMECurrentPlayersPanel.add(GAMEPlayer3ComboBox);
 		
@@ -420,19 +434,23 @@ public class GUI extends JFrame {
 		JLabel lblNewLabel_11 = new JLabel("Reserve Players:");
 		GAMEReservePlayerPanel.add(lblNewLabel_11);
 		
-		JComboBox<String> GAMEPlayer4ComboBox = new JComboBox<String>(pclist);
+		DefaultComboBoxModel<String> GAMEPlayer4ComboBoxModel = new DefaultComboBoxModel<String>(pclist);
+		JComboBox<String> GAMEPlayer4ComboBox = new JComboBox<String>(GAMEPlayer4ComboBoxModel);
 		set("player4", GAMEPlayer4ComboBox, null, null, true);
 		GAMEReservePlayerPanel.add(GAMEPlayer4ComboBox);
 		
-		JComboBox<String> GAMEPlayer5ComboBox = new JComboBox<String>(pclist);
+		DefaultComboBoxModel<String> GAMEPlayer5ComboBoxModel = new DefaultComboBoxModel<String>(pclist);
+		JComboBox<String> GAMEPlayer5ComboBox = new JComboBox<String>(GAMEPlayer5ComboBoxModel);
 		set("player5", GAMEPlayer5ComboBox, null, null, true);
 		GAMEReservePlayerPanel.add(GAMEPlayer5ComboBox);
 		
-		JComboBox<String> GAMEPlayer6ComboBox = new JComboBox<String>(pclist);
+		DefaultComboBoxModel<String> GAMEPlayer6ComboBoxModel = new DefaultComboBoxModel<String>(pclist);
+		JComboBox<String> GAMEPlayer6ComboBox = new JComboBox<String>(GAMEPlayer6ComboBoxModel);
 		set("player6", GAMEPlayer6ComboBox, null, null, true);
 		GAMEReservePlayerPanel.add(GAMEPlayer6ComboBox);
 		
-		JComboBox<String> GAMEPlayer7ComboBox = new JComboBox<String>(pclist);
+		DefaultComboBoxModel<String> GAMEPlayer7ComboBoxModel = new DefaultComboBoxModel<String>(pclist);
+		JComboBox<String> GAMEPlayer7ComboBox = new JComboBox<String>(GAMEPlayer7ComboBoxModel);
 		set("player7", GAMEPlayer7ComboBox, null, null, true);
 		GAMEReservePlayerPanel.add(GAMEPlayer7ComboBox);
 
