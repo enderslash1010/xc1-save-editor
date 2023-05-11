@@ -1,3 +1,4 @@
+package Model;
 // Abstract class with children DataPair and ValuePair
 public abstract class Pair<T extends Object> {
 

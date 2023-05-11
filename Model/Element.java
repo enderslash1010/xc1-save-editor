@@ -1,4 +1,4 @@
-
+package Model;
 public class Element {
 	
 	private DataType type;

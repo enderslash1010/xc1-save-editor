@@ -1,3 +1,4 @@
+package View;
 public class IntFilter extends TypeFilter {
 	
 	private int numBytes;

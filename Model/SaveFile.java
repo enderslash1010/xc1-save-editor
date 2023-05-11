@@ -1,3 +1,4 @@
+package Model;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -32,7 +33,7 @@ public class SaveFile {
 	final static int[] checksums = {0x1E, 0xA02E, 0xB25E, 0x11EAE, 0x11EDE, 0x11F2E, 0x11F5E, 0x2408E, 0x240BE, 0x240EE, 0x2449E, 0x248AE};
 	final static String[] sectionNames = {"THUM", "FLAG", "GAME", "TIME", "PCPM", "CAMD", "ITEM", "WTHR", "SNDS", "MINE", "TBOX", "OPTD"};
 
-	final static HashBiMap<String, Pointer> DataMap = HashBiMap.create(new HashMap<String, Pointer>() {{
+	public final static HashBiMap<String, Pointer> DataMap = HashBiMap.create(new HashMap<String, Pointer>() {{
 		// THUM
 		put("level", new Data(0x84, 0x86, DataType.Int));
 		put("playTimeHours", new Data(0x2A, 0x2C, DataType.Int));
@@ -84,6 +85,8 @@ public class SaveFile {
 		// TIME
 		put("playTime", new Data(0x11EB0, 0x11EB4, DataType.Int));
 		put("numDays", new Data(0x11EB8, 0x11EBA, DataType.Int));
+		put("dayTime", new Data(0x11EB4, 0x11EB8, DataType.Float));
+		put("numYears", new Data(0x11EBA, 0x11EBC, DataType.Int));
 		
 		// PCPM
 		put("p1x", new Data(0x11EE0, 0x11EE4, DataType.Float));

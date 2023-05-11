@@ -1,3 +1,4 @@
+package Model;
 import java.util.HashMap;
 
 // Child of Pair, associates String name with a value

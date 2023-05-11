@@ -1,3 +1,4 @@
+package View;
 import javax.swing.text.DocumentFilter;
 
 public class StringFilter extends DocumentFilter {
