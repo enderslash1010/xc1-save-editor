@@ -1,6 +1,6 @@
 package Model;
 
-/*
+/* TODO: javadoc
  *   abstract class Pointer
  *   
  *   Describes a location in a SaveFile, where a meaningful chunk of data is stored

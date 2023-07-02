@@ -1,4 +1,7 @@
 package Model;
+
+// TODO: javadoc
+
 public class Element {
 	
 	private DataType type;

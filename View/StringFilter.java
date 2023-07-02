@@ -1,6 +1,8 @@
 package View;
 import javax.swing.text.DocumentFilter;
 
+// TODO: javadocs
+
 public class StringFilter extends DocumentFilter {
 	
 	private int size;

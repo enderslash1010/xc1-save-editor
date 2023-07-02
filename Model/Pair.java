@@ -1,4 +1,6 @@
 package Model;
+
+// TODO: javadoc
 // Abstract class with children DataPair and ValuePair
 public abstract class Pair<T extends Object> {
 
@@ -18,6 +20,10 @@ public abstract class Pair<T extends Object> {
 	@Override
 	public int hashCode() {
 		return this.getName().hashCode() * this.getData().hashCode();
+	}
+	
+	public void setData(T t) {
+		this.data = t;
 	}
 	
 }

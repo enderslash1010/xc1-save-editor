@@ -6,6 +6,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
 
+// TODO: javadocs
+
 public abstract class TypeFilter extends DocumentFilter {
 
 	@Override
