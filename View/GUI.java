@@ -141,9 +141,6 @@ public class GUI extends JFrame {
 				if (fc.showOpenDialog(fc) == JFileChooser.APPROVE_OPTION) {
 					String fileLocation = fc.getSelectedFile().getAbsolutePath();
 					fireViewEvent(ViewEvent.OPEN_FILE, fileLocation);
-					setCurrFile(fileLocation);
-					setEnabled(true); // enable fields when a file is opened
-					showMessage("Sucessfully Opened File");
 				}
 			}
 
@@ -224,7 +221,7 @@ public class GUI extends JFrame {
 		setEnabled(false);
 	}
 
-	private void setCurrFile(String s) {
+	public void setCurrFile(String s) {
 		currFile.setText(s);
 	}
 

@@ -110,10 +110,14 @@ public class SaveFileController implements ViewListener {
 			try {
 				this.saveFile = new SaveFile(fileLocation);
 			} catch (Exception e1) {
-				gui.showMessage("Error loading file");
-				e1.printStackTrace();
+				gui.showMessage("Error loading file: " + e1.getMessage());
+				this.loading = false;
+				return;
 			}
 			loadValues();
+			gui.setCurrFile(fileLocation);
+			gui.setEnabled(true); // enable fields when a file is opened
+			gui.showMessage("Sucessfully Opened File");
 			this.loading = false;
 			break;
 		case ViewEvent.SAVE_FILE: // Model is saved to actual save file, assume that model and view are synced
