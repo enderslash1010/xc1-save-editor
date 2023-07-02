@@ -6,6 +6,8 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import com.google.common.collect.HashBiMap;
 
+// TODO: complete javadocs
+
 @SuppressWarnings("serial")
 public class SaveFile {
 
@@ -13,10 +15,8 @@ public class SaveFile {
 	private byte[] saveFile = new byte[0x28000];
 
 	private boolean dirty; // True if saveFile data structure is not same as save file on disk
-	
-	private ModelListener modelListener;
 
-	final static int[][] sections = 
+	private final static int[][] sections = 
 		{{0x20, 0x9CA0},     // THUM 0
 				{0xA030, 0xB244},    // FLAG 1
 				{0xB260, 0x11E88},   // GAME 2
@@ -30,9 +30,10 @@ public class SaveFile {
 				{0x244A0, 0x246D4},  // TBOX 10
 				{0x248B0, 0x248F0}}; // OPTD 11
 
-	final static int[] checksums = {0x1E, 0xA02E, 0xB25E, 0x11EAE, 0x11EDE, 0x11F2E, 0x11F5E, 0x2408E, 0x240BE, 0x240EE, 0x2449E, 0x248AE};
-	final static String[] sectionNames = {"THUM", "FLAG", "GAME", "TIME", "PCPM", "CAMD", "ITEM", "WTHR", "SNDS", "MINE", "TBOX", "OPTD"};
+	private final static int[] checksumLocations = {0x1E, 0xA02E, 0xB25E, 0x11EAE, 0x11EDE, 0x11F2E, 0x11F5E, 0x2408E, 0x240BE, 0x240EE, 0x2449E, 0x248AE};
+	private final static String[] sectionNames = {"THUM", "FLAG", "GAME", "TIME", "PCPM", "CAMD", "ITEM", "WTHR", "SNDS", "MINE", "TBOX", "OPTD"};
 
+	// TODO: make this a database?
 	public final static HashBiMap<String, Pointer> DataMap = HashBiMap.create(new HashMap<String, Pointer>() {{
 		// THUM
 		put("level", new Data(0x84, 0x86, DataType.Int));
@@ -55,10 +56,10 @@ public class SaveFile {
 		put("systemSaveFlag", new Data(0x86, 0x87, DataType.Boolean));
 		put("ng+Flag", new Data(0x87, 0x88, DataType.Boolean));
 		put("saveImage", new Data(0xE0, 0x9580, DataType.TPL));
-		
+
 		// FLAG
 		put("scenarioNum", new Data(0xA0B2, 0xA0B4, DataType.Int));
-		
+
 		// GAME
 		put("mapNum", new Data(0xB261, 0xB264, DataType.Int));
 		put("mapNum2", new Data(0xB264, 0xB268, DataType.String));
@@ -81,13 +82,13 @@ public class SaveFile {
 		put("mumkharLevel", new Data(0x113F4, 0x113F8, DataType.Int));
 		put("alvisLevel", new Data(0x116F8, 0x116FC, DataType.Int));
 		put("prologueDunbanLevel", new Data(0x119FC, 0x11A00, DataType.Int));
-		
+
 		// TIME
 		put("playTime", new Data(0x11EB0, 0x11EB4, DataType.Int));
 		put("numDays", new Data(0x11EB8, 0x11EBA, DataType.Int));
 		put("dayTime", new Data(0x11EB4, 0x11EB8, DataType.Float));
 		put("numYears", new Data(0x11EBA, 0x11EBC, DataType.Int));
-		
+
 		// PCPM
 		put("p1x", new Data(0x11EE0, 0x11EE4, DataType.Float));
 		put("p1y", new Data(0x11EE4, 0x11EE8, DataType.Float));
@@ -101,19 +102,19 @@ public class SaveFile {
 		put("p3y", new Data(0x11F04, 0x11F08, DataType.Float));
 		put("p3z", new Data(0x11F08, 0x11F0C, DataType.Float));
 		put("p3Angle", new Data(0x11F0C, 0x11F10, DataType.Float));
-		
+
 		// CAMD
 		put("cameraPosVertical", new Data(0x11F30, 0x11F34, DataType.Float));
 		put("cameraPosHorizontal", new Data(0x11F34, 0x11F38, DataType.Float));
 		put("cameraDistance", new Data(0x11F3C, 0x11F40, DataType.Float));
-		
+
 		// ITEM
 		put("money", new Data(0x2404A, 0x2404C, DataType.Int));
-		
+
 		// WTHR
-		
+
 		// SNDS
-		
+
 		// MINE
 		put("mineArray", new Array(0x240F0, 0x24474, new Element[] {
 				new Element("mineCooldown", 2, DataType.Int),
@@ -121,7 +122,7 @@ public class SaveFile {
 				new Element("minelistID", 1, DataType.Int),
 				new Element("mapID", 2, DataType.Int)
 		}));
-		
+
 		// TBOX
 		put("numBoxes", new Data(0x244A3, 0x244A4, DataType.Int));
 		put("boxArray", new Array(0x244A4, 0x246F4, new Element[] {
@@ -134,7 +135,7 @@ public class SaveFile {
 				new Element("boxDropTable", 2, DataType.Int),
 				new Element("boxMapID", 2, DataType.Int)
 		}));
-		
+
 		// OPTD
 		put("nonInvertedYAxis", new Data(0x248B0, 0x248B1, DataType.Boolean));
 		put("nonInvertedXAxis", new Data(0x248B1, 0x248B2, DataType.Boolean));
@@ -158,28 +159,27 @@ public class SaveFile {
 		put("fastDialogueText", new Data(0x248E1, 0x248E2, DataType.Boolean));
 		put("showSubtitles", new Data(0x248E2, 0x248E3, DataType.Boolean));
 	}});
-	
-	public SaveFile(String fileLocation, ModelListener modelListener) throws Exception {
+
+	public SaveFile(String fileLocation) throws Exception {
 		this.fileLocation = fileLocation;
-		this.modelListener = modelListener;
 		readFromFile();
 		saveToFile();
 	}
 
-	public byte getByteAt(int x) {
+	private byte getByteAt(int x) {
 		return saveFile[x];
 	}
 
 	// returns a byte array containing bytes from start (inclusive) to end (exclusive)
-	public byte[] getBytesAt(int start, int end) {
+	private byte[] getBytesAt(int start, int end) {
 		byte[] result = new byte[end-start];
 		for (int i = start; i < end; i++) {
-			result[i-start] = saveFile[i];
+			result[i-start] = getByteAt(i);
 		}
 		return result;
 	}
 
-	public byte[] getRawData(Pointer data) {
+	private byte[] getRawData(Pointer data) {
 		int[] location = data.getLocation();
 		return getBytesAt(location[0], location[1]);
 	}
@@ -229,7 +229,12 @@ public class SaveFile {
 		return ByteBuffer.wrap(rawData).getFloat();
 	}
 	
-	public ValuePair[] getArrayAt(Array arr, int index) {
+	public Object getArrayAt(Array arr, int index, String internalColName) {
+		Data data = arr.get(index, internalColName);
+		return getData(data);
+	}
+
+	private ValuePair[] getArrayIndexAt(Array arr, int index) {
 		DataPair[] pairArray = arr.getPairArray(index);
 		ValuePair[] result = new ValuePair[arr.getEntryOutlineLength()];
 		for (int i = 0; i < pairArray.length; i++) {
@@ -240,86 +245,99 @@ public class SaveFile {
 
 	public ValuePair[][] getArray(Array arr) {
 		ValuePair[][] result = new ValuePair[arr.getNumEntries()][arr.getEntryOutlineLength()];
-		
+
 		for (int i = 0; i < result.length; i++) {
-			result[i] = getArrayAt(arr, i);
+			result[i] = getArrayIndexAt(arr, i);
 		}
 		return result;
-		
-	}
 
-	public void setData(Pointer data, Object value) throws Exception {	
+	}
+	
+
+	/*
+	 *  @param data - Data object to be changed
+	 *  @param value - value to set Data object's value to
+	 *  
+	 *  Arrays go through setArrayData
+	 */
+	public void setData(Data data, Object value) throws Exception {	
 		// check if type of Object value matches data.getType, throw exception if not
 		// transform Object value into a byte array
 		byte[] result = new byte[data.size()];
 
-		if (data instanceof Data) {
-			switch (((Data)data).getType()) {
-			case String:
-				if (!(value instanceof String)) throw new Exception("Expecting String, got " + value.getClass());
-				for (int i = 0; i < ((String) value).length() && i < result.length; i++) {
-					result[i] = (byte) ((String) value).charAt(i);
-				}
-				break;
-			case Int:
-				if (!(Integer.class.isInstance(value))) throw new Exception("Expecting Integer, got " + value.getClass());
-				for (int i = 0, shift = result.length*8 - 8; i < result.length && shift >= 0; i++, shift-=8) {
-					result[i] = (byte)(((int) value >> shift) & 0xFF);
-				}	
-				break;
-			case Float:
-				if (!(Float.class.isInstance(value))) throw new Exception("Expecting Float, got " + value.getClass());
-				int bits = Float.floatToIntBits((float) value);
-				result[0] = (byte)(bits >> 24);
-				result[1] = (byte)(bits >> 16);
-				result[2] = (byte)(bits >> 8);
-				result[3] = (byte)(bits);
-				break;
-			case Boolean:
-				if (!(Boolean.class.isInstance(value))) throw new Exception("Expecting Boolean, got " + value.getClass());
-				if ((boolean) value) {
-					result[0] = 1;
-				}
-				else result[0] = 0;
-				break;
-			case TPL:
-				// TODO: handle TPL Images
-				break;
+		switch (((Data)data).getType()) {
+		case String:
+			if (!(value instanceof String)) throw new Exception("Expecting String, got " + value.getClass());
+			for (int i = 0; i < ((String) value).length() && i < result.length; i++) {
+				result[i] = (byte) ((String) value).charAt(i);
 			}
+			break;
+		case Int:
+			if (!(Integer.class.isInstance(value))) throw new Exception("Expecting Integer, got " + value.getClass());
+			for (int i = 0, shift = result.length*8 - 8; i < result.length && shift >= 0; i++, shift-=8) {
+				result[i] = (byte)(((int) value >> shift) & 0xFF);
+			}	
+			break;
+		case Float:
+			if (!(Float.class.isInstance(value))) throw new Exception("Expecting Float, got " + value.getClass());
+			int bits = Float.floatToIntBits((float) value);
+			result[0] = (byte)(bits >> 24);
+			result[1] = (byte)(bits >> 16);
+			result[2] = (byte)(bits >> 8);
+			result[3] = (byte)(bits);
+			break;
+		case Boolean:
+			if (!(Boolean.class.isInstance(value))) throw new Exception("Expecting Boolean, got " + value.getClass());
+			if ((boolean) value) {
+				result[0] = 1;
+			}
+			else result[0] = 0;
+			break;
+		case TPL:
+			// TODO: handle TPL Images
+			break;
 		}
-		else return; // Arrays shouldn't be passed into data parameter
+
 
 		// put this array of bytes into the saveFile at location specified in data
 		setBytesAt(data.start, result);
-		// fires model event to let controller know a field has changed
-		fireModelEvent(ModelEvent.SET_DATA, SaveFile.DataMap.inverse().get(data));
+
+	}
+	
+	// Same as setData above, but takes parameter fieldName instead of Data obj
+	public void setData(String fieldName, Object value) throws Exception {
+		Pointer pdata = SaveFile.DataMap.get(fieldName);
+		if (pdata instanceof Data) setData((Data) pdata, value);
+		else throw new Exception("Cannot use setData() directly with Array, use setArrayData()");
+	}
+	
+	/*
+	 *  @param arr - Array to be changed
+	 *  @param index - index of arr to use to set new array value
+	 *  @param colName - Model-facing colName to use to set new array value
+	 *  @param value - value to set arr to (arr[index][colName] = value)
+	 */
+	public void setArrayData(Array arr, int index, String internalColName, Object value) throws Exception {
+		// get Data object corresponding to parameters
+		Data data = arr.get(index, internalColName);
+		
+		// pass Data object to setData with value
+		setData(data, value);
+	}
+	
+	// Same as setArrayData above, but takes parameter fieldName instead of Array obj
+	public void setArrayData(String fieldName, int index, String internalColName, Object value) throws Exception {
+		Pointer pdata = SaveFile.DataMap.get(fieldName);
+		if (pdata instanceof Array) setArrayData((Array) pdata, index, internalColName, value);
+		else throw new Exception("Cannot use setArrayData() for non-array data, use setData()");
 	}
 
-	// Sets an entry within an array at index to an array of values
-	// Only values in ValuePair[] values are changed	
-	public void setArrayEntryAt(Array arr, int index, ValuePair[] values) throws Exception {
-		DataPair[] pairArr = arr.getPairArray(index);
-		for (int i = 0; i < pairArr.length; i++) {
-			if (values[i] == null) continue; // skip if there is not a ValuePair
-			setData(pairArr[i].getData(), values[i].getData());
-		}
-	}
-
-	// Set entire array to ValuePair[][], null entries are not changed
-	// ValuePair[] requires same length as Array arr
-	public void setArray(Array arr, ValuePair[][] values) throws Exception {
-		if (arr.getRowLength() != values.length || arr.getColLength() != values[0].length) throw new Exception("size of Array doesn't match size of ValuePair Array");
-		for (int i = 0; i < values.length; i++) {
-			setArrayEntryAt(arr, i, values[i]);
-		}
-	}
-
-	public void setByteAt(int x, byte b) {
+	private void setByteAt(int x, byte b) {
 		if (saveFile[x] != b) dirty = true;
 		saveFile[x] = b;
 	}
 
-	public void setBytesAt(int x, byte[] b) {
+	private void setBytesAt(int x, byte[] b) {
 		for (int i = 0; i < b.length; i++) {
 			this.setByteAt(x+i, b[i]);
 		}
@@ -335,6 +353,12 @@ public class SaveFile {
 		}
 		fin.close();
 		dirty = false;
+		
+		// TODO: if checksums are wrong, prompt user to fix them rather than automatically fixing them (i.e. user input before writing to file)
+		String result = CRC16.fixChecksums(this);
+		if (result.equals("Fixed Checksums")) {
+			dirty = true;
+		}
 	}
 
 	public String saveToFile() {
@@ -352,13 +376,73 @@ public class SaveFile {
 		}
 		return "Changes Saved Sucessfully";
 	}
-
-	public String getFileLocation() {
-		return this.fileLocation;
-	}
 	
-	private void fireModelEvent(int type, String param) {
-		this.modelListener.modelEventOccurred(new ModelEvent(this, type, param));
+	// nested class
+	class CRC16 {
+
+		/*	
+		 *   Computes the checksum for each section and compares to the stored checksum
+		 */
+		public static String fixChecksums(SaveFile saveFile) {
+			
+			String result = "";
+
+			/// crc16 polynomial: 1 + x^2 + x^15 + x^16 -> 0x8005 (1000 0000 0000 0101) 
+			int[] table = {
+					0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
+					0xC601, 0x06C0, 0x0780, 0xC741, 0x0500, 0xC5C1, 0xC481, 0x0440,
+					0xCC01, 0x0CC0, 0x0D80, 0xCD41, 0x0F00, 0xCFC1, 0xCE81, 0x0E40,
+					0x0A00, 0xCAC1, 0xCB81, 0x0B40, 0xC901, 0x09C0, 0x0880, 0xC841,
+					0xD801, 0x18C0, 0x1980, 0xD941, 0x1B00, 0xDBC1, 0xDA81, 0x1A40,
+					0x1E00, 0xDEC1, 0xDF81, 0x1F40, 0xDD01, 0x1DC0, 0x1C80, 0xDC41,
+					0x1400, 0xD4C1, 0xD581, 0x1540, 0xD701, 0x17C0, 0x1680, 0xD641,
+					0xD201, 0x12C0, 0x1380, 0xD341, 0x1100, 0xD1C1, 0xD081, 0x1040,
+					0xF001, 0x30C0, 0x3180, 0xF141, 0x3300, 0xF3C1, 0xF281, 0x3240,
+					0x3600, 0xF6C1, 0xF781, 0x3740, 0xF501, 0x35C0, 0x3480, 0xF441,
+					0x3C00, 0xFCC1, 0xFD81, 0x3D40, 0xFF01, 0x3FC0, 0x3E80, 0xFE41,
+					0xFA01, 0x3AC0, 0x3B80, 0xFB41, 0x3900, 0xF9C1, 0xF881, 0x3840,
+					0x2800, 0xE8C1, 0xE981, 0x2940, 0xEB01, 0x2BC0, 0x2A80, 0xEA41,
+					0xEE01, 0x2EC0, 0x2F80, 0xEF41, 0x2D00, 0xEDC1, 0xEC81, 0x2C40,
+					0xE401, 0x24C0, 0x2580, 0xE541, 0x2700, 0xE7C1, 0xE681, 0x2640,
+					0x2200, 0xE2C1, 0xE381, 0x2340, 0xE101, 0x21C0, 0x2080, 0xE041,
+					0xA001, 0x60C0, 0x6180, 0xA141, 0x6300, 0xA3C1, 0xA281, 0x6240,
+					0x6600, 0xA6C1, 0xA781, 0x6740, 0xA501, 0x65C0, 0x6480, 0xA441,
+					0x6C00, 0xACC1, 0xAD81, 0x6D40, 0xAF01, 0x6FC0, 0x6E80, 0xAE41,
+					0xAA01, 0x6AC0, 0x6B80, 0xAB41, 0x6900, 0xA9C1, 0xA881, 0x6840,
+					0x7800, 0xB8C1, 0xB981, 0x7940, 0xBB01, 0x7BC0, 0x7A80, 0xBA41,
+					0xBE01, 0x7EC0, 0x7F80, 0xBF41, 0x7D00, 0xBDC1, 0xBC81, 0x7C40,
+					0xB401, 0x74C0, 0x7580, 0xB541, 0x7700, 0xB7C1, 0xB681, 0x7640,
+					0x7200, 0xB2C1, 0xB381, 0x7340, 0xB101, 0x71C0, 0x7080, 0xB041,
+					0x5000, 0x90C1, 0x9181, 0x5140, 0x9301, 0x53C0, 0x5280, 0x9241,
+					0x9601, 0x56C0, 0x5780, 0x9741, 0x5500, 0x95C1, 0x9481, 0x5440,
+					0x9C01, 0x5CC0, 0x5D80, 0x9D41, 0x5F00, 0x9FC1, 0x9E81, 0x5E40,
+					0x5A00, 0x9AC1, 0x9B81, 0x5B40, 0x9901, 0x59C0, 0x5880, 0x9841,
+					0x8801, 0x48C0, 0x4980, 0x8941, 0x4B00, 0x8BC1, 0x8A81, 0x4A40,
+					0x4E00, 0x8EC1, 0x8F81, 0x4F40, 0x8D01, 0x4DC0, 0x4C80, 0x8C41,
+					0x4400, 0x84C1, 0x8581, 0x4540, 0x8701, 0x47C0, 0x4680, 0x8641,
+					0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040,
+			};
+
+			for (int k = 0; k < SaveFile.sectionNames.length; k++) {
+
+				int crc = 0x0000;
+				for (int b = SaveFile.sections[k][0]; b < SaveFile.sections[k][1]; b++) {
+					crc = (crc >>> 8) ^ table[(crc ^ saveFile.getByteAt(b)) & 0xff];
+				}
+
+//				 String outputText = SaveFile.sectionNames[k] + " Computed CRC16 = " + String.format("%02X", crc) + " | Checksum in File = " + String.format("%02X%02X", saveFile.getByteAt(SaveFile.checksums[k]), saveFile.getByteAt(SaveFile.checksums[k] + 1));
+//				 System.out.println(outputText);
+
+				if (saveFile.getByteAt(SaveFile.checksumLocations[k]) != (byte) (crc >> 8) || saveFile.getByteAt(SaveFile.checksumLocations[k] + 1) != (byte) (crc)) { // if checksums are different, change saveFile
+					// System.out.println("Bad checksum in " + SaveFile.sectionNames[k] + "\n");
+					saveFile.setBytesAt(SaveFile.checksumLocations[k], new byte[] {(byte) (crc >> 8), (byte) (crc)});
+					result = "Fixed Checksums";
+				}
+			}
+			
+			return result.equals("") ? "Already Correct Checksums" : result;
+			
+		}
 	}
 
 }
