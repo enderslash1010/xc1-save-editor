@@ -1,7 +1,7 @@
 package View;
 import java.util.EventObject;
 
-/**
+/** TODO: javadocs
  *	class ViewEvent
  *
  *	represents an event that the view can broadcast to controller
@@ -27,6 +27,10 @@ public class ViewEvent extends EventObject {
 	public static final int GET_DATA = 2; // param contains name of data to get
 
 	public static final int SET_DATA = 3; // param is in form "dataName:dataValue" to set dataName to dataValue
+
+	public static final int SET_ARRAY_DATA = 4; // param is in form "arrName:index:colName:value" to set arrName[index][colName] = value
+
+	public static final int GET_ARRAY_DATA = 5; // param is in form "arrName:index:colName"
 
 	public ViewEvent(Object source, int type, String param) {
 		super(source);
