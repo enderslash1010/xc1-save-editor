@@ -1,5 +1,5 @@
 package Model;
-/*  
+/*  TODO: javadocs
  *   class Array
  * 
  *                Element
@@ -36,9 +36,28 @@ public class Array extends Pointer {
 	}
 	
 	public int getNumEntries() { return this.numEntries; }
-	public int getRowLength() { return this.numEntries; }
+	public int getRowLength() { return this.numEntries; } // alias for numEntries
+	
 	public int getEntryOutlineLength() { return this.entryOutline.length; }
-	public int getColLength() { return this.entryOutline.length; }
+	public int getColLength() { return this.entryOutline.length; } // alias for entryOutline length
+	
+	/*
+	 *  returns a String array of all internal column names
+	 */
+	public String[] getColNames() {
+		String[] result = new String[entryOutline.length];
+		for (int i = 0; i < entryOutline.length; i++) {
+			result[i] = entryOutline[i].getName();
+		}
+		return result;
+	}
+	
+	private int getColElementIndex(String name) { // returns index of Element that has String name, or -1 if there is none
+		for (int i = 0; i < entryOutline.length; i++) {
+			if (entryOutline[i].getName().equals(name)) return i;
+		}
+		return -1;
+	}
 	
 	// returns a Data array for the nth index
 	public Data[] get(int n) {
@@ -55,12 +74,21 @@ public class Array extends Pointer {
 		return result;
 	}
 	
-	// returns a multidimensional Data array to describe entire array
-	public Data[][] getArray() {
-		Data[][] result = new Data[numEntries][entryOutline.length];
-		for (int i = 0; i < numEntries; i++) {
-			result[i] = get(i);
+	// returns a Data object for the nth index and corresponding column name (colName)
+	public Data get(int n, String colName) {
+		int start = this.start + (entrySize*n); // start of index
+		int end = start + entryOutline[0].size();
+		
+		// determine which index in entryOutline corresponds with colName
+		int colIndex = getColElementIndex(colName);
+		
+		// calculate the start and end
+		for (int i = 1; i <= colIndex; i++) {
+			start = end;
+			end = start + entryOutline[i].size();
 		}
+		
+		Data result = new Data(start, end, entryOutline[colIndex].getType());
 		return result;
 	}
 	
