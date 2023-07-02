@@ -1,4 +1,7 @@
 package View;
+
+// TODO: javadocs
+
 public class UIntFilter extends TypeFilter {
 	
 	private int numBytes;
