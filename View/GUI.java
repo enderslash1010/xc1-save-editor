@@ -1,5 +1,6 @@
 package View;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -7,7 +8,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.util.HashMap;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -19,14 +19,15 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.SoftBevelBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.DocumentFilter;
@@ -36,9 +37,8 @@ import com.google.common.collect.HashBiMap;
 
 import Controller.SaveFileController;
 import net.miginfocom.swing.MigLayout;
-import java.awt.Font;
 
-/*
+/* TODO: complete javadocs
  *  class GUI
  *  
  *  main window for editor that contains:
@@ -64,6 +64,24 @@ public class GUI extends JFrame {
 	private HashBiMap<String, JComponent> componentMap = HashBiMap.create(new HashMap<String, JComponent>());
 
 	/*
+	 *  Maps array names to mappings of user-facing column names to internal column names
+	 *  
+	 *  (Array Name -> (User-facing column name -> Internal column name))
+	 *  TODO: put translation for external->internal column names to controller
+	 */ 
+	private HashMap<String, HashBiMap<String, String>> columnMap = new HashMap<String, HashBiMap<String, String>>();
+
+	/*
+	 *   User-facing Map names
+	 */
+	public final String[] Maps = {"Title Screen (ma0000)", "Colony 9 (ma0101)", "Tephra Cave (ma0201)", "Bionis' Leg (ma0301)", "Colony 6 (ma0401)",
+			"Ether Mine (ma0402)", "Satorl Marsh (ma0501)", "Makna Forest (ma0601)", "Frontier Village (ma0701)", "Bionis' Shoulder (ma0801)",
+			"High Entia Tomb (ma0901)", "Eryth Sea (ma1001)", "Alcamoth (ma1101)", "Prison Island (ma1201)", "Prison Island 2 (ma1202)",
+			"Valak Mountain (ma1301)", "Sword Valley (ma1401)", "Galahad Fortress (ma1501)", "Fallen Arm (ma1601)", "Beta Fallen Arm (ma1602)",
+			"Mechonis Field (ma1701)", "Agniratha (ma1901)", "Central Factory (ma2001)", "Bionis' Interior (ma2101)", "Memory Space (ma2201)",
+			"Mechonis Core (ma2301)", "Junks (ma2401)", "Post-Game Colony 9 (ma0102)"};
+
+	/*
 	 *   Filters for different types of data
 	 */
 	public IntFilter int4 = new IntFilter(4);
@@ -72,60 +90,11 @@ public class GUI extends JFrame {
 	public UIntFilter uint4 = new UIntFilter(4);
 
 	/*
-	 *   FocusListeners for different types of data
-	 *   Needed to disallow intermediary strings (like a negative sign) to be kept in a text field upon saving to model
+	 *   focusListener saves the value in the JTextComponent when focus is lost
+	 *   JTextComponents in JTables don't need a focus listener, since setting data is handled in actionListener
 	 */
 
-	public FocusListener textIntFocusListener = new FocusListener() {
-
-		@Override
-		public void focusGained(FocusEvent e) { // do nothing
-		}
-
-		@Override
-		public void focusLost(FocusEvent e) {
-			// make sure text isn't empty or "-"
-			JTextComponent src = (JTextComponent) e.getSource();
-			if (src.getText().equals("") || src.getText().equals("-")) {
-				// revert text back to what's in the save file
-				fireViewEvent(ViewEvent.GET_DATA, componentMap.inverse().get(src));
-			}
-			else {
-				fireViewEvent(ViewEvent.SET_DATA, componentMap.inverse().get(src) + ":" + getValue(src));
-			}
-		}
-
-	};
-	public FocusListener textFloatFocusListener = new FocusListener() {
-
-		@Override
-		public void focusGained(FocusEvent e) { // do nothing
-		}
-
-		// ensures value in text field is a valid float when focus is lost (so the user can input Infinity, NaN, etc.)
-		@Override
-		public void focusLost(FocusEvent e) {
-			JTextComponent src = (JTextComponent) e.getSource();
-			String text = src.getText();
-
-			try {
-				float f;
-				if (text.length() > 2 && text.substring(0, 2).equals("0x")) { // check which format
-					f = Float.intBitsToFloat(Integer.parseInt(text.substring(2), 16));
-				}
-				else {
-					f = Float.parseFloat(text);
-				}
-				fireViewEvent(ViewEvent.SET_DATA, componentMap.inverse().get(src) + ":" + f);
-			}
-			catch (NumberFormatException ex) {
-				fireViewEvent(ViewEvent.GET_DATA, componentMap.inverse().get(src));
-			}
-
-		}
-
-	};
-	public FocusListener textStringFocusListener = new FocusListener() {
+	public FocusListener focusListener = new FocusListener() {
 
 		@Override
 		public void focusGained(FocusEvent e) { // do nothing
@@ -134,7 +103,7 @@ public class GUI extends JFrame {
 		@Override
 		public void focusLost(FocusEvent e) {
 			JTextComponent src = (JTextComponent) e.getSource();
-			fireViewEvent(ViewEvent.SET_DATA, componentMap.inverse().get(src) + ":" + getValue(src));
+			fireViewEvent(ViewEvent.SET_DATA, componentMap.inverse().get(src) + ":" + src.getText());
 		}
 
 	};
@@ -151,7 +120,6 @@ public class GUI extends JFrame {
 	}
 
 	// TODO: write tool tips for fields that need more explanation
-	// TODO: convert panels in JTabbedPane to MigLayout
 	public GUI(SaveFileController sfc) {
 
 		this.viewListener = sfc;
@@ -160,8 +128,9 @@ public class GUI extends JFrame {
 		JFileChooser fc = new JFileChooser();
 
 		frame.setTitle("Xenoblade Chronicles (Wii) Save Editor");
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(1050, 600);
+		frame.setMinimumSize(new Dimension(1100, 500));
 
 		JMenu fileMenu = new JMenu("File");
 
@@ -202,42 +171,42 @@ public class GUI extends JFrame {
 		 *   Save file partition views for each tab in JTabbedPane
 		 */
 		JPanel THUMPanel = new THUMView(this);
-		tabbedPane.addTab("THUM", null, THUMPanel, null);
+		tabbedPane.addTab("Save Thumnail", null, THUMPanel, null);
 
 		JPanel FLAGPanel = new FLAGView(this);
-		tabbedPane.addTab("FLAG", null, FLAGPanel, null);
+		tabbedPane.addTab("Flag", null, FLAGPanel, null);
 
 		JPanel GAMEPanel = new GAMEView(this);
-		tabbedPane.addTab("GAME", null, GAMEPanel, null);
+		tabbedPane.addTab("Game", null, GAMEPanel, null);
 
 		JPanel TIMEPanel = new TIMEView(this);
-		tabbedPane.addTab("TIME", null, TIMEPanel, null);
-		
+		tabbedPane.addTab("Time", null, TIMEPanel, null);
+
 		JPanel PCPMPanel = new PCPMView(this);
-		tabbedPane.addTab("PCPM", null, PCPMPanel, null);
-		
+		tabbedPane.addTab("Position", null, PCPMPanel, null);
+
 		JPanel CAMDPanel = new CAMDView(this);
-		tabbedPane.addTab("CAMD", null, CAMDPanel, null);
-		
+		tabbedPane.addTab("Camera", null, CAMDPanel, null);
+
 		JPanel ITEMPanel = new ITEMView(this);
-		tabbedPane.addTab("ITEM", null, ITEMPanel, null);
+		tabbedPane.addTab("Items", null, ITEMPanel, null);
 
 		JPanel WTHRPanel = new WTHRView(this);
-		tabbedPane.addTab("WTHR", null, WTHRPanel, null);
+		tabbedPane.addTab("Weather", null, WTHRPanel, null);
 
 		JPanel SNDSPanel = new SNDSView(this);
 		tabbedPane.addTab("SNDS", null, SNDSPanel, null);
 
 		JPanel MINEPanel = new MINEView(this);
-		tabbedPane.addTab("MINE", null, MINEPanel, null);
+		tabbedPane.addTab("Ether Mines", null, MINEPanel, null);
 
 		JPanel TBOXPanel = new TBOXView(this);
-		tabbedPane.addTab("TBOX", null, TBOXPanel, null);
+		tabbedPane.addTab("Treasure Boxes", null, TBOXPanel, null);
 
 		JPanel OPTDPanel = new OPTDView(this);
-		tabbedPane.addTab("OPTD", null, OPTDPanel, null);
+		tabbedPane.addTab("Options", null, OPTDPanel, null);
 
-		
+
 		JPanel bottomPanel = new JPanel();
 		bottomPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 
@@ -260,58 +229,66 @@ public class GUI extends JFrame {
 	}
 
 	/*
-	 * 	sets JComponent component with specified name to specified data (that should come from a SaveFile)
+	 * 	sets JComponent component with specified name to specified value (that should come from a SaveFile)
 	 */
-	public void setValue(String name, Object data) {
+	public void setValue(String name, Object value) {
 		JComponent jc = componentMap.get(name);
-		if (jc == null) return; // invalid name
+
+		if (jc == null) return; // invalid name, or name not mapped to component
 
 		String[] temp = (jc.getClass().toString()).split("\\.");
 		String instance = temp[temp.length-1];
+
 		switch(instance) { // TODO: add more component types here as needed
 		case "JTextField":
-			((JTextField) jc).setText(data.toString());
+			((JTextField) jc).setText(value.toString());
 			break;
 		case "JCheckBox": // assumes a checkbox item is associated with a boolean var
-			if ((boolean) data) {
-				((JCheckBox) jc).setSelected(true);
-			}
-			else {
-				((JCheckBox) jc).setSelected(false);
-			}
+			((JCheckBox) jc).setSelected((boolean) value);
 			break;
 		case "JComboBox":
 			for (int i = 0; i < ((JComboBox<?>) jc).getItemCount(); i++) {
 				String curr = ((JComboBox<?>) jc).getItemAt(i).toString();
-				if (data.equals(curr)) {
+				if (value.equals(curr)) {
 					((JComboBox<?>) jc).setSelectedIndex(i);
 					break;
 				}
 			}
 			break;
-		case "JTable":
-			// TODO: load array into table somehow
+		case "JBooleanButtonGroup": // assumes value is type boolean
+			((JBooleanButtonGroup) jc).setSelected((boolean) value);
+			break;
+		case "JSlider":
+			((JSlider) jc).setValue((int) value);
 			break;
 		}
 	}
 
 	/*
-	 *   gets String representation of the value of provided JComponent (i.e. text in a JTextField)
+	 * 	Sets JTable cell for Array name at index and colName (which determines row/col in JTable) to value
 	 */
-	private String getValue(JComponent jc) {
-		String[] temp = (jc.getClass().toString()).split("\\.");
-		String instance = temp[temp.length-1];
+	public void setArrayValue(String arrName, int index, String internalColName, Object value) {
+		// get JTable from name
+		JTable table = (JTable) componentMap.get(arrName);
+		DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
 
-		switch (instance) {
-		case "JTextField":
-			return ((JTextField) jc).getText();
-		case "JCheckBox":
-			return ((JCheckBox) jc).isSelected() ? "true" : "false"; // assumes a checkbox item is associated with a boolean var
-		case "JComboBox":
-			return ((JComboBox<?>) jc).getSelectedItem().toString();
+		// determine row
+		int row = index;
+
+		// determine col
+		int col = -1;
+		String externalColName = (columnMap.get(arrName)).inverse().get(internalColName);
+		for (int i = 0; i < tableModel.getColumnCount(); i++) {
+			if (tableModel.getColumnName(i).equals(externalColName)) {
+				col = i;
+			}
 		}
 
-		return null;
+		// if col == -1, then that internal column is not associated with a column in the GUI, so don't set anything
+		if (col == -1) return;
+
+		// set table cell to data
+		tableModel.setValueAt(value, row, col);
 	}
 
 	// enables/disables all user input boxes
@@ -322,42 +299,120 @@ public class GUI extends JFrame {
 	}
 
 	/*
-	 *   associates a name string with a JComponent, and adds a DocumentFilter, FocusListener, and actionListener if specified
-	 *   
-	 *   TODO: can delete param actionListener if all JComboBox, JCheckBox, etc. only use it
+	 *   associates a name string with a JComponent, and adds a DocumentFilter, FocusListener, and/or actionListener if specified
 	 */
-	public void set(String name, JComponent jc, DocumentFilter df, FocusListener fl, boolean actionListener) {
-		componentMap.put(name, jc);
-		componentMap.inverse().put(jc, name);
-		if (df != null && jc instanceof JTextComponent) {
-			AbstractDocument doc = (AbstractDocument) ((JTextComponent) jc).getDocument();
+
+	public void setTextField(String name, JTextField tf, DocumentFilter df) {
+		componentMap.put(name, tf);
+
+		if (df != null) {
+			AbstractDocument doc = (AbstractDocument) tf.getDocument();
 			doc.setDocumentFilter(df); // set document filter
 		}
-		if (fl != null) jc.addFocusListener(fl);
-		if (actionListener) {
-			// TODO: make these into switch statements
-			if (jc instanceof JComboBox) {
-				((JComboBox<?>) jc).addActionListener(new ActionListener() {
 
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						fireViewEvent(ViewEvent.SET_DATA, name + ":" + ((JComboBox<?>) jc).getSelectedItem());
-					}
+		tf.addFocusListener(focusListener);
+	}
 
-				});
+	public void setCheckBox(String name, JCheckBox cb) {
+		componentMap.put(name, cb);
+
+		cb.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				fireViewEvent(ViewEvent.SET_DATA, name + ":" + (cb.isSelected() ? "true" : "false"));
 			}
-			else if (jc instanceof JCheckBox) {
-				((JCheckBox) jc).addActionListener(new ActionListener() {
 
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						fireViewEvent(ViewEvent.SET_DATA, name + ":" + (((JCheckBox) jc).isSelected() ? "true" : "false"));
-					}
+		});
+	}
 
-				});
+	public void setComboBox(String name, JComboBox<?> cb) {
+		componentMap.put(name, cb);
+
+		cb.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				fireViewEvent(ViewEvent.SET_DATA, name + ":" + cb.getSelectedItem());
 			}
-			// TODO: add more classes that use actionlisteners if needed
+
+		});
+	}
+	
+	public void setSlider(String name, JSlider s) {
+		componentMap.put(name, s);
+		
+		s.addChangeListener(new ChangeListener() {
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				if (!s.getValueIsAdjusting()) fireViewEvent(ViewEvent.SET_DATA, name + ":" + s.getValue());
+			}
+			
+		});
+	}
+
+	// set but for BooleanButtonGroups
+	public void setBooleanButtonGroups(String name, BooleanButtonGroup bbg) {
+		componentMap.put(name, new JBooleanButtonGroup(bbg));
+		bbg.getTrueButton().addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				fireViewEvent(ViewEvent.SET_DATA, name + ":true");
+			}
+
+		});
+		bbg.getFalseButton().addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				fireViewEvent(ViewEvent.SET_DATA, name + ":false");
+			}
+
+		});
+	}
+
+	/*
+	 * 	@param arrName - name of array (from SaveFile.DataMap)
+	 * 	@param columnMaps - array of column names (from SaveFile.DataMap) in order they should appear in JTable
+	 * 	@param jc - JTable object
+	 */
+	public void setArray(String arrName, String[] columnMaps, JTable jc) {
+		if (jc.getColumnCount() != columnMaps.length) return;
+
+		componentMap.put(arrName, jc);
+
+		// map column names
+		for (int i = 0; i < columnMaps.length; i++) {
+			HashBiMap<String, String> map;
+			if (columnMap.containsKey(arrName)) { // add to existing HashBiMap
+				map = columnMap.get(arrName);
+			}
+			else { // create new HashBiMap
+				map = HashBiMap.create();
+			}
+			map.put(jc.getColumnName(i), columnMaps[i]);
+			columnMap.put(arrName, map);
 		}
+
+		jc.getModel().addTableModelListener(new TableModelListener() {
+
+			@Override
+			public void tableChanged(TableModelEvent e) {
+				int row = e.getFirstRow();
+				int col = e.getColumn();
+
+				//System.out.println("row: " + row + ", column: " + col);
+				//System.out.println(arrName + ":" + row + ":" + columnMaps[col] + ":" + jc.getModel().getValueAt(row, col));
+
+				// column number determines the dataName
+				// row number determines the index
+				if (jc.getModel().getValueAt(row, col) == null) return;
+				fireViewEvent(ViewEvent.SET_ARRAY_DATA, arrName + ":" + row + ":" + columnMaps[col] + ":" + jc.getModel().getValueAt(row, col)); // arrName:index:colName:value
+			}
+
+		});
 	}
 
 	public void showMessage(String msg) { JOptionPane.showMessageDialog(this, msg); }
