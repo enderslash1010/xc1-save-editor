@@ -1,39 +1,94 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<project default="create_run_jar" name="Create Runnable Jar for Project xc1-save-editor with Jar-in-Jar Loader">
-    <!--this file was created by Eclipse Runnable JAR file Export Wizard-->
-    <!--ANT 1.7 is required-->
-    <!--define folder properties-->
-    <property name="dir.buildfile" value="."/>
-    <property name="dir.workspace" value="C:/Users/ender/eclipse-workspace"/>
-    <property name="dir.jarfile" value="${dir.buildfile}"/>
-    <target name="create_run_jar">
-        <jar destfile="${dir.jarfile}/test.jar">
-            <manifest>
-                <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
-                <attribute name="Rsrc-Main-Class" value="View.Driver"/>
-                <attribute name="Class-Path" value="."/>
-                <attribute name="Rsrc-Class-Path" value="./ junit-jupiter-api_5.9.2.jar junit-jupiter-engine_5.9.2.jar junit-jupiter-migrationsupport_5.9.2.jar junit-jupiter-params_5.9.2.jar junit-platform-commons_1.9.2.jar junit-platform-engine_1.9.2.jar junit-platform-launcher_1.9.2.jar junit-platform-runner_1.9.2.jar junit-platform-suite-api_1.9.2.jar junit-platform-suite-engine_1.9.2.jar junit-platform-suite-commons_1.9.2.jar junit-vintage-engine_5.9.2.jar org.opentest4j_1.2.0.jar org.apiguardian.api_1.1.2.jar org.junit_4.13.2.v20211018-1956.jar org.hamcrest.core_1.3.0.v20180420-1519.jar miglayout15-swing.jar guava-31.1-jre.jar"/>
-            </manifest>
-            <zipfileset src="jar-in-jar-loader.zip"/>
-            <fileset dir="C:/Users/ender/git/xc1-save-editor"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="junit-jupiter-api_5.9.2.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="junit-jupiter-engine_5.9.2.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="junit-jupiter-migrationsupport_5.9.2.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="junit-jupiter-params_5.9.2.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="junit-platform-commons_1.9.2.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="junit-platform-engine_1.9.2.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="junit-platform-launcher_1.9.2.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="junit-platform-runner_1.9.2.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="junit-platform-suite-api_1.9.2.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="junit-platform-suite-engine_1.9.2.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="junit-platform-suite-commons_1.9.2.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="junit-vintage-engine_5.9.2.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="org.opentest4j_1.2.0.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="org.apiguardian.api_1.1.2.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="org.junit_4.13.2.v20211018-1956.jar"/>
-            <zipfileset dir="C:/Users/ender/.p2/pool/plugins" includes="org.hamcrest.core_1.3.0.v20180420-1519.jar"/>
-            <zipfileset dir="C:/Users/ender/git/xc1-save-editor" includes="miglayout15-swing.jar"/>
-            <zipfileset dir="${dir.jarfile}" includes="guava-31.1-jre.jar"/>
-        </jar>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="xc1-save-editor">
+    <property environment="env"/>
+    <property name="junit.output.dir" value="junit"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="17"/>
+    <property name="source" value="17"/>
+    <path id="JUnit 5.libraryclasspath">
+        <pathelement location="../../../Ender/.p2/pool/plugins/junit-jupiter-api_5.9.2.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/junit-jupiter-engine_5.9.2.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/junit-jupiter-migrationsupport_5.9.2.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/junit-jupiter-params_5.9.2.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/junit-platform-commons_1.9.2.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/junit-platform-engine_1.9.2.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/junit-platform-launcher_1.9.2.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/junit-platform-runner_1.9.2.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/junit-platform-suite-api_1.9.2.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/junit-platform-suite-engine_1.9.2.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/junit-platform-suite-commons_1.9.2.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/junit-vintage-engine_5.9.2.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/org.opentest4j_1.2.0.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/org.apiguardian.api_1.1.2.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/org.junit_4.13.2.v20211018-1956.jar"/>
+        <pathelement location="../../../Ender/.p2/pool/plugins/org.hamcrest.core_1.3.0.v20180420-1519.jar"/>
+    </path>
+    <path id="xc1-save-editor.classpath">
+        <pathelement location="."/>
+        <path refid="JUnit 5.libraryclasspath"/>
+        <pathelement location="miglayout15-swing.jar"/>
+        <pathelement location="../../Documents/Programming/Eclipse/guava-31.1-jre.jar"/>
+    </path>
+    <path id="run.Driver.classpath">
+        <path refid="xc1-save-editor.classpath"/>
+        <path refid="JUnit 5.libraryclasspath"/>
+        <pathelement location="miglayout15-swing.jar"/>
+        <pathelement location="../../Documents/Programming/Eclipse/guava-31.1-jre.jar"/>
+    </path>
+    <path id="run.SaveFileTest.classpath">
+        <path refid="xc1-save-editor.classpath"/>
+        <path refid="JUnit 5.libraryclasspath"/>
+        <pathelement location="miglayout15-swing.jar"/>
+        <pathelement location="../../Documents/Programming/Eclipse/guava-31.1-jre.jar"/>
+    </path>
+    <target name="init">
+        <copy includeemptydirs="false" todir=".">
+            <fileset dir=".">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete>
+            <fileset dir="." includes="**/*.class"/>
+        </delete>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="." includeantruntime="false" source="${source}" target="${target}">
+            <src path="."/>
+            <classpath refid="xc1-save-editor.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+    <target name="Driver">
+        <java classname="View.Driver" failonerror="true" fork="yes">
+            <classpath refid="run.Driver.classpath"/>
+        </java>
+    </target>
+    <target name="SaveFileTest">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="Model.SaveFileTest" todir="${junit.output.dir}"/>
+            <jvmarg line="-ea"/>
+            <classpath refid="run.SaveFileTest.classpath"/>
+        </junit>
+    </target>
+    <target name="junitreport">
+        <junitreport todir="${junit.output.dir}">
+            <fileset dir="${junit.output.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${junit.output.dir}"/>
+        </junitreport>
     </target>
 </project>
