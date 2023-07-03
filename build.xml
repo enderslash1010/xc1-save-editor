@@ -9,6 +9,9 @@
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="17"/>
     <property name="source" value="17"/>
+    <path id="external.classpath">
+      <pathelement location="../../../ender/git/xc1-save-editor/miglayout15-swing.jar"/>
+    </path>
     <path id="JUnit 5.libraryclasspath">
         <pathelement location="../../../Ender/.p2/pool/plugins/junit-jupiter-api_5.9.2.jar"/>
         <pathelement location="../../../Ender/.p2/pool/plugins/junit-jupiter-engine_5.9.2.jar"/>
@@ -65,7 +68,9 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="." includeantruntime="false" source="${source}" target="${target}">
             <src path="."/>
-            <classpath refid="xc1-save-editor.classpath"/>
+            <classpath refid="xc1-save-editor.classpath"
+                <path refid="external.classpath"/>
+            </classpath>
         </javac>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
