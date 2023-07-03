@@ -69,7 +69,7 @@
         <javac debug="true" debuglevel="${debuglevel}" destdir="." includeantruntime="false" source="${source}" target="${target}">
             <src path="."/>
             <classpath refid="xc1-save-editor.classpath"/>
-            <path refid="external.classpath"/>
+            <classpath refid="external.classpath"/>
         </javac>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
