@@ -36,10 +36,9 @@ import javax.swing.text.JTextComponent;
 import com.google.common.collect.HashBiMap;
 
 import Controller.SaveFileController;
-import net.miginfocom.swing.MigLayout;
 
-/* TODO: complete javadocs
- *  class GUI
+/**
+ *  GUI
  *  
  *  main window for editor that contains:
  *  	1)	JMenu for user options (Open, Save, etc.)
@@ -56,22 +55,22 @@ public class GUI extends JFrame {
 
 	private JLabel currFile;
 
-	/*
-	 *   Contains mappings for names to gui components
+	/**
+	 *   Contains mappings for names to GUI components
+	 *   Used to 'talk' with the controller/know what component the controller is 'talking' about
 	 *   
-	 *   Used to 'talk' with the controller/know what component the controller is 'talking' about,
+	 *   (Internal component name -> JComponent)
 	 */
 	private HashBiMap<String, JComponent> componentMap = HashBiMap.create(new HashMap<String, JComponent>());
 
-	/*
+	/**
 	 *  Maps array names to mappings of user-facing column names to internal column names
 	 *  
 	 *  (Array Name -> (User-facing column name -> Internal column name))
-	 *  TODO: put translation for external->internal column names to controller
 	 */ 
 	private HashMap<String, HashBiMap<String, String>> columnMap = new HashMap<String, HashBiMap<String, String>>();
 
-	/*
+	/**
 	 *   User-facing Map names
 	 */
 	public final String[] Maps = {"Title Screen (ma0000)", "Colony 9 (ma0101)", "Tephra Cave (ma0201)", "Bionis' Leg (ma0301)", "Colony 6 (ma0401)",
@@ -81,19 +80,18 @@ public class GUI extends JFrame {
 			"Mechonis Field (ma1701)", "Agniratha (ma1901)", "Central Factory (ma2001)", "Bionis' Interior (ma2101)", "Memory Space (ma2201)",
 			"Mechonis Core (ma2301)", "Junks (ma2401)", "Post-Game Colony 9 (ma0102)"};
 
-	/*
-	 *   Filters for different types of data
+	/**
+	 *   Integer filters of varying sizes
 	 */
 	public IntFilter int4 = new IntFilter(4);
 	public UIntFilter uint1 = new UIntFilter(1);
 	public UIntFilter uint2 = new UIntFilter(2);
 	public UIntFilter uint4 = new UIntFilter(4);
 
-	/*
-	 *   focusListener saves the value in the JTextComponent when focus is lost
+	/**
+	 *   focusListener saves the value in the <code>JTextComponent</code> when focus is lost
 	 *   JTextComponents in JTables don't need a focus listener, since setting data is handled in actionListener
 	 */
-
 	public FocusListener focusListener = new FocusListener() {
 
 		@Override
@@ -108,18 +106,12 @@ public class GUI extends JFrame {
 
 	};
 
-	/*
-	 *   MigLayout layout for panels that hold a label and one other component (like JTextField)
-	 *   These types of panels are contained within the panels of the JTabbedPane
+	/**
+	 * GUI Constructor
+	 * Initiates all GUI components and Views
+	 * 
+	 * @param sfc - the <code>SaveFileController</code> that created the GUI
 	 */
-	public MigLayout getDefaultLayout() {
-		return new MigLayout(
-				"fillx", // Layout Constraints
-				"10[min!]10[]10", // Column constraints
-				"5[]5"); // Row constraints
-	}
-
-	// TODO: write tool tips for fields that need more explanation
 	public GUI(SaveFileController sfc) {
 
 		this.viewListener = sfc;
@@ -163,10 +155,8 @@ public class GUI extends JFrame {
 		JPanel contentPanel = new JPanel(new BorderLayout());
 		JTabbedPane tabbedPane = new JTabbedPane();
 		contentPanel.add(tabbedPane);
-
-		/*
-		 *   Save file partition views for each tab in JTabbedPane
-		 */
+		
+		// Save file partition views for each tab in JTabbedPane
 		JPanel THUMPanel = new THUMView(this);
 		tabbedPane.addTab("Save Thumnail", null, THUMPanel, null);
 
@@ -221,12 +211,20 @@ public class GUI extends JFrame {
 		setEnabled(false);
 	}
 
+	/**
+	 *  Sets the text of the currFile <code>JComponent<code>, which shows which file is currently open
+	 * 
+	 *  @param s - location of current file shown in the bottom right of the UI
+	 */
 	public void setCurrFile(String s) {
 		currFile.setText(s);
 	}
 
-	/*
-	 * 	sets JComponent component with specified name to specified value (that should come from a SaveFile)
+	/**
+	 * 	sets <code>JComponent</code> component with specified name (that should come from SaveFile.DataMap) to specified value
+	 * 
+	 *  @param name - internal name of field
+	 *  @param value - value to load into the corresponding JComponenet
 	 */
 	public void setValue(String name, Object value) {
 		JComponent jc = componentMap.get(name);
@@ -240,7 +238,7 @@ public class GUI extends JFrame {
 		case "JTextField":
 			((JTextField) jc).setText(value.toString());
 			break;
-		case "JCheckBox": // assumes a checkbox item is associated with a boolean var
+		case "JCheckBox": // assumes a checkbox item is associated with a boolean variable
 			((JCheckBox) jc).setSelected((boolean) value);
 			break;
 		case "JComboBox":
@@ -261,8 +259,13 @@ public class GUI extends JFrame {
 		}
 	}
 
-	/*
-	 * 	Sets JTable cell for Array name at index and colName (which determines row/col in JTable) to value
+	/**
+	 * 	Sets <code>JTable</code> cell for Array name at index and colName (which determines row/col in the <code>JTable</code>) to the specified value
+	 * 
+	 *  @param arrName - name of Array
+	 *  @param index - row (or index) of the Array
+	 *  @param internalColName - internal column name to specify column in the Array
+	 *  @param value - what value to put into the Array at the specified index/internal column name
 	 */
 	public void setArrayValue(String arrName, int index, String internalColName, Object value) {
 		// get JTable from name
@@ -288,17 +291,24 @@ public class GUI extends JFrame {
 		tableModel.setValueAt(value, row, col);
 	}
 
-	// enables/disables all user input boxes
+	/**
+	 *  enables/disables all user input boxes
+	 *  
+	 *  @param b - whether to enable all the JComponents mapped to a field
+	 */
 	public void setEnabled(boolean b) {
 		for (String key : componentMap.keySet()) {
 			componentMap.get(key).setEnabled(b);
 		}
 	}
 
-	/*
-	 *   associates a name string with a JComponent, and adds a DocumentFilter, FocusListener, and/or actionListener if specified
+	/**
+	 *  associates a field name with a <code>JTextField</code> by adding the association to componentMap, and adds a <code>DocumentFilter</code> if needed
+	 *  
+	 *  @param name - name of the field (comes from SaveFile.DataMap)
+	 *  @param tf - the <code>JTextField</code> to associate with name
+	 *  @param df - the DocumentFilter to use with the JTextField; use null to specify the default DocumentFilter
 	 */
-
 	public void setTextField(String name, JTextField tf, DocumentFilter df) {
 		componentMap.put(name, tf);
 
@@ -310,6 +320,12 @@ public class GUI extends JFrame {
 		tf.addFocusListener(focusListener);
 	}
 
+	/**
+	 *  associates a field name with a <code>JCheckBox</code> by adding the association to componentMap
+	 * 
+	 *  @param name - name of the field (comes from SaveFile.DataMap)
+	 *  @param cb - the <code>JCheckBox</code> to associate with name
+	 */
 	public void setCheckBox(String name, JCheckBox cb) {
 		componentMap.put(name, cb);
 
@@ -323,6 +339,12 @@ public class GUI extends JFrame {
 		});
 	}
 
+	/**
+	 *  associates a field name with a <code>JComboBox</code> by adding the association to componentMap
+	 * 
+	 *  @param name - name of the field (comes from SaveFile.DataMap)
+	 *  @param cb - the <code>JComboBox</code>
+	 */
 	public void setComboBox(String name, JComboBox<?> cb) {
 		componentMap.put(name, cb);
 
@@ -336,6 +358,12 @@ public class GUI extends JFrame {
 		});
 	}
 	
+	/**
+	 *  associates a field name with a <code>JSlider</code> by adding the association to componentMap
+	 * 
+	 *  @param name - name of the field (comes from SaveFile.DataMap)
+	 *  @param s - the <code>JSlider</code>
+	 */
 	public void setSlider(String name, JSlider s) {
 		componentMap.put(name, s);
 		
@@ -349,7 +377,12 @@ public class GUI extends JFrame {
 		});
 	}
 
-	// set but for BooleanButtonGroups
+	/**
+	 *  associates a field name with a <code>BooleanButtonGroup</code> by adding the association to componentMap
+	 * 
+	 *  @param name - name of the field (comes from SaveFile.DataMap)
+	 *  @param cb - the <code>BooleanButtonGroup</code>
+	 */
 	public void setBooleanButtonGroups(String name, BooleanButtonGroup bbg) {
 		componentMap.put(name, new JBooleanButtonGroup(bbg));
 		bbg.getTrueButton().addActionListener(new ActionListener() {
@@ -370,7 +403,9 @@ public class GUI extends JFrame {
 		});
 	}
 
-	/*
+	/**
+	 *  associates an array name with a <code>JTable</code>, and adds column mappings so the JTable can show columns in a different order
+	 * 
 	 * 	@param arrName - name of array (from SaveFile.DataMap)
 	 * 	@param columnMaps - array of column names (from SaveFile.DataMap) in order they should appear in JTable
 	 * 	@param jc - JTable object
@@ -400,11 +435,7 @@ public class GUI extends JFrame {
 				int row = e.getFirstRow();
 				int col = e.getColumn();
 
-				//System.out.println("row: " + row + ", column: " + col);
-				//System.out.println(arrName + ":" + row + ":" + columnMaps[col] + ":" + jc.getModel().getValueAt(row, col));
-
-				// column number determines the dataName
-				// row number determines the index
+				// column number determines the dataName, row number determines the index
 				if (jc.getModel().getValueAt(row, col) == null) return;
 				fireViewEvent(ViewEvent.SET_ARRAY_DATA, arrName + ":" + row + ":" + columnMaps[col] + ":" + jc.getModel().getValueAt(row, col)); // arrName:index:colName:value
 			}
@@ -412,11 +443,28 @@ public class GUI extends JFrame {
 		});
 	}
 
+	/**
+	 *  Shows a pop-up message
+	 * 
+	 *  @param msg - text shown in the pop-up message
+	 */
 	public void showMessage(String msg) { JOptionPane.showMessageDialog(this, msg); }
 
+	/**
+	 *  fires a <code>ViewEvent</code> for <code>SaveFileController<code> to handle
+	 * 
+	 *  @param type - type of <code>ViewEvent</code>
+	 *  @param param - parameters for the <code>ViewEvent</code>
+	 */
 	private void fireViewEvent(int type, String param) { 
 		this.viewListener.viewEventOccurred(new ViewEvent(this, type, param));
 	}
+	
+	/**
+	 *  fires a <code>ViewEvent</code>, without parameters, for <code>SaveFileController</code> to handle
+	 * 
+	 *  @param type - type of <code>ViewEvent</code>
+	 */
 	private void fireViewEvent(int type) {
 		this.viewListener.viewEventOccurred(new ViewEvent(this, type));
 	}
