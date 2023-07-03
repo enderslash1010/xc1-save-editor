@@ -68,7 +68,7 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="." includeantruntime="false" source="${source}" target="${target}">
             <src path="."/>
-            <classpath refid="xc1-save-editor.classpath"/>
+            <classpath refid="xc1-save-editor.classpath">
                 <path refid="external.classpath"/>
             </classpath>
         </javac>
