@@ -6,8 +6,6 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import com.google.common.collect.HashBiMap;
 
-// TODO: complete javadocs
-
 /**
  *  SaveFile
  *  
