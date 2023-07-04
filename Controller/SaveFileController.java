@@ -12,7 +12,7 @@ import View.GUI;
 import View.ViewEvent;
 import View.ViewListener;
 
-/**	 TODO: complete javadocs
+/**	
  *   This is the "controller" for the SaveFile "model"
  */
 
@@ -24,11 +24,6 @@ public class SaveFileController implements ViewListener {
 
 	private boolean loading = false; // flag to silence ViewEvents upon loading, since actionListeners for JComponents would fire from this initial load, when no action from this controller needs to be taken
 	private boolean gettingArrayData = false; // don't fire a ViewEvent to set array data while getting array data (prevents int loop)
-
-	/**
-	 * 	Model-View Mappings: pairs values that the View (GUI) uses to their internal representation in the save file (Model)
-	 *  Stores these mappings in a HashBiMap, to convert both view->model and model->view 
-	 */
 
 	public SaveFileController() {
 		this.gui = new GUI(this);
@@ -282,38 +277,57 @@ public class SaveFileController implements ViewListener {
 		}
 	}
 
-	// TODO: clean up the following methods to be more descriptive and/or consolidate them; maybe similar to boxRankMap?
-
-	// Converts mapNum to how its represented in the save file ("Tephra Cave (ma0201)" -> "0201" -> 0x 01 00 02)
-	public String getFileMapNum(String mapNum) {
-		mapNum = mapValues.get(mapNum);
+	/**
+	 *  Converts mapNum to how its represented in the save file in it's separated form ("Tephra Cave (ma0201)" -> "0201" -> 0x 01 00 02)
+	 * 
+	 *  @param mapID - View value for mapNum
+	 *  @return - converted Model value for separated mapNum
+	 */
+	public String viewToModelSeparatedMapID(String mapID) {
+		mapID = mapValues.get(mapID);
 		int result = 0;
-		result += Integer.parseInt(mapNum.substring(2));
+		result += Integer.parseInt(mapID.substring(2));
 		result = result << 16;
-		result += Integer.parseInt(mapNum.substring(0, 2));
+		result += Integer.parseInt(mapID.substring(0, 2));
 		return result + "";
 	}
 
-	// Converts mapNum to how it's shown in gui (0x010002 -> "0201" -> "Tephra Cave (ma0201)")
-	public String getFormattedMapNum(int mapNum) {
-		int first = (mapNum % 256);
-		int second = (mapNum >> 16);
+	/**
+	 *  Converts a separated mapNum to how it's shown in the UI (0x010002 -> "0201" -> "Tephra Cave (ma0201)")
+	 * 
+	 *  @param mapID - Model value for separated mapNum
+	 *  @return - converted View value for mapNum
+	 */
+	public String modelToViewSeparatedMapID(int mapID) {
+		int first = (mapID % 256);
+		int second = (mapID >> 16);
 
 		String temp = String.format("%02d%02d", first, second);
 		return mapValues.inverse().get(temp);
 	}
 
-	// Converts mapID to how it's shown in gui (0x0201 -> "0201" -> "Tephra Cave (ma0201)"
-	public String getFormattedMapID(int mapID) {
+	/**
+	 *  Converts mapNum to how it's shown in gui (0x0102 -> "0201" -> "Tephra Cave (ma0201)")
+	 * 
+	 *  @param mapNum - Model value for mapNum
+	 *  @return - converted View value for mapNum
+	 */
+	public String modelToViewMapID(int mapID) {
 		int first = (mapID >> 8);
 		int second = (mapID % 256);
 
 		String temp = String.format("%02d%02d", first, second);
 		return mapValues.inverse().get(temp);
 	}
-	// Converts mapID from gui to model representation (reverse of getFormattedMapID)
-	public int getMapID(String formattedMapID) {
-		String stringRep = mapValues.get(formattedMapID); // always a string of length 4, i.e. "0102"
+	
+	/**
+	 *  Converts mapNum to how its represented in the save file ("Tephra Cave (ma0201)" -> "0201" -> 0x0102)
+	 * 
+	 *  @param mapNum - View value for mapNum
+	 *  @return - converted Model value for separated mapNum
+	 */
+	public int viewToModelMapID(String mapID) {
+		String stringRep = mapValues.get(mapID); // always a string of length 4, i.e. "0102"
 
 		int first = Integer.parseInt(stringRep.substring(0, 2));
 		int second = Integer.parseInt(stringRep.substring(2));
@@ -322,8 +336,10 @@ public class SaveFileController implements ViewListener {
 		return result;
 	}
 
-	// Bi-directional HashMaps that pair user-facing values shown by gui to their corresponding save file values
-	// In form: put(viewValue, modelValue)
+	/**
+	 * 	View-Model Mappings: pairs values that the View (GUI) uses to their internal representation in the save file (Model)
+	 *  Stored in a HashBiMap, to convert both view->model and model->view 
+	 */
 	private final HashBiMap<String, String> pclist = HashBiMap.create(new HashMap<String, String>() {{
 		put(" ", "0"); // character slot empty
 		put("Shulk", "1");
@@ -372,7 +388,6 @@ public class SaveFileController implements ViewListener {
 		put("Post-Game Colony 9 (ma0102)", "0102");
 	}});
 
-	// translates boxRank
 	final HashBiMap<String, String> boxRankMap = HashBiMap.create(new HashMap<String, String>() {{
 		put("Unspecified", "0");
 		put("Normal", "1"); 
@@ -380,7 +395,13 @@ public class SaveFileController implements ViewListener {
 		put("Super", "3");
 	}});
 
-	// translates model values to view (user-facing) values
+	/**
+	 *  Translates model values to view (user-facing) values
+	 * 
+	 *  @param fieldName - field name (from SaveFile.DataMap)
+	 *  @param modelVal - Model value
+	 *  @return - translated View value if there is a translation, otherwise it's unchanged from parameter modelVal
+	 */
 	public Object modelToView(String fieldName, Object modelVal) {
 		switch (fieldName) {
 		case "picSlot1": case "picSlot2": case "picSlot3": case "picSlot4": case "picSlot5": case "picSlot6": case "picSlot7": 
@@ -388,13 +409,13 @@ public class SaveFileController implements ViewListener {
 			modelVal = pclist.inverse().get(modelVal.toString());
 			break;
 		case "mapNum":
-			modelVal = getFormattedMapNum((int) modelVal);
+			modelVal = modelToViewSeparatedMapID((int) modelVal);
 			break;
 		case "mapNum2":
 			modelVal = mapValues.inverse().get(modelVal.toString());
 			break;
 		case "mapID": case "boxMapID": // array column name
-			modelVal = getFormattedMapID((int) modelVal);
+			modelVal = modelToViewMapID((int) modelVal);
 			break;
 		case "boxRank":
 			modelVal = boxRankMap.inverse().get(modelVal.toString());
@@ -407,6 +428,12 @@ public class SaveFileController implements ViewListener {
 
 
 	// translates view values to model values
+	/**
+	 * 
+	 *  @param fieldName - field name (from SaveFile.DataMap)
+	 *  @param viewVal - View value
+	 *  @return - translated Model value if there is a translation, otherwise unchanged from parameter viewVal
+	 */
 	public String viewToModel(String fieldName, String viewVal) {
 		switch (fieldName) {
 		case "picSlot1": case "picSlot2": case "picSlot3": case "picSlot4": case "picSlot5": case "picSlot6": case "picSlot7":
@@ -414,13 +441,13 @@ public class SaveFileController implements ViewListener {
 			viewVal = pclist.get(viewVal);
 			break;
 		case "mapNum":
-			viewVal = getFileMapNum(viewVal.toString());
+			viewVal = viewToModelSeparatedMapID(viewVal.toString());
 			break;
 		case "mapNum2":
 			viewVal = mapValues.get(viewVal);
 			break;
 		case "mapID": case "boxMapID": // array column name
-			viewVal = getMapID(viewVal)+"";
+			viewVal = viewToModelMapID(viewVal)+"";
 			break;
 		case "boxRank":
 			viewVal = boxRankMap.get(viewVal);
