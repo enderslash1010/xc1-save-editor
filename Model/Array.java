@@ -1,86 +1,96 @@
 package Model;
-/*  TODO: javadocs
- *   class Array
+
+import java.util.HashMap;
+
+/*  
+ *  Array
+ *  
+ *  Layout of an Array:
  * 
  *                Element
  *  |----------------------------------------|
  *                                        Entry
  *  |-----------------------------------------------------------------------------------------|
- * 
-   [[(mineCooldown, Int at [0x240f0, 0x240f2)), (numHarvests, Int at [0x240f2, 0x240f3)), ...,], 
-    [(mineCooldown, Int at [0x240f6, 0x240f8)), (numHarvests, Int at [0x240f8, 0x240f9)), ...,],
-    [(mineCooldown, Int at [0x240fc, 0x240fe)), (numHarvests, Int at [0x240fe, 0x240ff)), ...,]]
-    
-    This class stores the location/description of array structured data in the save file, 
-    but doesn't store the actual values (SaveFile class can retrieve these values from an Array object)
+ * 																									  _
+ *  [[(mineCooldown, Int at [0x240f0, 0x240f2)), (numHarvests, Int at [0x240f2, 0x240f3)), ...,], 0   |
+ *   [(mineCooldown, Int at [0x240f6, 0x240f8)), (numHarvests, Int at [0x240f8, 0x240f9)), ...,], 1   |  Index
+ *   [(mineCooldown, Int at [0x240fc, 0x240fe)), (numHarvests, Int at [0x240fe, 0x240ff)), ...,]] 2   |
+ *   																							      -
+ *   This class stores the location/description of array structured data in the save file, 
+ *   but doesn't store the actual values (SaveFile class can retrieve these values from an Array object)
  */
 public class Array extends Pointer {
 	
 	private Element[] entryOutline;
 	private int entrySize; // Size of individual entry in bytes (use getEntryOutlineLength() for number of elements in one entry)
 	private int numEntries; // how many entries are in array
+	private HashMap<String, Integer> colNames;
 	
 	public Array(int start, int end, Element[] entryOutline) {
 		this.start = start;
 		this.end = end;
 		this.entryOutline = entryOutline;
 		
-		// Determine the size of each entry from entryOutline
+		// Determine the size of each entry from entryOutline, and create colNames arrays
 		this.entrySize = 0;
+		this.colNames = new HashMap<String, Integer>();
 		for (int i = 0; i < this.entryOutline.length; i++) {
 			this.entrySize += entryOutline[i].size();
+			this.colNames.put(entryOutline[i].getName(), i);
 		}
 		
 		// Determine how many entries
 		this.numEntries = this.size() / this.entrySize;
 	}
-	
+	 
+	/**
+	 * Gets the number of entries in this Array, the same as the row length
+	 * @return the number of entries (also the row length) in this Array
+	 */
 	public int getNumEntries() { return this.numEntries; }
 	public int getRowLength() { return this.numEntries; } // alias for numEntries
 	
+	/**
+	 * Gets the entry outline length of this Array, the same as the column length
+	 * @return the column length (also the entry outline length)
+	 */
 	public int getEntryOutlineLength() { return this.entryOutline.length; }
 	public int getColLength() { return this.entryOutline.length; } // alias for entryOutline length
 	
-	/*
-	 *  returns a String array of all internal column names
+	/**
+	 * Gets an un-ordered array of the column names in this Array
+	 * @return a String array consisting of the column names
 	 */
 	public String[] getColNames() {
-		String[] result = new String[entryOutline.length];
-		for (int i = 0; i < entryOutline.length; i++) {
-			result[i] = entryOutline[i].getName();
-		}
-		return result;
+		return this.colNames.keySet().toArray(new String[0]);
 	}
 	
-	private int getColElementIndex(String name) { // returns index of Element that has String name, or -1 if there is none
-		for (int i = 0; i < entryOutline.length; i++) {
-			if (entryOutline[i].getName().equals(name)) return i;
+	/**
+	 * Gets the index of the column with the specified name
+	 * @param name the internal name of a column in this Array to get the index of
+	 * @return the index of the column that has the String name, or -1 if there is none
+	 */
+	private int getColNameIndex(String name) {
+		Integer index = this.colNames.get(name);
+		try {
+			return index;
+		} catch (NullPointerException e) {
+			return -1;
 		}
-		return -1;
 	}
 	
-	// returns a Data array for the nth index
-	public Data[] get(int n) {
-		Data[] result = new Data[entryOutline.length];
-		int currAddr = this.start + (entrySize*n);
-		
-		for (int i = 0; i < result.length; i++) {
-			int start = currAddr;
-			int end = currAddr + entryOutline[i].size();
-			DataType type = entryOutline[i].getType();
-			result[i] = new Data(start, end, type);
-			currAddr = end;
-		}
-		return result;
-	}
-	
-	// returns a Data object for the nth index and corresponding column name (colName)
+	/**
+	 * 	Gets a <code>Data</code> object for the nth index and specified column name
+	 *  @param n the index in the Array
+	 *  @param colName a column name of this Array
+	 *  @return a <code>Data</code> object at the specified location
+	 */
 	public Data get(int n, String colName) {
 		int start = this.start + (entrySize*n); // start of index
 		int end = start + entryOutline[0].size();
 		
 		// determine which index in entryOutline corresponds with colName
-		int colIndex = getColElementIndex(colName);
+		int colIndex = getColNameIndex(colName);
 		
 		// calculate the start and end
 		for (int i = 1; i <= colIndex; i++) {
@@ -89,37 +99,6 @@ public class Array extends Pointer {
 		}
 		
 		Data result = new Data(start, end, entryOutline[colIndex].getType());
-		return result;
-	}
-	
-	// returns DataPair array that pairs names with data for nth index
-	public DataPair[] getPairArray(int n) {
-		DataPair[] result = new DataPair[getEntryOutlineLength()];
-		Data[] array = get(n);
-		for (int i = 0; i < array.length; i++) {
-			result[i] = new DataPair(entryOutline[i].getName(), array[i]);
-		}
-		return result;
-	}
-	
-	// returns an array of HashMaps for each entry in array
-	public DataPair[][] getPairArrays() {
-		DataPair[][] result = new DataPair[this.numEntries][getEntryOutlineLength()];
-		for (int i = 0; i < this.numEntries; i++) {
-			result[i] = getPairArray(i); 
-		}
-		return result;
-	}
-	
-	public String toString() {
-		String result = "";
-		DataPair[][] pairArr = this.getPairArrays();
-		for (int i = 0; i < pairArr.length; i++) {
-			result += "----- element " + i + " -----\n";
-			for (int j = 0; j < pairArr[i].length; j++) {
-				result += pairArr[i][j] + "\n";
-			}
-		}
 		return result;
 	}
 	

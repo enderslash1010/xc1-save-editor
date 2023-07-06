@@ -1,15 +1,25 @@
 package View;
 
-// TODO: javadocs
-
+/**
+ * A <code>TypeFilter</code> for unsigned integers
+ * Used with a <code>JComponent</code> to only allow uinteger values of a specified size to be input
+ * 
+ * @author ender
+ */
 public class UIntFilter extends TypeFilter {
 	
 	private int numBytes;
 	
+	/**
+	 * Default constructor, number of bytes is set to 4
+	 */
 	public UIntFilter() {
-		this.numBytes = 4; // default is 4 byte int
+		this.numBytes = 4;
 	}
 	
+	/**
+	 * @param numBytes the maximum number of bytes allowed to be input
+	 */
 	public UIntFilter(int numBytes) {
 		this.numBytes = numBytes;
 	}
