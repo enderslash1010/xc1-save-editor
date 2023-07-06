@@ -40,7 +40,8 @@ public class SaveFile {
 	/**
 	 *  SaveFile.DataMap maps where information/fields is in the save file
 	 */
-	// TODO: make this a database?
+	// TODO: put this into controller (since the SaveFile shouldn't really know the names of the data)
+	// TODO: change String to Enum
 	public final static HashBiMap<String, Pointer> DataMap = HashBiMap.create(new HashMap<String, Pointer>() {{
 		// THUM
 		put("level", new Data(0x84, 0x86, DataType.Int));
@@ -211,7 +212,7 @@ public class SaveFile {
 	 *  @param p - the <code>Pointer<code> object
 	 *  @return - data in the data type described in the <code>Pointer</code> object
 	 */
-	public Object getData(Pointer p) {
+	public Object getData(Data p) {
 		// get raw data, then transform into the DataType specified in the data object
 		byte[] rawData = getRawData(p);
 
@@ -228,9 +229,6 @@ public class SaveFile {
 			case TPL:
 				return rawData;
 			}
-		}
-		else if (p instanceof Array){ // data is instance of Array
-			return getArray((Array) p);
 		}
 		return null;
 	}
@@ -281,38 +279,7 @@ public class SaveFile {
 	public Object getArrayAt(Array arr, int index, String internalColName) {
 		Data data = arr.get(index, internalColName);
 		return getData(data);
-	}
-
-	/**
-	 *  Gets transformed data from an Array at the specified index
-	 *  @param arr - Array to get the data from
-	 *  @param index - the index (or row) to get the data from
-	 *  @return - a ValuePair array, to pair field names with values
-	 */
-	private ValuePair[] getArrayIndexAt(Array arr, int index) {
-		DataPair[] pairArray = arr.getPairArray(index);
-		ValuePair[] result = new ValuePair[arr.getEntryOutlineLength()];
-		for (int i = 0; i < pairArray.length; i++) {
-			result[i] = new ValuePair(pairArray[i].getName(), getData(pairArray[i].getData()));
-		}
-		return result;
-	}
-
-	/**
-	 *  Gets transformed data from an entire array
-	 *  @param arr - Array to get the data from
-	 *  @return - a ValuePair 2D array, to pair field names with values at each index
-	 */
-	public ValuePair[][] getArray(Array arr) {
-		ValuePair[][] result = new ValuePair[arr.getNumEntries()][arr.getEntryOutlineLength()];
-
-		for (int i = 0; i < result.length; i++) {
-			result[i] = getArrayIndexAt(arr, i);
-		}
-		return result;
-
-	}
-	
+	}	
 
 	/**
 	 * 	Sets a <code>Data</code> object to the specified value, throwing an exception if the specified value is not the correct type
