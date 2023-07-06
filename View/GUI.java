@@ -110,7 +110,7 @@ public class GUI extends JFrame {
 	 * GUI Constructor
 	 * Initiates all GUI components and Views
 	 * 
-	 * @param sfc - the <code>SaveFileController</code> that created the GUI
+	 * @param sfc the <code>SaveFileController</code> that created the GUI
 	 */
 	public GUI(SaveFileController sfc) {
 
@@ -178,11 +178,11 @@ public class GUI extends JFrame {
 		JPanel ITEMPanel = new ITEMView(this);
 		tabbedPane.addTab("Items", null, ITEMPanel, null);
 
-		JPanel WTHRPanel = new WTHRView(this);
-		tabbedPane.addTab("Weather", null, WTHRPanel, null);
+//		JPanel WTHRPanel = new WTHRView(this);
+//		tabbedPane.addTab("Weather", null, WTHRPanel, null);
 
-		JPanel SNDSPanel = new SNDSView(this);
-		tabbedPane.addTab("SNDS", null, SNDSPanel, null);
+//		JPanel SNDSPanel = new SNDSView(this);
+//		tabbedPane.addTab("SNDS", null, SNDSPanel, null);
 
 		JPanel MINEPanel = new MINEView(this);
 		tabbedPane.addTab("Ether Mines", null, MINEPanel, null);
@@ -214,7 +214,7 @@ public class GUI extends JFrame {
 	/**
 	 *  Sets the text of the currFile <code>JComponent<code>, which shows which file is currently open
 	 * 
-	 *  @param s - location of current file shown in the bottom right of the UI
+	 *  @param s the location of current file shown in the bottom right of the UI
 	 */
 	public void setCurrFile(String s) {
 		currFile.setText(s);
@@ -223,8 +223,8 @@ public class GUI extends JFrame {
 	/**
 	 * 	sets <code>JComponent</code> component with specified name (that should come from SaveFile.DataMap) to specified value
 	 * 
-	 *  @param name - internal name of field
-	 *  @param value - value to load into the corresponding JComponenet
+	 *  @param name the internal name of field
+	 *  @param value the value to load into the corresponding JComponenet
 	 */
 	public void setValue(String name, Object value) {
 		JComponent jc = componentMap.get(name);
@@ -260,12 +260,13 @@ public class GUI extends JFrame {
 	}
 
 	/**
-	 * 	Sets <code>JTable</code> cell for Array name at index and colName (which determines row/col in the <code>JTable</code>) to the specified value
+	 * Sets <code>JTable</code> cell for Array name at index and colName to the specified value
+	 * The index and column name uniquely identify an <code>Array</code> element
 	 * 
-	 *  @param arrName - name of Array
-	 *  @param index - row (or index) of the Array
-	 *  @param internalColName - internal column name to specify column in the Array
-	 *  @param value - what value to put into the Array at the specified index/internal column name
+	 * @param arrName the name of Array from SaveFile.DataMap
+	 * @param index the row (or index) of the Array
+	 * @param internalColName the internal column name to specify column in the Array
+	 * @param value what value to put into the Array at the specified index/internal column name
 	 */
 	public void setArrayValue(String arrName, int index, String internalColName, Object value) {
 		// get JTable from name
@@ -293,8 +294,7 @@ public class GUI extends JFrame {
 
 	/**
 	 *  enables/disables all user input boxes
-	 *  
-	 *  @param b - whether to enable all the JComponents mapped to a field
+	 *  @param b whether to enable all the JComponents mapped to a field
 	 */
 	public void setEnabled(boolean b) {
 		for (String key : componentMap.keySet()) {
@@ -305,9 +305,9 @@ public class GUI extends JFrame {
 	/**
 	 *  associates a field name with a <code>JTextField</code> by adding the association to componentMap, and adds a <code>DocumentFilter</code> if needed
 	 *  
-	 *  @param name - name of the field (comes from SaveFile.DataMap)
-	 *  @param tf - the <code>JTextField</code> to associate with name
-	 *  @param df - the DocumentFilter to use with the JTextField; use null to specify the default DocumentFilter
+	 *  @param name the name of the field from SaveFile.DataMap
+	 *  @param tf the <code>JTextField</code> to associate with name
+	 *  @param df the DocumentFilter to use with the JTextField; use null to specify the default DocumentFilter
 	 */
 	public void setTextField(String name, JTextField tf, DocumentFilter df) {
 		componentMap.put(name, tf);
@@ -323,8 +323,8 @@ public class GUI extends JFrame {
 	/**
 	 *  associates a field name with a <code>JCheckBox</code> by adding the association to componentMap
 	 * 
-	 *  @param name - name of the field (comes from SaveFile.DataMap)
-	 *  @param cb - the <code>JCheckBox</code> to associate with name
+	 *  @param name the name of the field (comes from SaveFile.DataMap)
+	 *  @param cb the <code>JCheckBox</code> to associate with name
 	 */
 	public void setCheckBox(String name, JCheckBox cb) {
 		componentMap.put(name, cb);
@@ -342,8 +342,8 @@ public class GUI extends JFrame {
 	/**
 	 *  associates a field name with a <code>JComboBox</code> by adding the association to componentMap
 	 * 
-	 *  @param name - name of the field (comes from SaveFile.DataMap)
-	 *  @param cb - the <code>JComboBox</code>
+	 *  @param name the name of the field (comes from SaveFile.DataMap)
+	 *  @param cb the <code>JComboBox</code> to associate with name
 	 */
 	public void setComboBox(String name, JComboBox<?> cb) {
 		componentMap.put(name, cb);
@@ -361,8 +361,8 @@ public class GUI extends JFrame {
 	/**
 	 *  associates a field name with a <code>JSlider</code> by adding the association to componentMap
 	 * 
-	 *  @param name - name of the field (comes from SaveFile.DataMap)
-	 *  @param s - the <code>JSlider</code>
+	 *  @param name the name of the field (comes from SaveFile.DataMap)
+	 *  @param s the <code>JSlider</code> to associate with name
 	 */
 	public void setSlider(String name, JSlider s) {
 		componentMap.put(name, s);
@@ -380,8 +380,8 @@ public class GUI extends JFrame {
 	/**
 	 *  associates a field name with a <code>BooleanButtonGroup</code> by adding the association to componentMap
 	 * 
-	 *  @param name - name of the field (comes from SaveFile.DataMap)
-	 *  @param cb - the <code>BooleanButtonGroup</code>
+	 *  @param name the name of the field (comes from SaveFile.DataMap)
+	 *  @param cb the <code>BooleanButtonGroup</code> to associate with name
 	 */
 	public void setBooleanButtonGroups(String name, BooleanButtonGroup bbg) {
 		componentMap.put(name, new JBooleanButtonGroup(bbg));
@@ -406,9 +406,9 @@ public class GUI extends JFrame {
 	/**
 	 *  associates an array name with a <code>JTable</code>, and adds column mappings so the JTable can show columns in a different order
 	 * 
-	 * 	@param arrName - name of array (from SaveFile.DataMap)
-	 * 	@param columnMaps - array of column names (from SaveFile.DataMap) in order they should appear in JTable
-	 * 	@param jc - JTable object
+	 * 	@param arrName the name of array (from SaveFile.DataMap)
+	 * 	@param columnMaps the array of column names (from SaveFile.DataMap) in order they should appear in JTable
+	 * 	@param jc the JTable object to associate with name
 	 */
 	public void setArray(String arrName, String[] columnMaps, JTable jc) {
 		if (jc.getColumnCount() != columnMaps.length) return;
@@ -444,17 +444,16 @@ public class GUI extends JFrame {
 	}
 
 	/**
-	 *  Shows a pop-up message
-	 * 
-	 *  @param msg - text shown in the pop-up message
+	 *  Shows a pop-up message with a custom message
+	 *  @param msg the message shown in the pop-up message
 	 */
 	public void showMessage(String msg) { JOptionPane.showMessageDialog(this, msg); }
 
 	/**
 	 *  fires a <code>ViewEvent</code> for <code>SaveFileController<code> to handle
 	 * 
-	 *  @param type - type of <code>ViewEvent</code>
-	 *  @param param - parameters for the <code>ViewEvent</code>
+	 *  @param type the type of <code>ViewEvent</code>
+	 *  @param param the parameters for the <code>ViewEvent</code>
 	 */
 	private void fireViewEvent(int type, String param) { 
 		this.viewListener.viewEventOccurred(new ViewEvent(this, type, param));
@@ -463,7 +462,7 @@ public class GUI extends JFrame {
 	/**
 	 *  fires a <code>ViewEvent</code>, without parameters, for <code>SaveFileController</code> to handle
 	 * 
-	 *  @param type - type of <code>ViewEvent</code>
+	 *  @param type the type of <code>ViewEvent</code>
 	 */
 	private void fireViewEvent(int type) {
 		this.viewListener.viewEventOccurred(new ViewEvent(this, type));
