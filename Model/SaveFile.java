@@ -6,7 +6,11 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import com.google.common.collect.HashBiMap;
 
-// TODO: complete javadocs
+/**
+ *  SaveFile
+ *  
+ *  The Model for Xenoblade's save file structure
+ */
 
 @SuppressWarnings("serial")
 public class SaveFile {
@@ -33,7 +37,11 @@ public class SaveFile {
 	private final static int[] checksumLocations = {0x1E, 0xA02E, 0xB25E, 0x11EAE, 0x11EDE, 0x11F2E, 0x11F5E, 0x2408E, 0x240BE, 0x240EE, 0x2449E, 0x248AE};
 	private final static String[] sectionNames = {"THUM", "FLAG", "GAME", "TIME", "PCPM", "CAMD", "ITEM", "WTHR", "SNDS", "MINE", "TBOX", "OPTD"};
 
-	// TODO: make this a database?
+	/**
+	 *  SaveFile.DataMap maps where information/fields is in the save file
+	 */
+	// TODO: put this into controller (since the SaveFile shouldn't really know the names of the data)
+	// TODO: change String to Enum
 	public final static HashBiMap<String, Pointer> DataMap = HashBiMap.create(new HashMap<String, Pointer>() {{
 		// THUM
 		put("level", new Data(0x84, 0x86, DataType.Int));
@@ -166,11 +174,21 @@ public class SaveFile {
 		saveToFile();
 	}
 
+	/**
+	 * 	Gets a byte of the save file
+	 *  @param x - location in saveFile
+	 *  @return - byte of the saveFile at x
+	 */
 	private byte getByteAt(int x) {
 		return saveFile[x];
 	}
 
-	// returns a byte array containing bytes from start (inclusive) to end (exclusive)
+	/**
+	 * 	Gets bytes from start (inclusive) to end (exclusive) of the save file
+	 *  @param start - starting location in saveFile
+	 *  @param end - ending location in saveFile
+	 *  @return - bytes from start to end in an array
+	 */
 	private byte[] getBytesAt(int start, int end) {
 		byte[] result = new byte[end-start];
 		for (int i = start; i < end; i++) {
@@ -179,17 +197,27 @@ public class SaveFile {
 		return result;
 	}
 
-	private byte[] getRawData(Pointer data) {
-		int[] location = data.getLocation();
+	/**
+	 *  Gets the byte data of a <code>Pointer</code> object
+	 *  @param p - the <code>Pointer<code> object
+	 *  @return - byte array representing the raw byte data from p
+	 */
+	private byte[] getRawData(Pointer p) {
+		int[] location = p.getLocation();
 		return getBytesAt(location[0], location[1]);
 	}
-
-	public Object getData(Pointer data) {
+	
+	/**
+	 * 	Gets the raw data associated with a <code>Pointer</code> object and transforms it into the correct data type
+	 *  @param p - the <code>Pointer<code> object
+	 *  @return - data in the data type described in the <code>Pointer</code> object
+	 */
+	public Object getData(Data p) {
 		// get raw data, then transform into the DataType specified in the data object
-		byte[] rawData = getRawData(data);
+		byte[] rawData = getRawData(p);
 
-		if (data instanceof Data) {
-			switch (((Data) data).getType()) {
+		if (p instanceof Data) {
+			switch (((Data) p).getType()) {
 			case String:
 				return getString(rawData);
 			case Int:
@@ -202,12 +230,14 @@ public class SaveFile {
 				return rawData;
 			}
 		}
-		else if (data instanceof Array){ // data is instance of Array
-			return getArray((Array) data);
-		}
 		return null;
 	}
-
+	
+	/**
+	 *  Helper function for getData to transform raw data into a String
+	 *  @param rawData - raw byte data to be transformed
+	 *  @return - the transformed String data
+	 */
 	private String getString(byte[] rawData) {
 		String result = "";
 		for (int i = 0; i < rawData.length; i++) {
@@ -217,6 +247,11 @@ public class SaveFile {
 		return result;
 	}
 
+	/**
+	 *  Helper function for getData to transform raw data into an integer
+	 *  @param rawData - raw byte data to be transformed
+	 *  @return - the transformed integer data
+	 */
 	private int getInt(byte[] rawData) {
 		int result = 0;
 		for (byte b: rawData) {
@@ -225,40 +260,34 @@ public class SaveFile {
 		return result;
 	}
 
+	/**
+	 *  Helper function for getData to transform raw data into a float
+	 *  @param rawData - raw byte data to be transformed
+	 *  @return - the transformed float data
+	 */
 	private float getFloat(byte[] rawData) {
 		return ByteBuffer.wrap(rawData).getFloat();
 	}
 	
+	/**
+	 * 	Gets transformed data from an Array at the specified index and column name
+	 *  @param arr - Array to get the data from
+	 *  @param index - the index (or row) to get the data from
+	 *  @param internalColName - the column name to get the data from
+	 *  @return - the transformed data
+	 */
 	public Object getArrayAt(Array arr, int index, String internalColName) {
 		Data data = arr.get(index, internalColName);
 		return getData(data);
-	}
+	}	
 
-	private ValuePair[] getArrayIndexAt(Array arr, int index) {
-		DataPair[] pairArray = arr.getPairArray(index);
-		ValuePair[] result = new ValuePair[arr.getEntryOutlineLength()];
-		for (int i = 0; i < pairArray.length; i++) {
-			result[i] = new ValuePair(pairArray[i].getName(), getData(pairArray[i].getData()));
-		}
-		return result;
-	}
-
-	public ValuePair[][] getArray(Array arr) {
-		ValuePair[][] result = new ValuePair[arr.getNumEntries()][arr.getEntryOutlineLength()];
-
-		for (int i = 0; i < result.length; i++) {
-			result[i] = getArrayIndexAt(arr, i);
-		}
-		return result;
-
-	}
-	
-
-	/*
-	 *  @param data - Data object to be changed
+	/**
+	 * 	Sets a <code>Data</code> object to the specified value, throwing an exception if the specified value is not the correct type
+	 *  @param data - Data object to be set
 	 *  @param value - value to set Data object's value to
+	 *  @throws Exception
 	 *  
-	 *  Arrays go through setArrayData
+	 *  Note: Arrays go through setArrayData
 	 */
 	public void setData(Data data, Object value) throws Exception {	
 		// check if type of Object value matches data.getType, throw exception if not
@@ -304,18 +333,27 @@ public class SaveFile {
 
 	}
 	
-	// Same as setData above, but takes parameter fieldName instead of Data obj
+	/**
+	 * 	Sets a <code>Data</code> object to the specified value, throwing an exception if the specified value is not the correct type
+	 *  @param fieldName - field name of the Data object to be set
+	 *  @param value - value to set Data object's value to
+	 *  @throws Exception
+	 *  
+	 *  Note: Arrays go through setArrayData
+	 */
 	public void setData(String fieldName, Object value) throws Exception {
 		Pointer pdata = SaveFile.DataMap.get(fieldName);
 		if (pdata instanceof Data) setData((Data) pdata, value);
 		else throw new Exception("Cannot use setData() directly with Array, use setArrayData()");
 	}
 	
-	/*
+	/**
+	 * 	Sets a single value in an Array
 	 *  @param arr - Array to be changed
-	 *  @param index - index of arr to use to set new array value
-	 *  @param colName - Model-facing colName to use to set new array value
-	 *  @param value - value to set arr to (arr[index][colName] = value)
+	 *  @param index - index of the Array to use to set new array value
+	 *  @param internalColName - internal column name to use to set new array value
+	 *  @param value - value to set Array to (arr[index][colName] = value)
+	 *  @throws Exception
 	 */
 	public void setArrayData(Array arr, int index, String internalColName, Object value) throws Exception {
 		// get Data object corresponding to parameters
@@ -325,24 +363,46 @@ public class SaveFile {
 		setData(data, value);
 	}
 	
-	// Same as setArrayData above, but takes parameter fieldName instead of Array obj
+	/**
+	 * Sets a single value in an Array
+	 * @param fieldName - field name of the Array object
+	 * @param index - index of the Array to use to set new array value
+	 * @param internalColName - internal column name to use to set new array value
+	 * @param value - value to set Array to (arr[index][colName] = value)
+	 * @throws Exception
+	 */
 	public void setArrayData(String fieldName, int index, String internalColName, Object value) throws Exception {
 		Pointer pdata = SaveFile.DataMap.get(fieldName);
 		if (pdata instanceof Array) setArrayData((Array) pdata, index, internalColName, value);
 		else throw new Exception("Cannot use setArrayData() for non-array data, use setData()");
 	}
 
+	/**
+	 * 	Sets a byte of the save file
+	 *  @param x - location of byte
+	 *  @param b - new byte to set
+	 */
 	private void setByteAt(int x, byte b) {
 		if (saveFile[x] != b) dirty = true;
 		saveFile[x] = b;
 	}
 
+	/**
+	 * 	Sets multiple bytes of the save file
+	 *  @param x - starting location
+	 *  @param b - array of bytes to set
+	 */
 	private void setBytesAt(int x, byte[] b) {
 		for (int i = 0; i < b.length; i++) {
 			this.setByteAt(x+i, b[i]);
 		}
 	}
-
+	
+	/**
+	 * 	Reads from the actual file, and saves into saveFile
+	 *  Fixes any checksum errors encountered upon load
+	 *  @throws Exception - when the opened file doesn't have the correct magic numbers (USRD)
+	 */
 	private void readFromFile() throws Exception {
 		FileInputStream fin = new FileInputStream(fileLocation);
 
@@ -361,6 +421,10 @@ public class SaveFile {
 		}
 	}
 
+	/**
+	 *  Saves to actual file
+	 *  @return - String message to describe what happened
+	 */
 	public String saveToFile() {
 		if (!this.dirty) return "No changes made, nothing saved"; // if file was not changed, no need to save
 		CRC16.fixChecksums(this); // fix checksums on saving
@@ -377,11 +441,15 @@ public class SaveFile {
 		return "Changes Saved Sucessfully";
 	}
 	
-	// nested class
+	/**
+	 *  CRC16
+	 *	
+	 *	Nested class for SavFile to compute/correct checksums for each save file partition
+	 */
 	class CRC16 {
 
 		/*	
-		 *   Computes the checksum for each section and compares to the stored checksum
+		 *   Computes the checksum for each section, compares to the stored checksum, and changes the stored checksum if it's not correct
 		 */
 		public static String fixChecksums(SaveFile saveFile) {
 			

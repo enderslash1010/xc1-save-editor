@@ -1,13 +1,10 @@
 package View;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.SoftBevelBorder;
+import javax.swing.border.TitledBorder;
 
 import net.miginfocom.swing.MigLayout;
-import javax.swing.border.TitledBorder;
 
 @SuppressWarnings("serial")
 public class GAMEView extends JPanel {

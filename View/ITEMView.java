@@ -1,12 +1,9 @@
 package View;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.border.BevelBorder;
-import javax.swing.border.SoftBevelBorder;
+import javax.swing.border.TitledBorder;
 
 import net.miginfocom.swing.MigLayout;
-import javax.swing.border.TitledBorder;
 
 @SuppressWarnings("serial")
 public class ITEMView extends JPanel {

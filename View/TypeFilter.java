@@ -6,8 +6,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
 
-// TODO: javadocs
-
+/**
+ * Parent class of <code>IntFilter</code> and <code>UIntFilter</code>
+ * Both of these classes differ only by the algorithm used to check if a value is within the filter, so shared methods are put here
+ * @author ender
+ */
 public abstract class TypeFilter extends DocumentFilter {
 
 	@Override
@@ -46,6 +49,11 @@ public abstract class TypeFilter extends DocumentFilter {
 		else Toolkit.getDefaultToolkit().beep();
 	}
 	
+	/**
+	 * Determines if the contents of the <code>JComponent</code> fit within the filter
+	 * @param string the text in the <code>JComponent</code>
+	 * @return true if the text fits within the filter; otherwise, false
+	 */
 	public abstract boolean isType(String string);
 	
 }

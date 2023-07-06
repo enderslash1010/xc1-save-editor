@@ -15,8 +15,8 @@ public class BooleanButtonGroup extends ButtonGroup {
 
 	/**
 	 * BooleanButtonGroup Constructor
-	 * @param t - the true button
-	 * @param f - the false button
+	 * @param t the true button
+	 * @param f the false button
 	 */
 	public BooleanButtonGroup(AbstractButton t, AbstractButton f) {
 		super();
@@ -37,8 +37,9 @@ public class BooleanButtonGroup extends ButtonGroup {
 	}
 
 	/**
-	 * Returns the value of this <code>BooleanButtonGroup</code>
-	 * @return - value of this <code>BooleanButtonGroup</code>
+	 * Gets the value of this <code>BooleanButtonGroup</code>
+	 * If the true button is selected, this method returns true; Similarly with the false button
+	 * @return the value of this <code>BooleanButtonGroup</code>
 	 */
 	public boolean getBoolean() {
 		AbstractButton f = super.buttons.get(0);
@@ -57,7 +58,7 @@ public class BooleanButtonGroup extends ButtonGroup {
 
 	/**
 	 * Sets the value of this <code>BooleanButtonGroup</code>
-	 * @param b - which button to select, or alternatively what value to set this <code>BooleanButtonGroup</code> to
+	 * @param b which button to select, or alternatively what value to set this <code>BooleanButtonGroup</code> to
 	 */
 	public void setBoolean(boolean b) {
 		if (b) {
@@ -70,7 +71,14 @@ public class BooleanButtonGroup extends ButtonGroup {
 		}
 	}
 
+	/**
+	 * @return the button associated with false
+	 */
 	public AbstractButton getFalseButton() { return super.buttons.get(0); }
+	
+	/**
+	 * @return the button associated with true
+	 */
 	public AbstractButton getTrueButton() { return super.buttons.get(1); }
 
 }

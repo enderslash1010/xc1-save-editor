@@ -1,15 +1,25 @@
 package View;
 
-// TODO: javadocs
-
+/**
+ * A <code>TypeFilter</code> for integers
+ * Used with a <code>JComponent</code> to only allow integer values of a specified size to be input
+ * 
+ * @author ender
+ */
 public class IntFilter extends TypeFilter {
 	
 	private int numBytes;
 	
+	/**
+	 * Default constructor, number of bytes is set to 4
+	 */
 	public IntFilter() {
-		this.numBytes = 4; // default is 4 byte int
+		this.numBytes = 4;
 	}
 	
+	/**
+	 * @param numBytes the maximum number of bytes allowed to be input
+	 */
 	public IntFilter(int numBytes) {
 		this.numBytes = numBytes;
 	}
