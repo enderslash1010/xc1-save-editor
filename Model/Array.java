@@ -2,6 +2,8 @@ package Model;
 
 import java.util.HashMap;
 
+import Controller.ArrayField;
+
 /*  
  *  Array
  *  
@@ -24,7 +26,7 @@ public class Array extends Pointer {
 	private Element[] entryOutline;
 	private int entrySize; // Size of individual entry in bytes (use getEntryOutlineLength() for number of elements in one entry)
 	private int numEntries; // how many entries are in array
-	private HashMap<String, Integer> colNames;
+	private HashMap<ArrayField, Integer> colNames;
 	
 	public Array(int start, int end, Element[] entryOutline) {
 		this.start = start;
@@ -33,7 +35,7 @@ public class Array extends Pointer {
 		
 		// Determine the size of each entry from entryOutline, and create colNames arrays
 		this.entrySize = 0;
-		this.colNames = new HashMap<String, Integer>();
+		this.colNames = new HashMap<ArrayField, Integer>();
 		for (int i = 0; i < this.entryOutline.length; i++) {
 			this.entrySize += entryOutline[i].size();
 			this.colNames.put(entryOutline[i].getName(), i);
@@ -61,8 +63,8 @@ public class Array extends Pointer {
 	 * Gets an un-ordered array of the column names in this Array
 	 * @return a String array consisting of the column names
 	 */
-	public String[] getColNames() {
-		return this.colNames.keySet().toArray(new String[0]);
+	public ArrayField[] getColNames() {
+		return this.colNames.keySet().toArray(new ArrayField[0]);
 	}
 	
 	/**
@@ -70,7 +72,7 @@ public class Array extends Pointer {
 	 * @param name the internal name of a column in this Array to get the index of
 	 * @return the index of the column that has the String name, or -1 if there is none
 	 */
-	private int getColNameIndex(String name) {
+	private int getColNameIndex(ArrayField name) {
 		Integer index = this.colNames.get(name);
 		try {
 			return index;
@@ -85,7 +87,7 @@ public class Array extends Pointer {
 	 *  @param colName a column name of this Array
 	 *  @return a <code>Data</code> object at the specified location
 	 */
-	public Data get(int n, String colName) {
+	public Data get(int n, ArrayField colName) {
 		int start = this.start + (entrySize*n); // start of index
 		int end = start + entryOutline[0].size();
 		
