@@ -11,6 +11,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.border.TitledBorder;
 
+import Controller.SaveField;
 import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")
@@ -86,7 +87,7 @@ public class OPTDView extends JPanel {
 		brightnessSlider.setPaintTicks(true);
 		brightnessSlider.setPaintLabels(true);
 		gammaPanel.add(brightnessSlider, "cell 1 0,growx");
-		gui.setSlider("gamma", brightnessSlider);
+		gui.setSlider(SaveField.gamma, brightnessSlider);
 
 		JPanel helpPanel = new JPanel();
 		viewPort.add(helpPanel, "cell 0 1 2 1,growx");
@@ -95,27 +96,27 @@ public class OPTDView extends JPanel {
 
 		JCheckBox displayControls = new JCheckBox("Display Controls");
 		helpPanel.add(displayControls, "cell 1 0");
-		gui.setCheckBox("showControls", displayControls);
+		gui.setCheckBox(SaveField.showControls, displayControls);
 
 		JCheckBox artDescriptions = new JCheckBox("Show Art Descriptions");
 		helpPanel.add(artDescriptions, "cell 2 0");
-		gui.setCheckBox("showArtDescriptions", artDescriptions);
+		gui.setCheckBox(SaveField.showArtDescriptions, artDescriptions);
 
 		JCheckBox enemyIcons = new JCheckBox("Show Enemy Icons");
 		helpPanel.add(enemyIcons, "cell 3 0");
-		gui.setCheckBox("showEnemyIcons", enemyIcons);
+		gui.setCheckBox(SaveField.showEnemyIcons, enemyIcons);
 
 		JCheckBox buffDebuffInfo = new JCheckBox("Buff/Debuff Info");
 		helpPanel.add(buffDebuffInfo, "cell 4 0");
-		gui.setCheckBox("showBuffDebuffInfoEveryTime", buffDebuffInfo);
+		gui.setCheckBox(SaveField.showBuffDebuffInfoEveryTime, buffDebuffInfo);
 
 		JCheckBox buffDebuffIndicator = new JCheckBox("Buff/Debuff Indicator");
 		helpPanel.add(buffDebuffIndicator, "cell 5 0");
-		gui.setCheckBox("showBuffDebuffIndicator", buffDebuffIndicator);
+		gui.setCheckBox(SaveField.showBuffDebuffIndicator, buffDebuffIndicator);
 
 		JCheckBox destinationMarker = new JCheckBox("Show Destination Marker");
 		helpPanel.add(destinationMarker, "cell 6 0");
-		gui.setCheckBox("showDestinationMarker", destinationMarker);
+		gui.setCheckBox(SaveField.showDestinationMarker, destinationMarker);
 
 		JPanel cameraPanel = new JPanel();
 		viewPort.add(cameraPanel, "cell 0 2 2 1,growx");
@@ -138,11 +139,11 @@ public class OPTDView extends JPanel {
 		xAxisSlider.setValue(0);
 		xAxisSlider.setMajorTickSpacing(1);
 		panel_1.add(xAxisSlider, "cell 1 0,growx");
-		gui.setSlider("xAxisSpeed", xAxisSlider);
+		gui.setSlider(SaveField.xAxisSpeed, xAxisSlider);
 
 		JCheckBox invertedXAxis = new JCheckBox("Inverted");
 		panel_1.add(invertedXAxis, "cell 2 0");
-		gui.setCheckBox("nonInvertedXAxis", invertedXAxis);
+		gui.setCheckBox(SaveField.nonInvertedXAxis, invertedXAxis);
 
 		JPanel panel = new JPanel();
 		panel.setBorder(new TitledBorder(null, "Y-Axis", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -161,11 +162,11 @@ public class OPTDView extends JPanel {
 		yAxisSlider.setValue(0);
 		panel.add(yAxisSlider, "cell 1 0,growx,aligny top");
 		yAxisSlider.setMaximum(4);
-		gui.setSlider("yAxisSpeed", yAxisSlider);
+		gui.setSlider(SaveField.yAxisSpeed, yAxisSlider);
 
 		JCheckBox invertedYAxis = new JCheckBox("Inverted");
 		panel.add(invertedYAxis, "cell 2 0");
-		gui.setCheckBox("nonInvertedYAxis", invertedYAxis);
+		gui.setCheckBox(SaveField.nonInvertedYAxis, invertedYAxis);
 
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(null, "Zoom Speed", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -180,7 +181,7 @@ public class OPTDView extends JPanel {
 		zoomSlider.setPaintTicks(true);
 		zoomSlider.setPaintLabels(true);
 		panel_2.add(zoomSlider, "cell 0 0,growx");
-		gui.setSlider("zoomSpeed", zoomSlider);
+		gui.setSlider(SaveField.zoomSpeed, zoomSlider);
 
 		JPanel panel_3 = new JPanel();
 		panel_3.setBorder(new TitledBorder(null, "Point of View", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -196,7 +197,7 @@ public class OPTDView extends JPanel {
 		povSlider.setPaintTicks(true);
 		povSlider.setPaintLabels(true);
 		panel_3.add(povSlider, "cell 0 0,growx");
-		gui.setSlider("pointOfView", povSlider);
+		gui.setSlider(SaveField.pointOfView, povSlider);
 
 		JPanel panel_4 = new JPanel();
 		cameraPanel.add(panel_4, "cell 0 2,grow");
@@ -204,11 +205,11 @@ public class OPTDView extends JPanel {
 
 		JCheckBox angleCorrection = new JCheckBox("Angle Correction");
 		panel_4.add(angleCorrection, "cell 0 0");
-		gui.setCheckBox("angleCorrection", angleCorrection);
+		gui.setCheckBox(SaveField.angleCorrection, angleCorrection);
 
 		JCheckBox battleCamera = new JCheckBox("Battle Camera");
 		panel_4.add(battleCamera, "cell 1 0");
-		gui.setCheckBox("battleCamera", battleCamera);
+		gui.setCheckBox(SaveField.battleCamera, battleCamera);
 
 		JPanel panel_5 = new JPanel();
 		viewPort.add(panel_5, "cell 0 3,growx");
@@ -217,7 +218,7 @@ public class OPTDView extends JPanel {
 
 		JCheckBox chckbxDisplayMinimap = new JCheckBox("Display Minimap");
 		panel_5.add(chckbxDisplayMinimap, "cell 0 0,alignx left,aligny top");
-		gui.setCheckBox("minimap", chckbxDisplayMinimap);
+		gui.setCheckBox(SaveField.minimap, chckbxDisplayMinimap);
 
 		JPanel panel_7 = new JPanel();
 		panel_7.setBorder(new TitledBorder(null, "Rotation", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -252,7 +253,7 @@ public class OPTDView extends JPanel {
 
 		JCheckBox subtitles = new JCheckBox("Show Subtitles");
 		panel_6.add(subtitles, "cell 1 0");
-		gui.setCheckBox("showSubtitles", subtitles);
+		gui.setCheckBox(SaveField.showSubtitles, subtitles);
 
 		JPanel panel_9 = new JPanel();
 		panel_9.setBorder(new TitledBorder(null, "Dialogue Text Speed", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -267,10 +268,10 @@ public class OPTDView extends JPanel {
 
 		BooleanButtonGroup textSpeedRadioGroup = new BooleanButtonGroup(fastTextSpeedRadio, normalTextSpeedRadio);
 
-		gui.setBooleanButtonGroups("jpVoice", voiceRadioGroup);
-		gui.setBooleanButtonGroups("rotate", rotationRadioGroup);
-		gui.setBooleanButtonGroups("autoEventScrolling", eventRadioGroup);
-		gui.setBooleanButtonGroups("fastDialogueText", textSpeedRadioGroup);
+		gui.setBooleanButtonGroups(SaveField.jpVoice, voiceRadioGroup);
+		gui.setBooleanButtonGroups(SaveField.rotate, rotationRadioGroup);
+		gui.setBooleanButtonGroups(SaveField.autoEventScrolling, eventRadioGroup);
+		gui.setBooleanButtonGroups(SaveField.fastDialogueText, textSpeedRadioGroup);
 
 	}
 

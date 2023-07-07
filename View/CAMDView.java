@@ -3,6 +3,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
+import Controller.SaveField;
 import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")
@@ -29,7 +30,7 @@ public class CAMDView extends JPanel {
 		CAMDVPos = new JTextField();
 		cameraVPosPanel.add(CAMDVPos, "cell 0 0,growx,aligny top");
 		CAMDVPos.setColumns(10);
-		gui.setTextField("cameraPosVertical", CAMDVPos, null);
+		gui.setTextField(SaveField.cameraPosVertical, CAMDVPos, null);
 
 		JPanel cameraHPosPanel = new JPanel();
 		cameraPanel.add(cameraHPosPanel, "cell 1 0,growx");
@@ -39,7 +40,7 @@ public class CAMDView extends JPanel {
 		CAMDHPos = new JTextField();
 		cameraHPosPanel.add(CAMDHPos, "cell 0 0,growx,aligny top");
 		CAMDHPos.setColumns(10);
-		gui.setTextField("cameraPosHorizontal", CAMDHPos, null);
+		gui.setTextField(SaveField.cameraPosHorizontal, CAMDHPos, null);
 
 		JPanel CAMDDistancePanel = new JPanel();
 		cameraPanel.add(CAMDDistancePanel, "cell 2 0,growx");
@@ -49,7 +50,7 @@ public class CAMDView extends JPanel {
 		CAMDDistance = new JTextField();
 		CAMDDistancePanel.add(CAMDDistance, "cell 0 0,growx,aligny top");
 		CAMDDistance.setColumns(10);
-		gui.setTextField("cameraDistance", CAMDDistance, null);
+		gui.setTextField(SaveField.cameraDistance, CAMDDistance, null);
 	}
 
 }

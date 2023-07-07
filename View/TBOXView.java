@@ -10,6 +10,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.text.AbstractDocument;
 
+import Controller.ArrayField;
+import Controller.SaveField;
 import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")
@@ -48,7 +50,7 @@ public class TBOXView extends JPanel {
 		doc.setDocumentFilter(gui.uint2);
 		dropColumn.setCellEditor(new DefaultCellEditor(dropTextField));
 
-		gui.setArray("boxArray", new String[] {"boxMapID", "boxRank", "xBox", "yBox", "zBox", "boxAngle", "boxDropTable"}, TBOXTable);
+		gui.setArray(SaveField.boxArray, new ArrayField[] {ArrayField.boxMapID, ArrayField.boxRank, ArrayField.xBox, ArrayField.yBox, ArrayField.zBox, ArrayField.boxAngle, ArrayField.boxDropTable}, TBOXTable);
 
 		JScrollPane scrollPane = new JScrollPane(TBOXTable);
 		this.add(scrollPane, "cell 0 0,growx,aligny top");
@@ -61,7 +63,7 @@ public class TBOXView extends JPanel {
 		numBoxes = new JTextField();
 		numBoxesPanel.add(numBoxes, "cell 0 0,alignx left,aligny top");
 		numBoxes.setColumns(10);
-		gui.setTextField("numBoxes", numBoxes, gui.uint1);
+		gui.setTextField(SaveField.numBoxes, numBoxes, gui.uint1);
 	}
 
 }

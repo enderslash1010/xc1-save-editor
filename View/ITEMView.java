@@ -3,6 +3,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
+import Controller.SaveField;
 import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")
@@ -25,7 +26,7 @@ public class ITEMView extends JPanel {
 		ITEMMoneyPanel.add(ITEMMoney, "cell 0 0,growx,aligny top");
 		ITEMMoney.setText("");
 		ITEMMoney.setColumns(10);
-		gui.setTextField("money", ITEMMoney, gui.int4);
+		gui.setTextField(SaveField.money, ITEMMoney, gui.int4);
 	}
 	
 }
