@@ -93,6 +93,7 @@ public class Array extends Pointer {
 		
 		// determine which index in entryOutline corresponds with colName
 		int colIndex = getColNameIndex(colName);
+		if (colIndex == -1) return null;
 		
 		// calculate the start and end
 		for (int i = 1; i <= colIndex; i++) {
