@@ -1,5 +1,7 @@
 package Model;
 
+import Controller.ArrayField;
+
 /**
  * An Element describes a column in an <code>Array</code>
  * Used when creating an <code>Array</code> to describe what data each entry consists of
@@ -9,7 +11,7 @@ public class Element {
 	
 	private DataType type;
 	private int size;
-	private String name;
+	private ArrayField name;
 	
 	/**
 	 * Element Constructor
@@ -17,7 +19,7 @@ public class Element {
 	 * @param size the number of bytes this field takes up in the save file
 	 * @param type the data type of this field
 	 */
-	public Element(String name, int size, DataType type) {
+	public Element(ArrayField name, int size, DataType type) {
 		this.size = size;
 		this.type = type;
 		this.name = name;
@@ -40,7 +42,7 @@ public class Element {
 	/**
 	 * @return the field name of this object (from SaveFile.DataMap)
 	 */
-	public String getName() {
+	public ArrayField getName() {
 		return this.name;
 	}
 }
