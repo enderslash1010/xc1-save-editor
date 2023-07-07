@@ -6,12 +6,14 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import com.google.common.collect.HashBiMap;
 
+import Controller.ArrayField;
+import Controller.SaveField;
+
 /**
  *  SaveFile
  *  
  *  The Model for Xenoblade's save file structure
  */
-
 @SuppressWarnings("serial")
 public class SaveFile {
 
@@ -42,130 +44,130 @@ public class SaveFile {
 	 */
 	// TODO: put this into controller (since the SaveFile shouldn't really know the names of the data)
 	// TODO: change String to Enum
-	public final static HashBiMap<String, Pointer> DataMap = HashBiMap.create(new HashMap<String, Pointer>() {{
+	public final static HashBiMap<SaveField, Pointer> DataMap = HashBiMap.create(new HashMap<SaveField, Pointer>() {{
 		// THUM
-		put("level", new Data(0x84, 0x86, DataType.Int));
-		put("playTimeHours", new Data(0x2A, 0x2C, DataType.Int));
-		put("playTimeMins", new Data(0x2C, 0x2E, DataType.Int));
-		put("playTimeSeconds", new Data(0x23, 0x24, DataType.Int));
-		put("saveTimeDay", new Data(0x29, 0x2A, DataType.Int));
-		put("saveTimeMonth", new Data(0x26, 0x28, DataType.Int));
-		put("saveTimeYear", new Data(0x24, 0x26, DataType.Int));
-		put("saveTimeHour", new Data(0x28, 0x29, DataType.Int));
-		put("saveTimeMinute", new Data(0x22, 0x23, DataType.Int));
-		put("picSlot1", new Data(0x37, 0x38, DataType.Int));
-		put("picSlot2", new Data(0x3B, 0x3C, DataType.Int));
-		put("picSlot3", new Data(0x3F, 0x40, DataType.Int));
-		put("picSlot4", new Data(0x43, 0x44, DataType.Int));
-		put("picSlot5", new Data(0x47, 0x48, DataType.Int));
-		put("picSlot6", new Data(0x4B, 0x4C, DataType.Int));
-		put("picSlot7", new Data(0x4F, 0x50, DataType.Int));
-		put("name", new Data(0x64, 0x84, DataType.String));
-		put("systemSaveFlag", new Data(0x86, 0x87, DataType.Boolean));
-		put("ng+Flag", new Data(0x87, 0x88, DataType.Boolean));
-		put("saveImage", new Data(0xE0, 0x9580, DataType.TPL));
+		put(SaveField.level, new Data(0x84, 0x86, DataType.Int));
+		put(SaveField.playTimeHours, new Data(0x2A, 0x2C, DataType.Int));
+		put(SaveField.playTimeMins, new Data(0x2C, 0x2E, DataType.Int));
+		put(SaveField.playTimeSeconds, new Data(0x23, 0x24, DataType.Int));
+		put(SaveField.saveTimeDay, new Data(0x29, 0x2A, DataType.Int));
+		put(SaveField.saveTimeMonth, new Data(0x26, 0x28, DataType.Int));
+		put(SaveField.saveTimeYear, new Data(0x24, 0x26, DataType.Int));
+		put(SaveField.saveTimeHour, new Data(0x28, 0x29, DataType.Int));
+		put(SaveField.saveTimeMinute, new Data(0x22, 0x23, DataType.Int));
+		put(SaveField.picSlot1, new Data(0x37, 0x38, DataType.Int));
+		put(SaveField.picSlot2, new Data(0x3B, 0x3C, DataType.Int));
+		put(SaveField.picSlot3, new Data(0x3F, 0x40, DataType.Int));
+		put(SaveField.picSlot4, new Data(0x43, 0x44, DataType.Int));
+		put(SaveField.picSlot5, new Data(0x47, 0x48, DataType.Int));
+		put(SaveField.picSlot6, new Data(0x4B, 0x4C, DataType.Int));
+		put(SaveField.picSlot7, new Data(0x4F, 0x50, DataType.Int));
+		put(SaveField.nameString, new Data(0x64, 0x84, DataType.String));
+		put(SaveField.systemSaveFlag, new Data(0x86, 0x87, DataType.Boolean));
+		put(SaveField.ngPlusFlag, new Data(0x87, 0x88, DataType.Boolean));
+		put(SaveField.saveImage, new Data(0xE0, 0x9580, DataType.TPL));
 
 		// FLAG
-		put("scenarioNum", new Data(0xA0B2, 0xA0B4, DataType.Int));
+		put(SaveField.scenarioNum, new Data(0xA0B2, 0xA0B4, DataType.Int));
 
 		// GAME
-		put("mapNum", new Data(0xB261, 0xB264, DataType.Int));
-		put("mapNum2", new Data(0xB264, 0xB268, DataType.String));
-		put("player1", new Data(0xD1FE, 0xD200, DataType.Int));
-		put("player2", new Data(0xD202, 0xD204, DataType.Int));
-		put("player3", new Data(0xD206, 0xD208, DataType.Int));
-		put("player4", new Data(0xD20A, 0xD20C, DataType.Int));
-		put("player5", new Data(0xD20E, 0xD210, DataType.Int));
-		put("player6", new Data(0xD212, 0xD214, DataType.Int));
-		put("player7", new Data(0xD216, 0xD218, DataType.Int));
-		put("shulkLevel", new Data(0xF8D0, 0xF8D4, DataType.Int));
-		put("reynLevel", new Data(0xFBD4, 0xFBD8, DataType.Int));
-		put("fioraLevel", new Data(0xFEC8, 0xFECC, DataType.Int));
-		put("dunbanLevel", new Data(0x101DC, 0x101E0, DataType.Int));
-		put("sharlaLevel", new Data(0x104E0, 0x104E4, DataType.Int));
-		put("rikiLevel", new Data(0x107E4, 0x107E8, DataType.Int));
-		put("meliaLevel", new Data(0x10AE8, 0x10AEC, DataType.Int));
-		put("sevenLevel", new Data(0x10DEC, 0x10DF0, DataType.Int));
-		put("dicksonLevel", new Data(0x110F0, 0x110F4, DataType.Int));
-		put("mumkharLevel", new Data(0x113F4, 0x113F8, DataType.Int));
-		put("alvisLevel", new Data(0x116F8, 0x116FC, DataType.Int));
-		put("prologueDunbanLevel", new Data(0x119FC, 0x11A00, DataType.Int));
+		put(SaveField.mapNum, new Data(0xB261, 0xB264, DataType.Int));
+		put(SaveField.mapNum2, new Data(0xB264, 0xB268, DataType.String));
+		put(SaveField.player1, new Data(0xD1FE, 0xD200, DataType.Int));
+		put(SaveField.player2, new Data(0xD202, 0xD204, DataType.Int));
+		put(SaveField.player3, new Data(0xD206, 0xD208, DataType.Int));
+		put(SaveField.player4, new Data(0xD20A, 0xD20C, DataType.Int));
+		put(SaveField.player5, new Data(0xD20E, 0xD210, DataType.Int));
+		put(SaveField.player6, new Data(0xD212, 0xD214, DataType.Int));
+		put(SaveField.player7, new Data(0xD216, 0xD218, DataType.Int));
+		put(SaveField.shulkLevel, new Data(0xF8D0, 0xF8D4, DataType.Int));
+		put(SaveField.reynLevel, new Data(0xFBD4, 0xFBD8, DataType.Int));
+		put(SaveField.fioraLevel, new Data(0xFEC8, 0xFECC, DataType.Int));
+		put(SaveField.dunbanLevel, new Data(0x101DC, 0x101E0, DataType.Int));
+		put(SaveField.sharlaLevel, new Data(0x104E0, 0x104E4, DataType.Int));
+		put(SaveField.rikiLevel, new Data(0x107E4, 0x107E8, DataType.Int));
+		put(SaveField.meliaLevel, new Data(0x10AE8, 0x10AEC, DataType.Int));
+		put(SaveField.sevenLevel, new Data(0x10DEC, 0x10DF0, DataType.Int));
+		put(SaveField.dicksonLevel, new Data(0x110F0, 0x110F4, DataType.Int));
+		put(SaveField.mumkharLevel, new Data(0x113F4, 0x113F8, DataType.Int));
+		put(SaveField.alvisLevel, new Data(0x116F8, 0x116FC, DataType.Int));
+		put(SaveField.prologueDunbanLevel, new Data(0x119FC, 0x11A00, DataType.Int));
 
 		// TIME
-		put("playTime", new Data(0x11EB0, 0x11EB4, DataType.Int));
-		put("numDays", new Data(0x11EB8, 0x11EBA, DataType.Int));
-		put("dayTime", new Data(0x11EB4, 0x11EB8, DataType.Float));
-		put("numYears", new Data(0x11EBA, 0x11EBC, DataType.Int));
+		put(SaveField.playTime, new Data(0x11EB0, 0x11EB4, DataType.Int));
+		put(SaveField.numDays, new Data(0x11EB8, 0x11EBA, DataType.Int));
+		put(SaveField.dayTime, new Data(0x11EB4, 0x11EB8, DataType.Float));
+		put(SaveField.numYears, new Data(0x11EBA, 0x11EBC, DataType.Int));
 
 		// PCPM
-		put("p1x", new Data(0x11EE0, 0x11EE4, DataType.Float));
-		put("p1y", new Data(0x11EE4, 0x11EE8, DataType.Float));
-		put("p1z", new Data(0x11EE8, 0x11EEC, DataType.Float));
-		put("p1Angle", new Data(0x11EEC, 0x11EF0, DataType.Float));
-		put("p2x", new Data(0x11EF0, 0x11EF4, DataType.Float));
-		put("p2y", new Data(0x11EF4, 0x11EF8, DataType.Float));
-		put("p2z", new Data(0x11EF8, 0x11EFC, DataType.Float));
-		put("p2Angle", new Data(0x11EFC, 0x11F00, DataType.Float));
-		put("p3x", new Data(0x11F00, 0x11F04, DataType.Float));
-		put("p3y", new Data(0x11F04, 0x11F08, DataType.Float));
-		put("p3z", new Data(0x11F08, 0x11F0C, DataType.Float));
-		put("p3Angle", new Data(0x11F0C, 0x11F10, DataType.Float));
+		put(SaveField.p1x, new Data(0x11EE0, 0x11EE4, DataType.Float));
+		put(SaveField.p1y, new Data(0x11EE4, 0x11EE8, DataType.Float));
+		put(SaveField.p1z, new Data(0x11EE8, 0x11EEC, DataType.Float));
+		put(SaveField.p1Angle, new Data(0x11EEC, 0x11EF0, DataType.Float));
+		put(SaveField.p2x, new Data(0x11EF0, 0x11EF4, DataType.Float));
+		put(SaveField.p2y, new Data(0x11EF4, 0x11EF8, DataType.Float));
+		put(SaveField.p2z, new Data(0x11EF8, 0x11EFC, DataType.Float));
+		put(SaveField.p2Angle, new Data(0x11EFC, 0x11F00, DataType.Float));
+		put(SaveField.p3x, new Data(0x11F00, 0x11F04, DataType.Float));
+		put(SaveField.p3y, new Data(0x11F04, 0x11F08, DataType.Float));
+		put(SaveField.p3z, new Data(0x11F08, 0x11F0C, DataType.Float));
+		put(SaveField.p3Angle, new Data(0x11F0C, 0x11F10, DataType.Float));
 
 		// CAMD
-		put("cameraPosVertical", new Data(0x11F30, 0x11F34, DataType.Float));
-		put("cameraPosHorizontal", new Data(0x11F34, 0x11F38, DataType.Float));
-		put("cameraDistance", new Data(0x11F3C, 0x11F40, DataType.Float));
+		put(SaveField.cameraPosVertical, new Data(0x11F30, 0x11F34, DataType.Float));
+		put(SaveField.cameraPosHorizontal, new Data(0x11F34, 0x11F38, DataType.Float));
+		put(SaveField.cameraDistance, new Data(0x11F3C, 0x11F40, DataType.Float));
 
 		// ITEM
-		put("money", new Data(0x2404A, 0x2404C, DataType.Int));
+		put(SaveField.money, new Data(0x2404A, 0x2404C, DataType.Int));
 
 		// WTHR
 
 		// SNDS
 
 		// MINE
-		put("mineArray", new Array(0x240F0, 0x24474, new Element[] {
-				new Element("mineCooldown", 2, DataType.Int),
-				new Element("numHarvests", 1, DataType.Int),
-				new Element("minelistID", 1, DataType.Int),
-				new Element("mapID", 2, DataType.Int)
+		put(SaveField.mineArray, new Array(0x240F0, 0x24474, new Element[] {
+				new Element(ArrayField.mineCooldown, 2, DataType.Int),
+				new Element(ArrayField.numHarvests, 1, DataType.Int),
+				new Element(ArrayField.minelistID, 1, DataType.Int),
+				new Element(ArrayField.mapID, 2, DataType.Int)
 		}));
 
 		// TBOX
-		put("numBoxes", new Data(0x244A3, 0x244A4, DataType.Int));
-		put("boxArray", new Array(0x244A4, 0x246F4, new Element[] {
-				new Element("blank", 4, DataType.Int),
-				new Element("xBox", 4, DataType.Float),
-				new Element("yBox", 4, DataType.Float),
-				new Element("zBox", 4, DataType.Float),
-				new Element("boxAngle", 4, DataType.Float),
-				new Element("boxRank", 4, DataType.Int),
-				new Element("boxDropTable", 2, DataType.Int),
-				new Element("boxMapID", 2, DataType.Int)
+		put(SaveField.numBoxes, new Data(0x244A3, 0x244A4, DataType.Int));
+		put(SaveField.boxArray, new Array(0x244A4, 0x246F4, new Element[] {
+				new Element(ArrayField.blank, 4, DataType.Int),
+				new Element(ArrayField.xBox, 4, DataType.Float),
+				new Element(ArrayField.yBox, 4, DataType.Float),
+				new Element(ArrayField.zBox, 4, DataType.Float),
+				new Element(ArrayField.boxAngle, 4, DataType.Float),
+				new Element(ArrayField.boxRank, 4, DataType.Int),
+				new Element(ArrayField.boxDropTable, 2, DataType.Int),
+				new Element(ArrayField.boxMapID, 2, DataType.Int)
 		}));
 
 		// OPTD
-		put("nonInvertedYAxis", new Data(0x248B0, 0x248B1, DataType.Boolean));
-		put("nonInvertedXAxis", new Data(0x248B1, 0x248B2, DataType.Boolean));
-		put("yAxisSpeed", new Data(0x248B2, 0x248B3, DataType.Int));
-		put("xAxisSpeed", new Data(0x248B3, 0x248B4, DataType.Int));
-		put("zoomSpeed", new Data(0x248B4, 0x248B5, DataType.Int));
-		put("pointOfView", new Data(0x248B5, 0x248B6, DataType.Int));
-		put("angleCorrection", new Data(0x248B6, 0x248B7, DataType.Boolean));
-		put("battleCamera", new Data(0x248B7, 0x248B8, DataType.Boolean));
-		put("gamma", new Data(0x248BF, 0x248C0, DataType.Int));
-		put("minimap", new Data(0x248C0, 0x248C1, DataType.Boolean));
-		put("rotate", new Data(0x248C1, 0x248C2, DataType.Boolean));
-		put("jpVoice", new Data(0x248CC, 0x248CD, DataType.Boolean));
-		put("showControls", new Data(0x248D0, 0x248D1, DataType.Boolean));
-		put("showArtDescriptions", new Data(0x248D1, 0x248D2, DataType.Boolean));
-		put("showBuffDebuffInfoEveryTime", new Data(0x248D2, 0x248D3, DataType.Boolean));
-		put("showEnemyIcons", new Data(0x248D3, 0x248D4, DataType.Boolean));
-		put("showBuffDebuffIndicator", new Data(0x248D4, 0x248D5, DataType.Boolean));
-		put("showDestinationMarker", new Data(0x248D5, 0x248D6, DataType.Boolean));
-		put("autoEventScrolling", new Data(0x248E0, 0x248E1, DataType.Boolean));
-		put("fastDialogueText", new Data(0x248E1, 0x248E2, DataType.Boolean));
-		put("showSubtitles", new Data(0x248E2, 0x248E3, DataType.Boolean));
+		put(SaveField.nonInvertedYAxis, new Data(0x248B0, 0x248B1, DataType.Boolean));
+		put(SaveField.nonInvertedXAxis, new Data(0x248B1, 0x248B2, DataType.Boolean));
+		put(SaveField.yAxisSpeed, new Data(0x248B2, 0x248B3, DataType.Int));
+		put(SaveField.xAxisSpeed, new Data(0x248B3, 0x248B4, DataType.Int));
+		put(SaveField.zoomSpeed, new Data(0x248B4, 0x248B5, DataType.Int));
+		put(SaveField.pointOfView, new Data(0x248B5, 0x248B6, DataType.Int));
+		put(SaveField.angleCorrection, new Data(0x248B6, 0x248B7, DataType.Boolean));
+		put(SaveField.battleCamera, new Data(0x248B7, 0x248B8, DataType.Boolean));
+		put(SaveField.gamma, new Data(0x248BF, 0x248C0, DataType.Int));
+		put(SaveField.minimap, new Data(0x248C0, 0x248C1, DataType.Boolean));
+		put(SaveField.rotate, new Data(0x248C1, 0x248C2, DataType.Boolean));
+		put(SaveField.jpVoice, new Data(0x248CC, 0x248CD, DataType.Boolean));
+		put(SaveField.showControls, new Data(0x248D0, 0x248D1, DataType.Boolean));
+		put(SaveField.showArtDescriptions, new Data(0x248D1, 0x248D2, DataType.Boolean));
+		put(SaveField.showBuffDebuffInfoEveryTime, new Data(0x248D2, 0x248D3, DataType.Boolean));
+		put(SaveField.showEnemyIcons, new Data(0x248D3, 0x248D4, DataType.Boolean));
+		put(SaveField.showBuffDebuffIndicator, new Data(0x248D4, 0x248D5, DataType.Boolean));
+		put(SaveField.showDestinationMarker, new Data(0x248D5, 0x248D6, DataType.Boolean));
+		put(SaveField.autoEventScrolling, new Data(0x248E0, 0x248E1, DataType.Boolean));
+		put(SaveField.fastDialogueText, new Data(0x248E1, 0x248E2, DataType.Boolean));
+		put(SaveField.showSubtitles, new Data(0x248E2, 0x248E3, DataType.Boolean));
 	}});
 
 	public SaveFile(String fileLocation) throws Exception {
@@ -276,7 +278,7 @@ public class SaveFile {
 	 *  @param internalColName - the column name to get the data from
 	 *  @return - the transformed data
 	 */
-	public Object getArrayAt(Array arr, int index, String internalColName) {
+	public Object getArrayAt(Array arr, int index, ArrayField internalColName) {
 		Data data = arr.get(index, internalColName);
 		return getData(data);
 	}	
@@ -341,7 +343,7 @@ public class SaveFile {
 	 *  
 	 *  Note: Arrays go through setArrayData
 	 */
-	public void setData(String fieldName, Object value) throws Exception {
+	public void setData(SaveField fieldName, Object value) throws Exception {
 		Pointer pdata = SaveFile.DataMap.get(fieldName);
 		if (pdata instanceof Data) setData((Data) pdata, value);
 		else throw new Exception("Cannot use setData() directly with Array, use setArrayData()");
@@ -355,7 +357,7 @@ public class SaveFile {
 	 *  @param value - value to set Array to (arr[index][colName] = value)
 	 *  @throws Exception
 	 */
-	public void setArrayData(Array arr, int index, String internalColName, Object value) throws Exception {
+	public void setArrayData(Array arr, int index, ArrayField internalColName, Object value) throws Exception {
 		// get Data object corresponding to parameters
 		Data data = arr.get(index, internalColName);
 		
@@ -371,7 +373,7 @@ public class SaveFile {
 	 * @param value - value to set Array to (arr[index][colName] = value)
 	 * @throws Exception
 	 */
-	public void setArrayData(String fieldName, int index, String internalColName, Object value) throws Exception {
+	public void setArrayData(SaveField fieldName, int index, ArrayField internalColName, Object value) throws Exception {
 		Pointer pdata = SaveFile.DataMap.get(fieldName);
 		if (pdata instanceof Array) setArrayData((Array) pdata, index, internalColName, value);
 		else throw new Exception("Cannot use setArrayData() for non-array data, use setData()");
