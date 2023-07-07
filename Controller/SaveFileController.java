@@ -5,7 +5,6 @@ import com.google.common.collect.HashBiMap;
 
 import Model.Array;
 import Model.Data;
-import Model.DataType;
 import Model.Pointer;
 import Model.SaveFile;
 import View.GUI;
@@ -38,101 +37,76 @@ public class SaveFileController implements ViewListener {
 		if (loading) return; // ignore ViewEvents when loading
 		if (this.gettingArrayData) return; // if the controller is currently getting array data, then an erroneous ViewEvent is called from an actionListener, which causes inf loop
 
-		System.out.println("View Event: " + e.getType() + " ; " + e.getParam());
+		System.out.println("View Event: " + e);
 		switch (e.getType()) {
-		case ViewEvent.OPEN_FILE: // File is opened, need to initialize new saveFile Object, and send data from model to view
-			String fileLocation = e.getParam();
+		case OPEN_FILE: // File is opened, need to initialize new saveFile Object, and send data from model to view
 			this.loading = true;
-			openFile(fileLocation);
+			openFile(e.getFileLocation());
 			this.loading = false;
 			break;
-		case ViewEvent.SAVE_FILE: // Model is saved to actual save file, assume that model and view are synced
+		case SAVE_FILE: // Model is saved to actual save file, assume that model and view are synced
 			saveFile();
 			break;
-		case ViewEvent.GET_DATA: // sends data (from model) associated with name to view (gui)
-			String name = e.getParam();
-			loadValue(name);
+		case GET_DATA: // sends data (from model) associated with name to view (gui)
+			loadValue(e.getSaveField());
 			break;
-		case ViewEvent.GET_ARRAY_DATA:
-			String[] args = e.getParam().split(":"); // args.length=3
+		case GET_ARRAY_DATA:
 			this.gettingArrayData = true;
-			loadArrayValue(args[0], Integer.parseInt(args[1]), args[2]);
+			loadArrayValue(e.getSaveField(), e.getIndex(), e.getArrayField());
 			this.gettingArrayData = false;
 			break;
-		case ViewEvent.SET_DATA: // sends value of field in gui to save in model
-			args = e.getParam().split(":"); // args.length=2
-			name = args[0];
-
-			Data data = (Data) SaveFile.DataMap.get(name);
-
-			String value = null;
-			try {
-				value = args[1];
-			}
-			catch (ArrayIndexOutOfBoundsException oobe) {
-				if (((Data) data).getType() == DataType.String) { // if data type is string, then value = ""
-					value = "";
-				}
-				else { // data is null, reload value
-					viewEventOccurred(new ViewEvent(this, ViewEvent.GET_DATA, name));
-					return;
-				}
-			}
+		case SET_DATA: // sends value of field in gui to save in model
+			SaveField saveField = e.getSaveField();
+			Data data = (Data) SaveFile.DataMap.get(saveField);
+			String value = e.getValue();
 
 			// transform the value if needed
-			value = viewToModel(name, value);
+			value = viewToModel(saveField, value);
 
 			// convert to correct type
 			Object convertedValue = convertToType(data, value);
-			if (convertedValue == null) viewEventOccurred(new ViewEvent(this, ViewEvent.GET_DATA, name));
 
-			try {
-				saveFile.setData(data, convertedValue);
-			}
-			catch (Exception e1){
-				e1.printStackTrace();
+			if (convertedValue != null) { // don't set a null value, reload saved value back into the JComponent
+				try {
+					saveFile.setData(data, convertedValue);
+				}
+				catch (Exception e1){
+					e1.printStackTrace();
+				}
 			}
 
-			// once the value is saved into the Model, retrieve the value from the model to show in View component
-			viewEventOccurred(new ViewEvent(this, ViewEvent.GET_DATA, name));
+			// once the value is saved into the Model, retrieve the value from the model to show in View component (or if convertedVal is null, reload the saved value)
+			viewEventOccurred(new ViewEvent(this, ViewEvent.EventType.GET_DATA, null, saveField, null, null, value));
 
 			break;
-		case ViewEvent.SET_ARRAY_DATA:
-			args = e.getParam().split(":"); // args.length=4
-			String arrName = args[0];
-			int index = Integer.parseInt(args[1]);
-			String internalColName = args[2];
-
-			value = null;
-			try {
-				value = args[3];
-			}
-			catch (ArrayIndexOutOfBoundsException oobe) { // value is empty (i.e. ""), then reload it
-				viewEventOccurred(new ViewEvent(this, ViewEvent.GET_ARRAY_DATA, arrName + ":" + index + ":" + internalColName));
-				return;
-			}
+		case SET_ARRAY_DATA:
+			SaveField arrName = e.getSaveField();
+			int index = e.getIndex();
+			ArrayField colName = e.getArrayField();
+			value = e.getValue();
 
 			// transform value if needed
-			value = viewToModel(internalColName, value);
+			value = viewToModel(colName, value);
 
 			// convert to correct type
-			data = ((Array) SaveFile.DataMap.get(arrName)).get(index, internalColName);
+			data = ((Array) SaveFile.DataMap.get(arrName)).get(index, colName);
 			convertedValue = convertToType(data, value);
-			if (convertedValue == null) viewEventOccurred(new ViewEvent(this, ViewEvent.GET_ARRAY_DATA, arrName + ":" + index + ":" + internalColName));
 
-			try {
-				saveFile.setArrayData(arrName, index, internalColName, convertedValue);
-			} catch (Exception e1) {
-				e1.printStackTrace();
+			if (convertedValue != null) {
+				try {
+					saveFile.setArrayData(arrName, index, colName, convertedValue);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
 			}
 
 			// once the value is saved into the Model, retrieve the value from the model to show in View component
-			viewEventOccurred(new ViewEvent(this, ViewEvent.GET_ARRAY_DATA, arrName + ":" + index + ":" + internalColName));
+			viewEventOccurred(new ViewEvent(this, ViewEvent.EventType.GET_ARRAY_DATA, null, arrName, colName, index, value));
 
 			break;
 		}
 	}
-	
+
 	/**
 	 * Instantiates a new SaveFile, enables user input fields, and shows a success message
 	 * Shows an error message if something goes wrong upon instantiation
@@ -151,7 +125,7 @@ public class SaveFileController implements ViewListener {
 		gui.setEnabled(true); // enable fields when a file is opened
 		gui.showMessage("Sucessfully Opened File");
 	}
-	
+
 	/**
 	 * Ensures there is a <code>SaveFile</code> before saving, calls saveToFile to save to the actual file, and then shows a success message
 	 * Called when this <code>SaveFileController</code> receives a <code>ViewEvent</code> to save a file
@@ -163,17 +137,17 @@ public class SaveFileController implements ViewListener {
 			gui.showMessage(result);
 		}
 	}
-	
+
 	/**
 	 * Gets the value of fieldName from saveFile, and tells the GUI to load this value into the component associated with fieldName
 	 *  
 	 * @param fieldName the name of a <code>Data</code> object from SaveFile.DataMap
 	 */
-	private void loadValue(String fieldName) {
+	private void loadValue(SaveField fieldName) {
 		// get value of fieldName from saveFile
 		Pointer p = SaveFile.DataMap.get(fieldName);
 		if (p instanceof Array) return; // cannot load Array values here, use loadArrayValue 
-		
+
 		// get value from saveFile
 		Object value = saveFile.getData((Data) p);
 
@@ -184,29 +158,29 @@ public class SaveFileController implements ViewListener {
 		gui.setValue(fieldName, value);
 
 	}
-	
+
 	/**
 	 * Gets all values from the saveFile and tells the GUI to load them
 	 */
 	private void loadValues() {
 		// iterate through SaveFile.DataMap to set all values
-		for (String key : SaveFile.DataMap.keySet()) {
-			Pointer p = SaveFile.DataMap.get(key);
+		for (SaveField sfname : SaveFile.DataMap.keySet()) {
+			Pointer p = SaveFile.DataMap.get(sfname);
 
-			if (SaveFile.DataMap.get(key) instanceof Array) {
+			if (SaveFile.DataMap.get(sfname) instanceof Array) {
 				Array arr = (Array) p;
-				for (String internalColName : arr.getColNames()) {
+				for (ArrayField internalColName : arr.getColNames()) {
 					for (int index = 0; index < arr.getRowLength(); index++) {
-						loadArrayValue(key, index, internalColName);
+						loadArrayValue(sfname, index, internalColName);
 					}
 				}
 			}
 			else { // instanceof Data
-				loadValue(key);
+				loadValue(sfname);
 			}
 		}
 	}
-	
+
 	/**
 	 * Gets the value of the array at index and internalColName, and tells the GUI to load this value into the associated table cell
 	 *  
@@ -214,7 +188,7 @@ public class SaveFileController implements ViewListener {
 	 * @param index the index of Array to get value from
 	 * @param internalColName an internal column name of Array to get value from
 	 */
-	private void loadArrayValue(String arrName, int index, String internalColName) {
+	private void loadArrayValue(SaveField arrName, int index, ArrayField internalColName) {
 		// make sure arrName is a valid array
 		Pointer arrP = SaveFile.DataMap.get(arrName);
 		if (arrP instanceof Data) return; // don't allow data that's not Array
@@ -228,7 +202,7 @@ public class SaveFileController implements ViewListener {
 		// tell GUI to load value
 		gui.setArrayValue(arrName, index, internalColName, value);
 	}
-	
+
 	/**
 	 * Converts the value passed in to it's respective data type
 	 * 
@@ -237,6 +211,7 @@ public class SaveFileController implements ViewListener {
 	 * @return the value converted into the correct data type
 	 */
 	private Object convertToType(Data data, String value) {
+		if (value == null) return null;
 		switch (((Data) data).getType()) {
 		case Boolean:
 			return (value.equals("true") ? true : false);
@@ -392,26 +367,33 @@ public class SaveFileController implements ViewListener {
 	 * @param modelVal the Model value to be translated
 	 * @return the translated View value if there is a translation, otherwise it's unchanged from parameter modelVal
 	 */
-	public Object modelToView(String fieldName, Object modelVal) {
+	@SuppressWarnings("incomplete-switch") // only some SaveField enums need to be translated, so we don't need a complete switch
+	public Object modelToView(SaveField fieldName, Object modelVal) {
 		switch (fieldName) {
-		case "picSlot1": case "picSlot2": case "picSlot3": case "picSlot4": case "picSlot5": case "picSlot6": case "picSlot7": 
-		case "player1": case "player2": case "player3": case "player4": case "player5": case "player6": case "player7":
+		case picSlot1: case picSlot2: case picSlot3: case picSlot4: case picSlot5: case picSlot6: case picSlot7: 
+		case player1: case player2: case player3: case player4: case player5: case player6: case player7:
 			modelVal = pclist.inverse().get(modelVal.toString());
 			break;
-		case "mapNum":
+		case mapNum:
 			modelVal = modelToViewSeparatedMapID((int) modelVal);
 			break;
-		case "mapNum2":
+		case mapNum2:
 			modelVal = mapValues.inverse().get(modelVal.toString());
 			break;
-		case "mapID": case "boxMapID": // array column name
+		case nonInvertedYAxis: case nonInvertedXAxis: // need to inverse these fields to have the 'Inverted' checkbox
+			modelVal = !((boolean) modelVal);
+		}
+		return modelVal;
+	}
+	@SuppressWarnings("incomplete-switch") // only some Array columns need to be translated, so we don't need a complete switch
+	public Object modelToView(ArrayField colName, Object modelVal) {
+		switch (colName) {
+		case mapID: case boxMapID: // array column name
 			modelVal = modelToViewMapID((int) modelVal);
 			break;
-		case "boxRank":
+		case boxRank:
 			modelVal = boxRankMap.inverse().get(modelVal.toString());
 			break;
-		case "nonInvertedYAxis": case "nonInvertedXAxis": // need to inverse these fields to have the 'Inverted' checkbox
-			modelVal = !((boolean) modelVal);
 		}
 		return modelVal;
 	}
@@ -423,26 +405,33 @@ public class SaveFileController implements ViewListener {
 	 * @param viewVal the View value to be translated
 	 * @return the translated Model value if there is a translation, otherwise unchanged from parameter viewVal
 	 */
-	public String viewToModel(String fieldName, String viewVal) {
+	@SuppressWarnings("incomplete-switch") // only some SaveField enums need to be translated, so we don't need a complete switch
+	public String viewToModel(SaveField fieldName, String viewVal) {
 		switch (fieldName) {
-		case "picSlot1": case "picSlot2": case "picSlot3": case "picSlot4": case "picSlot5": case "picSlot6": case "picSlot7":
-		case "player1": case "player2": case "player3": case "player4": case "player5": case "player6": case "player7":
+		case picSlot1: case picSlot2: case picSlot3: case picSlot4: case picSlot5: case picSlot6: case picSlot7:
+		case player1: case player2: case player3: case player4: case player5: case player6: case player7:
 			viewVal = pclist.get(viewVal);
 			break;
-		case "mapNum":
+		case mapNum:
 			viewVal = viewToModelSeparatedMapID(viewVal.toString());
 			break;
-		case "mapNum2":
+		case mapNum2:
 			viewVal = mapValues.get(viewVal);
 			break;
-		case "mapID": case "boxMapID": // array column name
+		case nonInvertedYAxis: case nonInvertedXAxis: // need to inverse these fields to have the 'Inverted' checkbox
+			viewVal = !((Boolean.parseBoolean(viewVal)))+"";
+		}
+		return viewVal;
+	}
+	@SuppressWarnings("incomplete-switch") // only some Array columns need to be translated, so we don't need a complete switch
+	public String viewToModel(ArrayField colName, String viewVal) {
+		switch (colName) {
+		case mapID: case boxMapID: // array column name
 			viewVal = viewToModelMapID(viewVal)+"";
 			break;
-		case "boxRank":
+		case boxRank:
 			viewVal = boxRankMap.get(viewVal);
 			break;
-		case "nonInvertedYAxis": case "nonInvertedXAxis": // need to inverse these fields to have the 'Inverted' checkbox
-			viewVal = !((Boolean.parseBoolean(viewVal)))+"";
 		}
 		return viewVal;
 	}
