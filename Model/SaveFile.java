@@ -181,7 +181,7 @@ public class SaveFile {
 	 *  @param x - location in saveFile
 	 *  @return - byte of the saveFile at x
 	 */
-	private byte getByteAt(int x) {
+	byte getByteAt(int x) {
 		return saveFile[x];
 	}
 
@@ -191,7 +191,7 @@ public class SaveFile {
 	 *  @param end - ending location in saveFile
 	 *  @return - bytes from start to end in an array
 	 */
-	private byte[] getBytesAt(int start, int end) {
+	byte[] getBytesAt(int start, int end) {
 		byte[] result = new byte[end-start];
 		for (int i = start; i < end; i++) {
 			result[i-start] = getByteAt(i);
@@ -204,7 +204,7 @@ public class SaveFile {
 	 *  @param p - the <code>Pointer<code> object
 	 *  @return - byte array representing the raw byte data from p
 	 */
-	private byte[] getRawData(Pointer p) {
+	byte[] getRawData(Pointer p) {
 		int[] location = p.getLocation();
 		return getBytesAt(location[0], location[1]);
 	}
@@ -280,8 +280,13 @@ public class SaveFile {
 	 */
 	public Object getArrayAt(Array arr, int index, ArrayField internalColName) {
 		Data data = arr.get(index, internalColName);
+		if (data == null) return null;
 		return getData(data);
-	}	
+	}
+	public Object getArrayAt(SaveField arr, int index, ArrayField internalColName) {
+		if (SaveFile.DataMap.get(arr) instanceof Data) return null;
+		return getArrayAt((Array) SaveFile.DataMap.get(arr), index, internalColName);
+	}
 
 	/**
 	 * 	Sets a <code>Data</code> object to the specified value, throwing an exception if the specified value is not the correct type
