@@ -35,7 +35,10 @@ import javax.swing.text.JTextComponent;
 
 import com.google.common.collect.HashBiMap;
 
+import Controller.ArrayField;
+import Controller.SaveField;
 import Controller.SaveFileController;
+import View.ViewEvent.EventType;
 
 /**
  *  GUI
@@ -61,14 +64,14 @@ public class GUI extends JFrame {
 	 *   
 	 *   (Internal component name -> JComponent)
 	 */
-	private HashBiMap<String, JComponent> componentMap = HashBiMap.create(new HashMap<String, JComponent>());
+	private HashBiMap<SaveField, JComponent> componentMap = HashBiMap.create(new HashMap<SaveField, JComponent>());
 
 	/**
 	 *  Maps array names to mappings of user-facing column names to internal column names
 	 *  
 	 *  (Array Name -> (User-facing column name -> Internal column name))
 	 */ 
-	private HashMap<String, HashBiMap<String, String>> columnMap = new HashMap<String, HashBiMap<String, String>>();
+	private HashMap<SaveField, HashBiMap<String, ArrayField>> columnMap = new HashMap<SaveField, HashBiMap<String, ArrayField>>();
 
 	/**
 	 *   User-facing Map names
@@ -101,7 +104,7 @@ public class GUI extends JFrame {
 		@Override
 		public void focusLost(FocusEvent e) {
 			JTextComponent src = (JTextComponent) e.getSource();
-			fireViewEvent(ViewEvent.SET_DATA, componentMap.inverse().get(src) + ":" + src.getText());
+			fireViewEvent(ViewEvent.EventType.SET_DATA, componentMap.inverse().get(src), src.getText());
 		}
 
 	};
@@ -132,7 +135,7 @@ public class GUI extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				if (fc.showOpenDialog(fc) == JFileChooser.APPROVE_OPTION) {
 					String fileLocation = fc.getSelectedFile().getAbsolutePath();
-					fireViewEvent(ViewEvent.OPEN_FILE, fileLocation);
+					fireViewEvent(ViewEvent.EventType.OPEN_FILE, fileLocation);
 				}
 			}
 
@@ -144,7 +147,7 @@ public class GUI extends JFrame {
 		JMenuItem save = new JMenuItem("Save");
 		save.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				fireViewEvent(ViewEvent.SAVE_FILE);
+				fireViewEvent(ViewEvent.EventType.SAVE_FILE, null);
 			}
 		});
 		fileMenu.add(save);
@@ -226,7 +229,7 @@ public class GUI extends JFrame {
 	 *  @param name the internal name of field
 	 *  @param value the value to load into the corresponding JComponenet
 	 */
-	public void setValue(String name, Object value) {
+	public void setValue(SaveField name, Object value) {
 		JComponent jc = componentMap.get(name);
 
 		if (jc == null) return; // invalid name, or name not mapped to component
@@ -234,7 +237,7 @@ public class GUI extends JFrame {
 		String[] temp = (jc.getClass().toString()).split("\\.");
 		String instance = temp[temp.length-1];
 
-		switch(instance) { // TODO: add more component types here as needed
+		switch(instance) { 
 		case "JTextField":
 			((JTextField) jc).setText(value.toString());
 			break;
@@ -268,7 +271,7 @@ public class GUI extends JFrame {
 	 * @param internalColName the internal column name to specify column in the Array
 	 * @param value what value to put into the Array at the specified index/internal column name
 	 */
-	public void setArrayValue(String arrName, int index, String internalColName, Object value) {
+	public void setArrayValue(SaveField arrName, int index, ArrayField internalColName, Object value) {
 		// get JTable from name
 		JTable table = (JTable) componentMap.get(arrName);
 		DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
@@ -297,7 +300,7 @@ public class GUI extends JFrame {
 	 *  @param b whether to enable all the JComponents mapped to a field
 	 */
 	public void setEnabled(boolean b) {
-		for (String key : componentMap.keySet()) {
+		for (SaveField key : componentMap.keySet()) {
 			componentMap.get(key).setEnabled(b);
 		}
 	}
@@ -309,7 +312,7 @@ public class GUI extends JFrame {
 	 *  @param tf the <code>JTextField</code> to associate with name
 	 *  @param df the DocumentFilter to use with the JTextField; use null to specify the default DocumentFilter
 	 */
-	public void setTextField(String name, JTextField tf, DocumentFilter df) {
+	public void setTextField(SaveField name, JTextField tf, DocumentFilter df) {
 		componentMap.put(name, tf);
 
 		if (df != null) {
@@ -326,14 +329,14 @@ public class GUI extends JFrame {
 	 *  @param name the name of the field (comes from SaveFile.DataMap)
 	 *  @param cb the <code>JCheckBox</code> to associate with name
 	 */
-	public void setCheckBox(String name, JCheckBox cb) {
+	public void setCheckBox(SaveField name, JCheckBox cb) {
 		componentMap.put(name, cb);
 
 		cb.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				fireViewEvent(ViewEvent.SET_DATA, name + ":" + (cb.isSelected() ? "true" : "false"));
+				fireViewEvent(ViewEvent.EventType.SET_DATA, name, (cb.isSelected() ? "true" : "false"));
 			}
 
 		});
@@ -345,14 +348,14 @@ public class GUI extends JFrame {
 	 *  @param name the name of the field (comes from SaveFile.DataMap)
 	 *  @param cb the <code>JComboBox</code> to associate with name
 	 */
-	public void setComboBox(String name, JComboBox<?> cb) {
+	public void setComboBox(SaveField name, JComboBox<?> cb) {
 		componentMap.put(name, cb);
 
 		cb.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				fireViewEvent(ViewEvent.SET_DATA, name + ":" + cb.getSelectedItem());
+				fireViewEvent(ViewEvent.EventType.SET_DATA, name, cb.getSelectedItem());
 			}
 
 		});
@@ -364,14 +367,14 @@ public class GUI extends JFrame {
 	 *  @param name the name of the field (comes from SaveFile.DataMap)
 	 *  @param s the <code>JSlider</code> to associate with name
 	 */
-	public void setSlider(String name, JSlider s) {
+	public void setSlider(SaveField name, JSlider s) {
 		componentMap.put(name, s);
 		
 		s.addChangeListener(new ChangeListener() {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				if (!s.getValueIsAdjusting()) fireViewEvent(ViewEvent.SET_DATA, name + ":" + s.getValue());
+				if (!s.getValueIsAdjusting()) fireViewEvent(ViewEvent.EventType.SET_DATA, name, s.getValue());;
 			}
 			
 		});
@@ -383,13 +386,13 @@ public class GUI extends JFrame {
 	 *  @param name the name of the field (comes from SaveFile.DataMap)
 	 *  @param cb the <code>BooleanButtonGroup</code> to associate with name
 	 */
-	public void setBooleanButtonGroups(String name, BooleanButtonGroup bbg) {
+	public void setBooleanButtonGroups(SaveField name, BooleanButtonGroup bbg) {
 		componentMap.put(name, new JBooleanButtonGroup(bbg));
 		bbg.getTrueButton().addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				fireViewEvent(ViewEvent.SET_DATA, name + ":true");
+				fireViewEvent(ViewEvent.EventType.SET_DATA, name, "true");
 			}
 
 		});
@@ -397,7 +400,7 @@ public class GUI extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				fireViewEvent(ViewEvent.SET_DATA, name + ":false");
+				fireViewEvent(ViewEvent.EventType.SET_DATA, name, "false");
 			}
 
 		});
@@ -410,14 +413,14 @@ public class GUI extends JFrame {
 	 * 	@param columnMaps the array of column names (from SaveFile.DataMap) in order they should appear in JTable
 	 * 	@param jc the JTable object to associate with name
 	 */
-	public void setArray(String arrName, String[] columnMaps, JTable jc) {
+	public void setArray(SaveField arrName, ArrayField[] columnMaps, JTable jc) {
 		if (jc.getColumnCount() != columnMaps.length) return;
 
 		componentMap.put(arrName, jc);
 
 		// map column names
 		for (int i = 0; i < columnMaps.length; i++) {
-			HashBiMap<String, String> map;
+			HashBiMap<String, ArrayField> map;
 			if (columnMap.containsKey(arrName)) { // add to existing HashBiMap
 				map = columnMap.get(arrName);
 			}
@@ -437,7 +440,7 @@ public class GUI extends JFrame {
 
 				// column number determines the dataName, row number determines the index
 				if (jc.getModel().getValueAt(row, col) == null) return;
-				fireViewEvent(ViewEvent.SET_ARRAY_DATA, arrName + ":" + row + ":" + columnMaps[col] + ":" + jc.getModel().getValueAt(row, col)); // arrName:index:colName:value
+				fireViewEvent(ViewEvent.EventType.SET_ARRAY_DATA, arrName, columnMaps[col], row, jc.getModel().getValueAt(row, col).toString());
 			}
 
 		});
@@ -455,17 +458,18 @@ public class GUI extends JFrame {
 	 *  @param type the type of <code>ViewEvent</code>
 	 *  @param param the parameters for the <code>ViewEvent</code>
 	 */
-	private void fireViewEvent(int type, String param) { 
-		this.viewListener.viewEventOccurred(new ViewEvent(this, type, param));
-	}
 	
-	/**
-	 *  fires a <code>ViewEvent</code>, without parameters, for <code>SaveFileController</code> to handle
-	 * 
-	 *  @param type the type of <code>ViewEvent</code>
-	 */
-	private void fireViewEvent(int type) {
-		this.viewListener.viewEventOccurred(new ViewEvent(this, type));
+	private void fireViewEvent(EventType type, String fileLocation) { 
+		this.viewListener.viewEventOccurred(new ViewEvent(this, type, fileLocation, null, null, null, null));
+	}
+	private void fireViewEvent(EventType type, SaveField sf, ArrayField af, Integer index, String value) { 
+		this.viewListener.viewEventOccurred(new ViewEvent(this, type, null, sf, af, index, value));
+	}
+	private void fireViewEvent(EventType type, SaveField sf, String value) { 
+		this.viewListener.viewEventOccurred(new ViewEvent(this, type, null, sf, null, null, value));
+	}
+	private void fireViewEvent(EventType type, SaveField sf, Object value) { 
+		this.viewListener.viewEventOccurred(new ViewEvent(this, type, null, sf, null, null, value.toString()));
 	}
 
 }

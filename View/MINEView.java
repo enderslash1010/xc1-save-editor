@@ -10,6 +10,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.text.AbstractDocument;
 
+import Controller.ArrayField;
+import Controller.SaveField;
 import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")
@@ -58,7 +60,7 @@ public class MINEView extends JPanel {
 		doc.setDocumentFilter(gui.uint2);
 		cooldownColumn.setCellEditor(new DefaultCellEditor(cooldownTextField));
 		
-		gui.setArray("mineArray", new String[] {"mapID", "minelistID", "numHarvests", "mineCooldown"}, MINETable);
+		gui.setArray(SaveField.mineArray, new ArrayField[] {ArrayField.mapID, ArrayField.minelistID, ArrayField.numHarvests, ArrayField.mineCooldown}, MINETable);
 
 		JScrollPane scrollPane = new JScrollPane(MINETable);
 		this.add(scrollPane, "cell 0 0,grow");

@@ -3,6 +3,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
+import Controller.SaveField;
 import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")
@@ -23,7 +24,7 @@ public class FLAGView extends JPanel {
 
 		FLAGScenarioNum = new JTextField();
 		FLAGScenarioNum.setColumns(10);
-		gui.setTextField("scenarioNum", FLAGScenarioNum, gui.uint2);
+		gui.setTextField(SaveField.scenarioNum, FLAGScenarioNum, gui.uint2);
 		FLAGScenarioPanel.add(FLAGScenarioNum, "cell 0 0,growx");
 	}
 	

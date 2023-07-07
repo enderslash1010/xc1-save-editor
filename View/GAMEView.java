@@ -4,6 +4,7 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+import Controller.SaveField;
 import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")
@@ -29,7 +30,7 @@ public class GAMEView extends JPanel {
 
 		DefaultComboBoxModel<String> GAMEMapComboBoxModel = new DefaultComboBoxModel<String>(GAMEMaps);
 		JComboBox<String> GAMEMapComboBox = new JComboBox<String>(GAMEMapComboBoxModel);
-		gui.setComboBox("mapNum", GAMEMapComboBox);
+		gui.setComboBox(SaveField.mapNum, GAMEMapComboBox);
 		GAMEMapPanel.add(GAMEMapComboBox, "cell 0 0,growx,aligny top");
 
 		DefaultComboBoxModel<String> GAMEMap2ComboBoxModel = new DefaultComboBoxModel<String>(GAMEMaps);
@@ -39,7 +40,7 @@ public class GAMEView extends JPanel {
 		this.add(GAMEMap2Panel, "cell 1 0,grow");
 		GAMEMap2Panel.setLayout(new MigLayout("fillx", "10[]10", "10[]10"));
 		JComboBox<String> GAMEMap2ComboBox = new JComboBox<String>(GAMEMap2ComboBoxModel);
-		gui.setComboBox("mapNum2", GAMEMap2ComboBox);
+		gui.setComboBox(SaveField.mapNum2, GAMEMap2ComboBox);
 		GAMEMap2Panel.add(GAMEMap2ComboBox, "cell 0 0,growx,aligny top");
 
 		String[] pclist = new String[] {" ", "Shulk", "Reyn", "Fiora", "Dunban", "Sharla", "Riki", "Melia", "Seven", "Dickson", "Mumkhar", "Alvis", "Prologue Dunban", "Other Dunban"};
@@ -63,13 +64,13 @@ public class GAMEView extends JPanel {
 		this.add(GAMECurrentPlayersPanel, "cell 0 1 2 1,growx,aligny top");
 		GAMECurrentPlayersPanel.setLayout(new MigLayout("fillx", "10[]10[]10", "10[]10"));
 		JComboBox<String> GAMEPlayer1ComboBox = new JComboBox<String>(GAMEPlayer1ComboBoxModel);
-		gui.setComboBox("player1", GAMEPlayer1ComboBox);
+		gui.setComboBox(SaveField.player1, GAMEPlayer1ComboBox);
 		GAMECurrentPlayersPanel.add(GAMEPlayer1ComboBox, "cell 0 0,growx,aligny top");
 		JComboBox<String> GAMEPlayer2ComboBox = new JComboBox<String>(GAMEPlayer2ComboBoxModel);
-		gui.setComboBox("player2", GAMEPlayer2ComboBox);
+		gui.setComboBox(SaveField.player2, GAMEPlayer2ComboBox);
 		GAMECurrentPlayersPanel.add(GAMEPlayer2ComboBox, "cell 1 0,growx,aligny top");
 		JComboBox<String> GAMEPlayer3ComboBox = new JComboBox<String>(GAMEPlayer3ComboBoxModel);
-		gui.setComboBox("player3", GAMEPlayer3ComboBox);
+		gui.setComboBox(SaveField.player3, GAMEPlayer3ComboBox);
 		GAMECurrentPlayersPanel.add(GAMEPlayer3ComboBox, "cell 3 0,growx,aligny top");
 
 		JPanel GAMEReservePlayerPanel = new JPanel();
@@ -77,16 +78,16 @@ public class GAMEView extends JPanel {
 		this.add(GAMEReservePlayerPanel, "cell 0 2 2 1,growx,aligny top");
 		GAMEReservePlayerPanel.setLayout(new MigLayout("fillx", "10[]10[]10", "10[]10"));
 		JComboBox<String> GAMEPlayer4ComboBox = new JComboBox<String>(GAMEPlayer4ComboBoxModel);
-		gui.setComboBox("player4", GAMEPlayer4ComboBox);
+		gui.setComboBox(SaveField.player4, GAMEPlayer4ComboBox);
 		GAMEReservePlayerPanel.add(GAMEPlayer4ComboBox, "cell 0 0,growx,aligny top");
 		JComboBox<String> GAMEPlayer5ComboBox = new JComboBox<String>(GAMEPlayer5ComboBoxModel);
-		gui.setComboBox("player5", GAMEPlayer5ComboBox);
+		gui.setComboBox(SaveField.player5, GAMEPlayer5ComboBox);
 		GAMEReservePlayerPanel.add(GAMEPlayer5ComboBox, "cell 1 0,growx,aligny top");
 		JComboBox<String> GAMEPlayer6ComboBox = new JComboBox<String>(GAMEPlayer6ComboBoxModel);
-		gui.setComboBox("player6", GAMEPlayer6ComboBox);
+		gui.setComboBox(SaveField.player6, GAMEPlayer6ComboBox);
 		GAMEReservePlayerPanel.add(GAMEPlayer6ComboBox, "cell 3 0,growx,aligny top");
 		JComboBox<String> GAMEPlayer7ComboBox = new JComboBox<String>(GAMEPlayer7ComboBoxModel);
-		gui.setComboBox("player7", GAMEPlayer7ComboBox);
+		gui.setComboBox(SaveField.player7, GAMEPlayer7ComboBox);
 		GAMEReservePlayerPanel.add(GAMEPlayer7ComboBox, "cell 4 0,growx,aligny top");
 	}
 	
