@@ -47,7 +47,7 @@ public class ViewEvent extends EventObject {
 		super(source);
 		
 		// verify parameters based on the type
-		switch (this.type) {
+		switch (type) {
 		case GET_ARRAY_DATA:
 			if (sf == null || index == null || af == null) throw new IllegalArgumentException();
 			break;
