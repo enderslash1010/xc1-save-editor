@@ -1,5 +1,5 @@
 # xc1-save-editor
-Save Editor for Xenoblade Chronicles for the Wii
+Save Editor for Xenoblade Chronicles for the Wii  
 For NTSC/PAL, might not work with JP version
 
 ## Opening a Save File
