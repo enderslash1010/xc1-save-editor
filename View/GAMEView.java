@@ -15,25 +15,18 @@ public class GAMEView extends JPanel {
 	public GAMEView(GUI gui) {
 		this.gui = gui;
 		this.setLayout(new MigLayout("fillx", "10[]10[]", "10[]10[]10[]"));
-		
-		String[] GAMEMaps = {"Title Screen (ma0000)", "Colony 9 (ma0101)", "Tephra Cave (ma0201)", "Bionis' Leg (ma0301)", "Colony 6 (ma0401)",
-				"Ether Mine (ma0402)", "Satorl Marsh (ma0501)", "Makna Forest (ma0601)", "Frontier Village (ma0701)", "Bionis' Shoulder (ma0801)",
-				"High Entia Tomb (ma0901)", "Eryth Sea (ma1001)", "Alcamoth (ma1101)", "Prison Island (ma1201)", "Prison Island 2 (ma1202)",
-				"Valak Mountain (ma1301)", "Sword Valley (ma1401)", "Galahad Fortress (ma1501)", "Fallen Arm (ma1601)", "Beta Fallen Arm (ma1602)",
-				"Mechonis Field (ma1701)", "Agniratha (ma1901)", "Central Factory (ma2001)", "Bionis' Interior (ma2101)", "Memory Space (ma2201)",
-				"Mechonis Core (ma2301)", "Junks (ma2401)", "Post-Game Colony 9 (ma0102)"};
-		
+	
 		JPanel GAMEMapPanel = new JPanel();
 		GAMEMapPanel.setBorder(new TitledBorder(null, "Map", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		this.add(GAMEMapPanel, "cell 0 0,growx,aligny top");
 		GAMEMapPanel.setLayout(new MigLayout("fillx", "10[]10", "10[]10"));
 
-		DefaultComboBoxModel<String> GAMEMapComboBoxModel = new DefaultComboBoxModel<String>(GAMEMaps);
+		DefaultComboBoxModel<String> GAMEMapComboBoxModel = new DefaultComboBoxModel<String>((gui.Maps));
 		JComboBox<String> GAMEMapComboBox = new JComboBox<String>(GAMEMapComboBoxModel);
 		gui.setComboBox(SaveField.mapNum, GAMEMapComboBox);
 		GAMEMapPanel.add(GAMEMapComboBox, "cell 0 0,growx,aligny top");
 
-		DefaultComboBoxModel<String> GAMEMap2ComboBoxModel = new DefaultComboBoxModel<String>(GAMEMaps);
+		DefaultComboBoxModel<String> GAMEMap2ComboBoxModel = new DefaultComboBoxModel<String>(gui.Maps);
 
 		JPanel GAMEMap2Panel = new JPanel();
 		GAMEMap2Panel.setBorder(new TitledBorder(null, "Map (for NPCs and music)", TitledBorder.LEADING, TitledBorder.TOP, null, null));

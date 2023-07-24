@@ -15,7 +15,7 @@ public class ITEMView extends JPanel {
 	
 	public ITEMView(GUI gui) {
 		this.gui = gui;
-		this.setLayout(new MigLayout("", "10[]10", "10[]"));
+		this.setLayout(new MigLayout("fillx", "[]10[]10[]10[]10[]", "[]10[]10[]"));
 		
 		JPanel ITEMMoneyPanel = new JPanel();
 		ITEMMoneyPanel.setBorder(new TitledBorder(null, "Money", TitledBorder.LEADING, TitledBorder.TOP, null, null));

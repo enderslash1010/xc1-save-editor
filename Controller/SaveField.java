@@ -41,7 +41,7 @@ public enum SaveField {
 	money,
 	
 	// WTHR
-	
+	weatherReroll, weatherMap, foregroundWeather, weatherUnknown1, backgroundWeather, weatherUnknown2,
 	
 	// SNDS
 	

@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import javax.swing.JCheckBox;
@@ -31,7 +32,6 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.DocumentFilter;
-import javax.swing.text.JTextComponent;
 
 import com.google.common.collect.HashBiMap;
 
@@ -58,13 +58,26 @@ public class GUI extends JFrame {
 
 	private JLabel currFile;
 
+	private THUMView THUMPanel;
+	private FLAGView FLAGPanel;
+	private GAMEView GAMEPanel;
+	private TIMEView TIMEPanel;
+	private PCPMView PCPMPanel;
+	private CAMDView CAMDPanel;
+	private ITEMView ITEMPanel;
+	private WTHRView WTHRPanel;
+	//private SNDSView SNDSPanel;
+	private MINEView MINEPanel;
+	private TBOXView TBOXPanel;
+	private OPTDView OPTDPanel;
+
 	/**
 	 *   Contains mappings for names to GUI components
 	 *   Used to 'talk' with the controller/know what component the controller is 'talking' about
 	 *   
 	 *   (Internal component name -> JComponent)
 	 */
-	private HashBiMap<SaveField, JComponent> componentMap = HashBiMap.create(new HashMap<SaveField, JComponent>());
+	private HashMap<SaveField, JComponent> componentMap = new HashMap<SaveField, JComponent>();
 
 	/**
 	 *  Maps array names to mappings of user-facing column names to internal column names
@@ -78,7 +91,7 @@ public class GUI extends JFrame {
 	 */
 	public final String[] Maps = {"Title Screen (ma0000)", "Colony 9 (ma0101)", "Tephra Cave (ma0201)", "Bionis' Leg (ma0301)", "Colony 6 (ma0401)",
 			"Ether Mine (ma0402)", "Satorl Marsh (ma0501)", "Makna Forest (ma0601)", "Frontier Village (ma0701)", "Bionis' Shoulder (ma0801)",
-			"High Entia Tomb (ma0901)", "Eryth Sea (ma1001)", "Alcamoth (ma1101)", "Prison Island (ma1201)", "Prison Island 2 (ma1202)",
+			"High Entia Tomb (ma0901)", "Eryth Sea (ma1001)", "Alcamoth (ma1101)", "Prison Island (ma1201)", "Fallen Prison Island (ma1202)",
 			"Valak Mountain (ma1301)", "Sword Valley (ma1401)", "Galahad Fortress (ma1501)", "Fallen Arm (ma1601)", "Beta Fallen Arm (ma1602)",
 			"Mechonis Field (ma1701)", "Agniratha (ma1901)", "Central Factory (ma2001)", "Bionis' Interior (ma2101)", "Memory Space (ma2201)",
 			"Mechonis Core (ma2301)", "Junks (ma2401)", "Post-Game Colony 9 (ma0102)"};
@@ -90,24 +103,6 @@ public class GUI extends JFrame {
 	public UIntFilter uint1 = new UIntFilter(1);
 	public UIntFilter uint2 = new UIntFilter(2);
 	public UIntFilter uint4 = new UIntFilter(4);
-
-	/**
-	 *   focusListener saves the value in the <code>JTextComponent</code> when focus is lost
-	 *   JTextComponents in JTables don't need a focus listener, since setting data is handled in actionListener
-	 */
-	public FocusListener focusListener = new FocusListener() {
-
-		@Override
-		public void focusGained(FocusEvent e) { // do nothing
-		}
-
-		@Override
-		public void focusLost(FocusEvent e) {
-			JTextComponent src = (JTextComponent) e.getSource();
-			fireViewEvent(ViewEvent.EventType.SET_DATA, componentMap.inverse().get(src), src.getText());
-		}
-
-	};
 
 	/**
 	 * GUI Constructor
@@ -158,42 +153,42 @@ public class GUI extends JFrame {
 		JPanel contentPanel = new JPanel(new BorderLayout());
 		JTabbedPane tabbedPane = new JTabbedPane();
 		contentPanel.add(tabbedPane);
-		
+
 		// Save file partition views for each tab in JTabbedPane
-		JPanel THUMPanel = new THUMView(this);
+		THUMPanel = new THUMView(this);
 		tabbedPane.addTab("Save Thumnail", null, THUMPanel, null);
 
-		JPanel FLAGPanel = new FLAGView(this);
+		FLAGPanel = new FLAGView(this);
 		tabbedPane.addTab("Flag", null, FLAGPanel, null);
 
-		JPanel GAMEPanel = new GAMEView(this);
+		GAMEPanel = new GAMEView(this);
 		tabbedPane.addTab("Game", null, GAMEPanel, null);
 
-		JPanel TIMEPanel = new TIMEView(this);
+		TIMEPanel = new TIMEView(this);
 		tabbedPane.addTab("Time", null, TIMEPanel, null);
 
-		JPanel PCPMPanel = new PCPMView(this);
+		PCPMPanel = new PCPMView(this);
 		tabbedPane.addTab("Position", null, PCPMPanel, null);
 
-		JPanel CAMDPanel = new CAMDView(this);
+		CAMDPanel = new CAMDView(this);
 		tabbedPane.addTab("Camera", null, CAMDPanel, null);
 
-		JPanel ITEMPanel = new ITEMView(this);
+		ITEMPanel = new ITEMView(this);
 		tabbedPane.addTab("Items", null, ITEMPanel, null);
 
-//		JPanel WTHRPanel = new WTHRView(this);
-//		tabbedPane.addTab("Weather", null, WTHRPanel, null);
+		WTHRPanel = new WTHRView(this);
+		tabbedPane.addTab("Weather", null, WTHRPanel, null);
 
-//		JPanel SNDSPanel = new SNDSView(this);
+//		SNDSPanel = new SNDSView(this);
 //		tabbedPane.addTab("SNDS", null, SNDSPanel, null);
 
-		JPanel MINEPanel = new MINEView(this);
+		MINEPanel = new MINEView(this);
 		tabbedPane.addTab("Ether Mines", null, MINEPanel, null);
 
-		JPanel TBOXPanel = new TBOXView(this);
+		TBOXPanel = new TBOXView(this);
 		tabbedPane.addTab("Treasure Boxes", null, TBOXPanel, null);
 
-		JPanel OPTDPanel = new OPTDView(this);
+		OPTDPanel = new OPTDView(this);
 		tabbedPane.addTab("Options", null, OPTDPanel, null);
 
 
@@ -237,7 +232,7 @@ public class GUI extends JFrame {
 		String[] temp = (jc.getClass().toString()).split("\\.");
 		String instance = temp[temp.length-1];
 
-		switch(instance) { 
+		switch (instance) { 
 		case "JTextField":
 			((JTextField) jc).setText(value.toString());
 			break;
@@ -260,6 +255,17 @@ public class GUI extends JFrame {
 			((JSlider) jc).setValue((int) value);
 			break;
 		}
+	}
+
+	public String getValue(SaveField name) {
+		JComponent jc = componentMap.get(name);
+
+		if (jc instanceof JTextField) return ((JTextField) jc).getText();
+		else if (jc instanceof JCheckBox) return ((JCheckBox) jc).isSelected() + "";
+		else if (jc instanceof JComboBox<?>) return ((JComboBox<?>) jc).getSelectedItem().toString();
+		else if (jc instanceof JBooleanButtonGroup) return ((JBooleanButtonGroup) jc).isSelected() + "";
+		else if (jc instanceof JSlider) return ((JSlider) jc).getValue() + "";
+		else return null;
 	}
 
 	/**
@@ -320,7 +326,18 @@ public class GUI extends JFrame {
 			doc.setDocumentFilter(df); // set document filter
 		}
 
-		tf.addFocusListener(focusListener);
+		tf.addFocusListener(new FocusListener() {
+
+			@Override
+			public void focusGained(FocusEvent e) { // do nothing
+			}
+
+			@Override
+			public void focusLost(FocusEvent e) {
+				fireViewEvent(ViewEvent.EventType.SET_DATA, name, tf.getText());
+			}
+			
+		});
 	}
 
 	/**
@@ -351,16 +368,32 @@ public class GUI extends JFrame {
 	public void setComboBox(SaveField name, JComboBox<?> cb) {
 		componentMap.put(name, cb);
 
-		cb.addActionListener(new ActionListener() {
+		if (name == SaveField.mapNum) { // mapNum determines weather options
+			cb.addActionListener(new ActionListener() {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				fireViewEvent(ViewEvent.EventType.SET_DATA, name, cb.getSelectedItem());
-			}
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					fireViewEvent(ViewEvent.EventType.SET_DATA, name, cb.getSelectedItem());
+					int mapIndex = Arrays.asList(Maps).indexOf(cb.getSelectedItem());
+					WTHRPanel.setWeatherOptions(mapIndex);
+				}
 
-		});
+			});
+		}
+		else {
+
+			cb.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					System.out.println(e);
+					fireViewEvent(ViewEvent.EventType.SET_DATA, name, cb.getSelectedItem());
+				}
+
+			});
+		}
 	}
-	
+
 	/**
 	 *  associates a field name with a <code>JSlider</code> by adding the association to componentMap
 	 * 
@@ -369,14 +402,14 @@ public class GUI extends JFrame {
 	 */
 	public void setSlider(SaveField name, JSlider s) {
 		componentMap.put(name, s);
-		
+
 		s.addChangeListener(new ChangeListener() {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				if (!s.getValueIsAdjusting()) fireViewEvent(ViewEvent.EventType.SET_DATA, name, s.getValue());;
 			}
-			
+
 		});
 	}
 
@@ -458,7 +491,7 @@ public class GUI extends JFrame {
 	 *  @param type the type of <code>ViewEvent</code>
 	 *  @param param the parameters for the <code>ViewEvent</code>
 	 */
-	
+
 	private void fireViewEvent(EventType type, String fileLocation) { 
 		this.viewListener.viewEventOccurred(new ViewEvent(this, type, fileLocation, null, null, null, null));
 	}
