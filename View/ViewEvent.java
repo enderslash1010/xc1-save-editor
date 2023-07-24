@@ -108,13 +108,14 @@ public class ViewEvent extends EventObject {
 	public String getValue() { return this.value; }
 
 	@Override
-	public String toString() {
-		return "[" + this.type + 
-				", fileLocation = " + this.fileLocation +
-				", SaveField = " + this.sf +
-				", ArrayField = " + this.af +
-				", Index = " + this.index +
-				", Value = " + this.value + "]";
+	public String toString() {		
+		String result = "[" + this.type;
+		if (fileLocation != null) result += ", fileLocation = " + fileLocation;
+		if (sf != null) result += ", SaveField = " + sf;
+		if (af != null) result += ", ArrayField = " + af;
+		if (index != null) result += ", Index = " + index;
+		if (value != null) result += ", Value = " + value;
+		return result + "]";
 	}
 
 }
