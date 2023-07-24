@@ -65,18 +65,20 @@ public class SaveFileController implements ViewListener {
 
 			// convert to correct type
 			Object convertedValue = convertToType(data, value);
-
-			if (convertedValue != null) { // don't set a null value, reload saved value back into the JComponent
-				try {
-					saveFile.setData(data, convertedValue);
-				}
-				catch (Exception e1){
-					e1.printStackTrace();
-				}
+			
+			try {
+				saveFile.setData(data, convertedValue);
 			}
+			catch (IllegalArgumentException e1) {
+				e1.printStackTrace();
+			}
+			catch (NullPointerException e2) {
+				System.out.print("Reloading saved value: ");
+			}
+			
 
 			// once the value is saved into the Model, retrieve the value from the model to show in View component (or if convertedVal is null, reload the saved value)
-			viewEventOccurred(new ViewEvent(this, ViewEvent.EventType.GET_DATA, null, saveField, null, null, value));
+			viewEventOccurred(new ViewEvent(this, ViewEvent.EventType.GET_DATA, null, saveField, null, null, null));
 
 			break;
 		case SET_ARRAY_DATA:
@@ -92,16 +94,17 @@ public class SaveFileController implements ViewListener {
 			data = ((Array) SaveFile.DataMap.get(arrName)).get(index, colName);
 			convertedValue = convertToType(data, value);
 
-			if (convertedValue != null) {
-				try {
-					saveFile.setArrayData(arrName, index, colName, convertedValue);
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
+			try {
+				saveFile.setArrayData(arrName, index, colName, convertedValue);
+			} catch (IllegalArgumentException e1) {
+				e1.printStackTrace();
+			}
+			catch (NullPointerException e2) {
+				System.out.print("Reloading saved value: ");
 			}
 
 			// once the value is saved into the Model, retrieve the value from the model to show in View component
-			viewEventOccurred(new ViewEvent(this, ViewEvent.EventType.GET_ARRAY_DATA, null, arrName, colName, index, value));
+			viewEventOccurred(new ViewEvent(this, ViewEvent.EventType.GET_ARRAY_DATA, null, arrName, colName, index, null));
 
 			break;
 		}
@@ -145,11 +148,10 @@ public class SaveFileController implements ViewListener {
 	 */
 	private void loadValue(SaveField fieldName) {
 		// get value of fieldName from saveFile
-		Pointer p = SaveFile.DataMap.get(fieldName);
-		if (p instanceof Array) return; // cannot load Array values here, use loadArrayValue 
+		Data p = (Data) SaveFile.DataMap.get(fieldName);
 
 		// get value from saveFile
-		Object value = saveFile.getData((Data) p);
+		Object value = saveFile.getData(p);
 
 		// transform data to user-readable value if needed
 		value = modelToView(fieldName, value);
@@ -165,6 +167,8 @@ public class SaveFileController implements ViewListener {
 	private void loadValues() {
 		// iterate through SaveFile.DataMap to set all values
 		for (SaveField sfname : SaveFile.DataMap.keySet()) {
+			if (sfname == SaveField.foregroundWeather || sfname == SaveField.backgroundWeather) continue; // foreground/background weather is loaded with the map
+			
 			Pointer p = SaveFile.DataMap.get(sfname);
 
 			if (SaveFile.DataMap.get(sfname) instanceof Array) {
@@ -177,6 +181,10 @@ public class SaveFileController implements ViewListener {
 			}
 			else { // instanceof Data
 				loadValue(sfname);
+				if (sfname == SaveField.mapNum) { // foreground/background weather is loaded with the map
+					loadValue(SaveField.foregroundWeather);
+					loadValue(SaveField.backgroundWeather);
+				}
 			}
 		}
 	}
@@ -225,13 +233,15 @@ public class SaveFileController implements ViewListener {
 					return Float.parseFloat(value);
 				}
 			}
-			catch (NumberFormatException nfe) { // not a real float, load value back
+			catch (NumberFormatException nfe) {
+				break; // not a real float, load value back
 			}
 		case Int:
 			try {
 				return Integer.parseInt(value);
 			}
 			catch (NumberFormatException nfe) { // not an int (i.e. "" or "-"), load value back
+				break;
 			}
 		case String:
 			return value;
@@ -248,12 +258,19 @@ public class SaveFileController implements ViewListener {
 	 * @param mapID the View value for mapNum
 	 * @return the converted Model value for separated mapNum
 	 */
-	public String viewToModelSeparatedMapID(String mapID) {
+	public String viewToModelSeparatedMapID(String mapID, boolean reversed) {
 		mapID = mapValues.get(mapID);
 		int result = 0;
-		result += Integer.parseInt(mapID.substring(2));
-		result = result << 16;
-		result += Integer.parseInt(mapID.substring(0, 2));
+		if (reversed) {
+			result += Integer.parseInt(mapID.substring(2));
+			result = result << 16;
+			result += Integer.parseInt(mapID.substring(0, 2));
+		}
+		else {
+			result += Integer.parseInt(mapID.substring(0, 2));
+			result = result << 16;
+			result += Integer.parseInt(mapID.substring(2));
+		}
 		return result + "";
 	}
 
@@ -263,11 +280,14 @@ public class SaveFileController implements ViewListener {
 	 * @param mapID the Model value for separated mapNum
 	 * @return the converted View value for mapNum
 	 */
-	public String modelToViewSeparatedMapID(int mapID) {
-		int first = (mapID % 256);
-		int second = (mapID >> 16);
-
-		String temp = String.format("%02d%02d", first, second);
+	public String modelToViewSeparatedMapID(int mapID, boolean reversed) {
+		int first = (mapID >> 16);
+		int second = (mapID % 256);
+		
+		String temp;
+		if (reversed) temp = String.format("%02d%02d", second, first);
+		else temp = String.format("%02d%02d", first, second);
+		
 		return mapValues.inverse().get(temp);
 	}
 
@@ -337,7 +357,7 @@ public class SaveFileController implements ViewListener {
 		put("Eryth Sea (ma1001)", "1001");
 		put("Alcamoth (ma1101)", "1101");
 		put("Prison Island (ma1201)", "1201");
-		put("Prison Island 2 (ma1202)", "1202");
+		put("Fallen Prison Island (ma1202)", "1202");
 		put("Valak Mountain (ma1301)", "1301");
 		put("Sword Valley (ma1401)", "1401");
 		put("Galahad Fortress (ma1501)", "1501");
@@ -359,6 +379,20 @@ public class SaveFileController implements ViewListener {
 		put("Rare", "2"); 
 		put("Super", "3");
 	}});
+	
+	final HashBiMap<String, String> foregroundWeatherValues = HashBiMap.create(new HashMap<String, String>() {{
+		put("Clear", "1");
+		put("Rain", "2");
+		put("Storm", "3");
+		put("Snow", "4");
+		put("Blizzard", "5");
+		put("Heatwave", "6");
+		put("Dense Fog", "9");
+		put("Sandstorm", "10");
+		put("Shooting Stars", "11");
+		put("Slumber", "12");
+		put("Rebirth", "14");
+	}});
 
 	/**
 	 * Translates model values to view (user-facing) values
@@ -369,33 +403,71 @@ public class SaveFileController implements ViewListener {
 	 */
 	@SuppressWarnings("incomplete-switch") // only some SaveField enums need to be translated, so we don't need a complete switch
 	public Object modelToView(SaveField fieldName, Object modelVal) {
+		Object viewVal = modelVal;
 		switch (fieldName) {
 		case picSlot1: case picSlot2: case picSlot3: case picSlot4: case picSlot5: case picSlot6: case picSlot7: 
 		case player1: case player2: case player3: case player4: case player5: case player6: case player7:
-			modelVal = pclist.inverse().get(modelVal.toString());
+			viewVal = pclist.inverse().get(modelVal.toString());
 			break;
 		case mapNum:
-			modelVal = modelToViewSeparatedMapID((int) modelVal);
+			viewVal = modelToViewSeparatedMapID((int) modelVal, true);
 			break;
 		case mapNum2:
-			modelVal = mapValues.inverse().get(modelVal.toString());
+			viewVal = mapValues.inverse().get(modelVal.toString());
+			break;
+		case weatherMap:
+			viewVal = modelToViewSeparatedMapID((int) modelVal, false);
 			break;
 		case nonInvertedYAxis: case nonInvertedXAxis: // need to inverse these fields to have the 'Inverted' checkbox
-			modelVal = !((boolean) modelVal);
+			viewVal = !((boolean) modelVal);
+			break;
+		case foregroundWeather:
+			viewVal = foregroundWeatherValues.inverse().get(modelVal.toString());
+			break;
+		case backgroundWeather:
+			String map = gui.getValue(SaveField.mapNum);
+			int intModelVal = (int) modelVal;
+			
+			if (intModelVal == 0) { // Clear
+				viewVal = "Clear";
+			}
+			else if (map.equals("Makna Forest (ma0601)")) {
+				if (intModelVal == 1) viewVal = "Heatwave";
+				else viewVal = "Rain";
+			}
+			else if (map.equals("Eryth Sea (ma1001)") || map.equals("Alcamoth (ma1101)") || map.equals("Prison Island (ma1201)")) {
+				if (intModelVal == 1) viewVal = "Storm";
+				else viewVal = "Shooting Stars";
+			}
+			else if (map.equals("Satorl Marsh (ma0501)")) viewVal = "Dense Fog";
+			else if (map.equals("Bionis' Interior (ma2101)")) viewVal = "Slumber";
+			else if (map.equals("Valak Mountain (ma1301)")) {
+				if (intModelVal == 1) viewVal = "Snow";
+				else viewVal = "Blizzard";
+			}
+			else if (map.equals("Sword Valley (ma1401)")) viewVal = "Sandstorm";
+			else if (map.equals("Mechonis Core (ma2301)")) viewVal = "Rebirth";
+			else {
+				if (intModelVal == 1) viewVal = "Rain";
+				else viewVal = "Storm";
+			}
+			break;
 		}
-		return modelVal;
+		if (viewVal == null) return modelVal; // if Data is set outside this save editor, then some variables may be set to unmapped values; In that case, return modelVal
+		return viewVal;
 	}
 	@SuppressWarnings("incomplete-switch") // only some Array columns need to be translated, so we don't need a complete switch
 	public Object modelToView(ArrayField colName, Object modelVal) {
+		Object viewVal = modelVal;
 		switch (colName) {
 		case mapID: case boxMapID: // array column name
-			modelVal = modelToViewMapID((int) modelVal);
+			viewVal = modelToViewMapID((int) modelVal);
 			break;
 		case boxRank:
-			modelVal = boxRankMap.inverse().get(modelVal.toString());
+			viewVal = boxRankMap.inverse().get(modelVal.toString());
 			break;
 		}
-		return modelVal;
+		return viewVal;
 	}
 
 	/**
@@ -407,33 +479,69 @@ public class SaveFileController implements ViewListener {
 	 */
 	@SuppressWarnings("incomplete-switch") // only some SaveField enums need to be translated, so we don't need a complete switch
 	public String viewToModel(SaveField fieldName, String viewVal) {
+		String modelVal = viewVal;
 		switch (fieldName) {
 		case picSlot1: case picSlot2: case picSlot3: case picSlot4: case picSlot5: case picSlot6: case picSlot7:
 		case player1: case player2: case player3: case player4: case player5: case player6: case player7:
-			viewVal = pclist.get(viewVal);
+			modelVal = pclist.get(viewVal);
 			break;
 		case mapNum:
-			viewVal = viewToModelSeparatedMapID(viewVal.toString());
+			modelVal = viewToModelSeparatedMapID(viewVal.toString(), true);
 			break;
 		case mapNum2:
-			viewVal = mapValues.get(viewVal);
+			modelVal = mapValues.get(viewVal);
+			break;
+		case weatherMap:
+			modelVal = viewToModelSeparatedMapID(viewVal.toString(), false);
 			break;
 		case nonInvertedYAxis: case nonInvertedXAxis: // need to inverse these fields to have the 'Inverted' checkbox
-			viewVal = !((Boolean.parseBoolean(viewVal)))+"";
+			modelVal = !((Boolean.parseBoolean(viewVal)))+"";
+		case foregroundWeather:
+			modelVal = foregroundWeatherValues.get(viewVal);
+			break;
+		case backgroundWeather:
+			switch (viewVal) {
+			case "Clear": 
+				modelVal = "0"; 
+				break;
+			case "Slumber":
+			case "Heatwave":
+			case "Snow":
+			case "Rebirth":
+			case "Sandstorm":
+				modelVal = "1";
+				break;
+			case "Dense Fog": 
+			case "Shooting Stars":
+			case "Blizzard":
+				modelVal = "2";
+				break;
+			case "Rain":
+				if (gui.getValue(SaveField.mapNum).equals("Makna Forest (ma0601)")) modelVal = "2"; // the only map where rain is 2
+				else modelVal = "1";
+				break;
+			case "Storm":
+				String map = gui.getValue(SaveField.mapNum);
+				if (map.equals("Eryth Sea (ma1001)") || map.equals("Alcamoth (ma1101)") || map.equals("Prison Island (ma1201)")) modelVal = "1";
+				else modelVal = "2";
+				break;
+			}
+			break;
 		}
-		return viewVal;
+		return modelVal;
 	}
 	@SuppressWarnings("incomplete-switch") // only some Array columns need to be translated, so we don't need a complete switch
 	public String viewToModel(ArrayField colName, String viewVal) {
+		String modelVal = viewVal;
 		switch (colName) {
 		case mapID: case boxMapID: // array column name
-			viewVal = viewToModelMapID(viewVal)+"";
+			modelVal = viewToModelMapID(viewVal)+"";
 			break;
 		case boxRank:
-			viewVal = boxRankMap.get(viewVal);
+			modelVal = boxRankMap.get(viewVal);
 			break;
 		}
-		return viewVal;
+		return modelVal;
 	}
 
 }
