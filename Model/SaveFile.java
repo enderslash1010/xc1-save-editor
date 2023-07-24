@@ -122,7 +122,13 @@ public class SaveFile {
 		put(SaveField.money, new Data(0x2404A, 0x2404C, DataType.Int));
 
 		// WTHR
-
+		put(SaveField.weatherReroll, new Data(0x24090, 0x24094, DataType.Float));
+		put(SaveField.weatherMap, new Data(0x24099, 0x2409C, DataType.Int));
+		put(SaveField.foregroundWeather, new Data(0x24094, 0x24096, DataType.Int));
+		put(SaveField.weatherUnknown1, new Data(0x24096, 0x24098, DataType.Int));
+		put(SaveField.backgroundWeather, new Data(0x2409D, 0x2409E, DataType.Int));
+		put(SaveField.weatherUnknown2, new Data(0x2409E, 0x240A0, DataType.Int));
+		
 		// SNDS
 
 		// MINE
@@ -292,30 +298,32 @@ public class SaveFile {
 	 * 	Sets a <code>Data</code> object to the specified value, throwing an exception if the specified value is not the correct type
 	 *  @param data - Data object to be set
 	 *  @param value - value to set Data object's value to
-	 *  @throws Exception
+	 *  @throws IllegalArgumentException if value is not the expected type dictated by data.getType
 	 *  
 	 *  Note: Arrays go through setArrayData
 	 */
-	public void setData(Data data, Object value) throws Exception {	
+	public void setData(Data data, Object value) throws IllegalArgumentException, NullPointerException {
+		if (value == null) throw new NullPointerException("value cannot be null");
+		
 		// check if type of Object value matches data.getType, throw exception if not
 		// transform Object value into a byte array
 		byte[] result = new byte[data.size()];
 
 		switch (((Data)data).getType()) {
 		case String:
-			if (!(value instanceof String)) throw new Exception("Expecting String, got " + value.getClass());
+			if (!(value instanceof String)) throw new IllegalArgumentException("Expecting String, got " + value.getClass());
 			for (int i = 0; i < ((String) value).length() && i < result.length; i++) {
 				result[i] = (byte) ((String) value).charAt(i);
 			}
 			break;
 		case Int:
-			if (!(Integer.class.isInstance(value))) throw new Exception("Expecting Integer, got " + value.getClass());
+			if (!(Integer.class.isInstance(value))) throw new IllegalArgumentException("Expecting Integer, got " + value.getClass());
 			for (int i = 0, shift = result.length*8 - 8; i < result.length && shift >= 0; i++, shift-=8) {
 				result[i] = (byte)(((int) value >> shift) & 0xFF);
 			}	
 			break;
 		case Float:
-			if (!(Float.class.isInstance(value))) throw new Exception("Expecting Float, got " + value.getClass());
+			if (!(Float.class.isInstance(value))) throw new IllegalArgumentException("Expecting Float, got " + value.getClass());
 			int bits = Float.floatToIntBits((float) value);
 			result[0] = (byte)(bits >> 24);
 			result[1] = (byte)(bits >> 16);
@@ -323,7 +331,7 @@ public class SaveFile {
 			result[3] = (byte)(bits);
 			break;
 		case Boolean:
-			if (!(Boolean.class.isInstance(value))) throw new Exception("Expecting Boolean, got " + value.getClass());
+			if (!(Boolean.class.isInstance(value))) throw new IllegalArgumentException("Expecting Boolean, got " + value.getClass());
 			if ((boolean) value) {
 				result[0] = 1;
 			}
@@ -344,14 +352,14 @@ public class SaveFile {
 	 * 	Sets a <code>Data</code> object to the specified value, throwing an exception if the specified value is not the correct type
 	 *  @param fieldName - field name of the Data object to be set
 	 *  @param value - value to set Data object's value to
-	 *  @throws Exception
+	 *  @throws IllegalArgumentException
 	 *  
 	 *  Note: Arrays go through setArrayData
 	 */
-	public void setData(SaveField fieldName, Object value) throws Exception {
+	public void setData(SaveField fieldName, Object value) throws IllegalArgumentException, NullPointerException {
 		Pointer pdata = SaveFile.DataMap.get(fieldName);
 		if (pdata instanceof Data) setData((Data) pdata, value);
-		else throw new Exception("Cannot use setData() directly with Array, use setArrayData()");
+		else throw new IllegalArgumentException("Cannot use setData() directly with Array, use setArrayData()");
 	}
 	
 	/**
@@ -362,7 +370,7 @@ public class SaveFile {
 	 *  @param value - value to set Array to (arr[index][colName] = value)
 	 *  @throws Exception
 	 */
-	public void setArrayData(Array arr, int index, ArrayField internalColName, Object value) throws Exception {
+	public void setArrayData(Array arr, int index, ArrayField internalColName, Object value) throws IllegalArgumentException, NullPointerException {
 		// get Data object corresponding to parameters
 		Data data = arr.get(index, internalColName);
 		
@@ -378,10 +386,10 @@ public class SaveFile {
 	 * @param value - value to set Array to (arr[index][colName] = value)
 	 * @throws Exception
 	 */
-	public void setArrayData(SaveField fieldName, int index, ArrayField internalColName, Object value) throws Exception {
+	public void setArrayData(SaveField fieldName, int index, ArrayField internalColName, Object value) throws IllegalArgumentException, NullPointerException {
 		Pointer pdata = SaveFile.DataMap.get(fieldName);
 		if (pdata instanceof Array) setArrayData((Array) pdata, index, internalColName, value);
-		else throw new Exception("Cannot use setArrayData() for non-array data, use setData()");
+		else throw new IllegalArgumentException("Cannot use setArrayData() for non-array data, use setData()");
 	}
 
 	/**
