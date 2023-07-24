@@ -30,4 +30,6 @@ public class JBooleanButtonGroup extends JComponent {
 		bbg.setBoolean(b);
 	}
 	
+	public boolean isSelected() { return bbg.getBoolean(); }
+	
 }
