@@ -496,6 +496,7 @@ public class SaveFileController implements ViewListener {
 			break;
 		case nonInvertedYAxis: case nonInvertedXAxis: // need to inverse these fields to have the 'Inverted' checkbox
 			modelVal = !((Boolean.parseBoolean(viewVal)))+"";
+			break;
 		case foregroundWeather:
 			modelVal = foregroundWeatherValues.get(viewVal);
 			break;
