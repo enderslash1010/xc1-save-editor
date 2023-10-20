@@ -119,7 +119,7 @@ public class SaveFile {
 		put(SaveField.cameraDistance, new Data(0x11F3C, 0x11F40, DataType.Float));
 
 		// ITEM
-		put(SaveField.money, new Data(0x2404A, 0x2404C, DataType.Int));
+		put(SaveField.money, new Data(0x24048, 0x2404C, DataType.Int));
 
 		// WTHR
 		put(SaveField.weatherReroll, new Data(0x24090, 0x24094, DataType.Float));
