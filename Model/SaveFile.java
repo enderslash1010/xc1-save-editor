@@ -23,7 +23,7 @@ public class SaveFile {
 	private boolean dirty; // True if saveFile data structure is not same as save file on disk
 
 	private final static int[][] sections = 
-		{{0x20, 0x9CA0},     // THUM 0
+				{{0x20, 0x9CA0},     // THUM 0
 				{0xA030, 0xB244},    // FLAG 1
 				{0xB260, 0x11E88},   // GAME 2
 				{0x11EB0, 0x11EBC},  // TIME 3
@@ -120,6 +120,17 @@ public class SaveFile {
 
 		// ITEM
 		put(SaveField.money, new Data(0x2404A, 0x2404C, DataType.Int));
+		put(SaveField.gemArray, new Array(0x206D8, 0x21998, new Element[] {
+				new NullElement(2, 0xEA33), // Item ID from ITM_itemlist that doesn't affect gem attributes (just needs to be a gem type item)
+				new Element(ArrayField.gemID1, 2, DataType.Int),
+				new NullElement(1, 0),
+				new Element(ArrayField.gemInventorySlot, 1, DataType.Int),
+				new NullElement(1, 1), // Amount in stack for gems is always 1 (nothing changes for larger stacks)
+				new NullElement(1, 0),
+				// TODO: unknown (11 bits), value (11 bits), rank (3 bits), unknown (7 bits)
+				new Element(ArrayField.gemID2, 2, DataType.Int),
+				new NullElement(2, 0)
+		}));
 
 		// WTHR
 		put(SaveField.weatherReroll, new Data(0x24090, 0x24094, DataType.Float));
@@ -342,7 +353,6 @@ public class SaveFile {
 			break;
 		}
 
-
 		// put this array of bytes into the saveFile at location specified in data
 		setBytesAt(data.start, result);
 
@@ -394,12 +404,16 @@ public class SaveFile {
 
 	/**
 	 * 	Sets a byte of the save file
-	 *  @param x - location of byte
-	 *  @param b - new byte to set
+	 *  @param x location of byte
+	 *  @param b new byte to set
+	 *  @param mask bitmask of what bits to modify (0) and what bits to conserve their value (1); the bitmask AND'ed to the current value
 	 */
-	private void setByteAt(int x, byte b) {
-		if (saveFile[x] != b) dirty = true;
-		saveFile[x] = b;
+	private void setByteAt(int x, byte b, byte mask) {
+		byte newValue = (byte) ((saveFile[x] & mask) | b);
+		if (saveFile[x] != newValue) {
+			dirty = true;
+			saveFile[x] = newValue;
+		}
 	}
 
 	/**
@@ -409,7 +423,7 @@ public class SaveFile {
 	 */
 	private void setBytesAt(int x, byte[] b) {
 		for (int i = 0; i < b.length; i++) {
-			this.setByteAt(x+i, b[i]);
+			this.setByteAt(x+i, b[i], (byte) 0);
 		}
 	}
 	
