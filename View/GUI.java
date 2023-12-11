@@ -280,6 +280,8 @@ public class GUI extends JFrame {
 	public void setArrayValue(SaveField arrName, int index, ArrayField internalColName, Object value) {
 		// get JTable from name
 		JTable table = (JTable) componentMap.get(arrName);
+		if (table == null) return; // invalid name, or name not mapped to component
+		
 		DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
 
 		// determine row
