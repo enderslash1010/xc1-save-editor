@@ -38,7 +38,10 @@ public class Array extends Pointer {
 		this.colNames = new HashMap<ArrayField, Integer>();
 		for (int i = 0; i < this.entryOutline.length; i++) {
 			this.entrySize += entryOutline[i].size();
-			this.colNames.put(entryOutline[i].getName(), i);
+			
+			if (!(entryOutline[i] instanceof NullElement)) {
+				this.colNames.put(entryOutline[i].getName(), i);
+			}
 		}
 		
 		// Determine how many entries
