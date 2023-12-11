@@ -6,6 +6,9 @@ package Controller;
  * @author ender
  */
 public enum ArrayField {
+	// ITEM
+	gemID1, gemInventorySlot, gemUnk1, gemValue, gemRank, gemUnk2, gemID2, // gems
+	
 	// MINE
 	mineCooldown, numHarvests, minelistID, mapID,
 	

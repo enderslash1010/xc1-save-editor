@@ -39,6 +39,7 @@ public enum SaveField {
 	
 	// ITEM
 	money,
+	gemArray,
 	
 	// WTHR
 	weatherReroll, weatherMap, foregroundWeather, weatherUnknown1, backgroundWeather, weatherUnknown2,
