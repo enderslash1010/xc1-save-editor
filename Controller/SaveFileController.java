@@ -55,6 +55,7 @@ public class SaveFileController implements ViewListener {
 			loadArrayValue(e.getSaveField(), e.getIndex(), e.getArrayField());
 			this.gettingArrayData = false;
 			break;
+		// TODO: may be able to combine SET_DATA and SET_ARRAY_DATA
 		case SET_DATA: // sends value of field in gui to save in model
 			SaveField saveField = e.getSaveField();
 			Data data = (Data) SaveFile.DataMap.get(saveField);
