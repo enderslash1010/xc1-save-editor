@@ -18,7 +18,6 @@ import net.miginfocom.swing.MigLayout;
 public class OPTDView extends JPanel {
 
 	GUI gui;
-	// TODO: connect components using gui.set()
 	public OPTDView(GUI gui) {
 		this.gui = gui;
 		this.setLayout(new MigLayout("fill", "[]", "[]"));
