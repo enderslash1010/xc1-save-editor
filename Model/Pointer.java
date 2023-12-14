@@ -9,6 +9,9 @@ public abstract class Pointer {
 	protected int start;
 	protected int end;
 	
+	protected byte startBit; // within the start byte, which bit is the MSB (default=7)
+	protected byte endBit; // within the end byte, which bit is the LSB (default=0)
+	
 	/**
 	 * @return an array with index 0 being the start, and index 1 being the end
 	 */
@@ -16,7 +19,6 @@ public abstract class Pointer {
 		return new int[] {start, end};
 	}
 	
-	// returns lengths of data in number of bytes
 	/**
 	 * @return the size, in bytes, of this <code>Pointer</code>
 	 */

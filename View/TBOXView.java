@@ -47,7 +47,7 @@ public class TBOXView extends JPanel {
 		TableColumn dropColumn = TBOXTable.getColumnModel().getColumn(6);
 		JTextField dropTextField = new JTextField();
 		AbstractDocument doc = (AbstractDocument) dropTextField.getDocument();
-		doc.setDocumentFilter(gui.uint2);
+		doc.setDocumentFilter(gui.uint16);
 		dropColumn.setCellEditor(new DefaultCellEditor(dropTextField));
 
 		gui.setArray(SaveField.boxArray, new ArrayField[] {ArrayField.boxMapID, ArrayField.boxRank, ArrayField.xBox, ArrayField.yBox, ArrayField.zBox, ArrayField.boxAngle, ArrayField.boxDropTable}, TBOXTable);
@@ -63,7 +63,7 @@ public class TBOXView extends JPanel {
 		numBoxes = new JTextField();
 		numBoxesPanel.add(numBoxes, "cell 0 0,alignx left,aligny top");
 		numBoxes.setColumns(10);
-		gui.setTextField(SaveField.numBoxes, numBoxes, gui.uint1);
+		gui.setTextField(SaveField.numBoxes, numBoxes, gui.uint8);
 	}
 
 }

@@ -103,7 +103,7 @@ public class WTHRView extends JPanel {
 		WTHRUnknown1 = new JTextField();
 		WTHRWeatherPanel_1.add(WTHRUnknown1, "cell 0 0,growx");
 		WTHRUnknown1.setColumns(10);
-		gui.setTextField(SaveField.weatherUnknown1, WTHRUnknown1, gui.uint2);
+		gui.setTextField(SaveField.weatherUnknown1, WTHRUnknown1, gui.uint16);
 
 		JPanel panel = new JPanel();
 		panel.setBorder(new TitledBorder(null, "Unknown 2", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
@@ -113,7 +113,7 @@ public class WTHRView extends JPanel {
 		WTHRUnknown2 = new JTextField();
 		panel.add(WTHRUnknown2, "cell 0 0,growx");
 		WTHRUnknown2.setColumns(10);
-		gui.setTextField(SaveField.weatherUnknown2, WTHRUnknown2, gui.uint2);
+		gui.setTextField(SaveField.weatherUnknown2, WTHRUnknown2, gui.uint16);
 	}
 	
 	public void setWeatherOptions(int index) {

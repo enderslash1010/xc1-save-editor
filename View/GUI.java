@@ -99,10 +99,14 @@ public class GUI extends JFrame {
 	/**
 	 *   Integer filters of varying sizes
 	 */
-	public IntFilter int4 = new IntFilter(4);
-	public UIntFilter uint1 = new UIntFilter(1);
-	public UIntFilter uint2 = new UIntFilter(2);
-	public UIntFilter uint4 = new UIntFilter(4);
+	public IntFilter int32 = new IntFilter(32);
+	
+	public UIntFilter uint3 = new UIntFilter(3);
+	public UIntFilter uint8 = new UIntFilter(8);
+	public UIntFilter uint11 = new UIntFilter(11);
+	public UIntFilter uint12 = new UIntFilter(12);
+	public UIntFilter uint16 = new UIntFilter(16);
+	public UIntFilter uint32 = new UIntFilter(32);
 
 	/**
 	 * GUI Constructor
@@ -280,6 +284,8 @@ public class GUI extends JFrame {
 	public void setArrayValue(SaveField arrName, int index, ArrayField internalColName, Object value) {
 		// get JTable from name
 		JTable table = (JTable) componentMap.get(arrName);
+		if (table == null) return; // invalid name, or name not mapped to component
+		
 		DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
 
 		// determine row

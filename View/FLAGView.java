@@ -24,7 +24,7 @@ public class FLAGView extends JPanel {
 
 		FLAGScenarioNum = new JTextField();
 		FLAGScenarioNum.setColumns(10);
-		gui.setTextField(SaveField.scenarioNum, FLAGScenarioNum, gui.uint2);
+		gui.setTextField(SaveField.scenarioNum, FLAGScenarioNum, gui.uint16);
 		FLAGScenarioPanel.add(FLAGScenarioNum, "cell 0 0,growx");
 	}
 	

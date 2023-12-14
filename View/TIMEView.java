@@ -26,7 +26,7 @@ public class TIMEView extends JPanel {
 		TIMEPlayTime.setToolTipText("Every 4096 (0x1000) units is equal to one hour");
 		TIMEPlaythis.add(TIMEPlayTime, "cell 0 0,growx,aligny top");
 		TIMEPlayTime.setColumns(10);
-		gui.setTextField(SaveField.playTime, TIMEPlayTime, gui.uint4);
+		gui.setTextField(SaveField.playTime, TIMEPlayTime, gui.uint32);
 
 		JPanel TIMEDaythis = new JPanel();
 		TIMEDaythis.setBorder(new TitledBorder(null, "Time of Day", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -47,7 +47,7 @@ public class TIMEView extends JPanel {
 		TIMEDayCounter = new JTextField();
 		TIMEDaysPanel.add(TIMEDayCounter, "cell 0 0,growx,aligny top");
 		TIMEDayCounter.setColumns(10);
-		gui.setTextField(SaveField.numDays, TIMEDayCounter, gui.uint2);
+		gui.setTextField(SaveField.numDays, TIMEDayCounter, gui.uint16);
 
 		JPanel TIMEYearCountPanel = new JPanel();
 		TIMEYearCountPanel.setBorder(new TitledBorder(null, "Year Counter", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -57,7 +57,7 @@ public class TIMEView extends JPanel {
 		TIMEYearCounter = new JTextField();
 		TIMEYearCountPanel.add(TIMEYearCounter, "cell 0 0,growx,aligny top");
 		TIMEYearCounter.setColumns(10);
-		gui.setTextField(SaveField.numYears, TIMEYearCounter, gui.uint2);
+		gui.setTextField(SaveField.numYears, TIMEYearCounter, gui.uint16);
 	}
 
 }

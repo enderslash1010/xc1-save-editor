@@ -8,20 +8,20 @@ package View;
  */
 public class UIntFilter extends TypeFilter {
 	
-	private int numBytes;
+	private int numBits;
 	
 	/**
 	 * Default constructor, number of bytes is set to 4
 	 */
 	public UIntFilter() {
-		this.numBytes = 4;
+		this.numBits = 4;
 	}
 	
 	/**
 	 * @param numBytes the maximum number of bytes allowed to be input
 	 */
-	public UIntFilter(int numBytes) {
-		this.numBytes = numBytes;
+	public UIntFilter(int numBits) {
+		this.numBits = numBits;
 	}
 	
 	@Override
@@ -29,10 +29,7 @@ public class UIntFilter extends TypeFilter {
 		if (string.equals("")) return true; // empty TextPane should be valid too
 		try {
 			int i = Integer.parseInt(string);
-			// Int1: [0, 2^8 - 1]
-			// Int2: [0, 2^16 - 1]
-			// Int4: [0, 2^32 - 1]
-			if (i < 0|| i > (Math.pow(2, this.numBytes*8) - 1)) return false;
+			if (i < 0|| i > (Math.pow(2, this.numBits) - 1)) return false;
 			return true;
 		}
 		catch (NumberFormatException e) {

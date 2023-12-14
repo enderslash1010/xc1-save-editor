@@ -23,7 +23,7 @@ public class SaveFile {
 	private boolean dirty; // True if saveFile data structure is not same as save file on disk
 
 	private final static int[][] sections = 
-		{{0x20, 0x9CA0},     // THUM 0
+				{{0x20, 0x9CA0},     // THUM 0
 				{0xA030, 0xB244},    // FLAG 1
 				{0xB260, 0x11E88},   // GAME 2
 				{0x11EB0, 0x11EBC},  // TIME 3
@@ -42,8 +42,6 @@ public class SaveFile {
 	/**
 	 *  SaveFile.DataMap maps where information/fields is in the save file
 	 */
-	// TODO: put this into controller (since the SaveFile shouldn't really know the names of the data)
-	// TODO: change String to Enum
 	public final static HashBiMap<SaveField, Pointer> DataMap = HashBiMap.create(new HashMap<SaveField, Pointer>() {{
 		// THUM
 		put(SaveField.level, new Data(0x84, 0x86, DataType.Int));
@@ -120,6 +118,22 @@ public class SaveFile {
 
 		// ITEM
 		put(SaveField.money, new Data(0x24048, 0x2404C, DataType.Int));
+		put(SaveField.gemArray, new Array(0x206D8, 0x21998, new Element[] {
+				new StaticElement(16, 0xEA33), // Item ID from ITM_itemlist that doesn't affect gem attributes (just needs to be a gem type item)
+				new Element(ArrayField.gemID1, 11, DataType.Int),
+				new Element(ArrayField.gemUnk1, 5, DataType.Int),
+				new StaticElement(8, 0),
+				new Element(ArrayField.gemInventorySlot, 8, DataType.Int),
+				new StaticElement(8, 1), // Amount in stack for gems is always 1 (nothing changes for larger stacks)
+				new StaticElement(8, 0),
+				new Element(ArrayField.gemUnk2, 11, DataType.Int),
+				new Element(ArrayField.gemValue, 11, DataType.Int),
+				new Element(ArrayField.gemRank, 3, DataType.Int),
+				new Element(ArrayField.gemUnk3, 7, DataType.Int),
+				new Element(ArrayField.gemID2, 12, DataType.Int),
+				new StaticElement(4, 2),
+				new StaticElement(16, 0)
+		}));
 
 		// WTHR
 		put(SaveField.weatherReroll, new Data(0x24090, 0x24094, DataType.Float));
@@ -133,23 +147,23 @@ public class SaveFile {
 
 		// MINE
 		put(SaveField.mineArray, new Array(0x240F0, 0x24474, new Element[] {
-				new Element(ArrayField.mineCooldown, 2, DataType.Int),
-				new Element(ArrayField.numHarvests, 1, DataType.Int),
-				new Element(ArrayField.minelistID, 1, DataType.Int),
-				new Element(ArrayField.mapID, 2, DataType.Int)
+				new Element(ArrayField.mineCooldown, 16, DataType.Int),
+				new Element(ArrayField.numHarvests, 8, DataType.Int),
+				new Element(ArrayField.minelistID, 8, DataType.Int),
+				new Element(ArrayField.mapID, 16, DataType.Int)
 		}));
 
 		// TBOX
 		put(SaveField.numBoxes, new Data(0x244A3, 0x244A4, DataType.Int));
 		put(SaveField.boxArray, new Array(0x244A4, 0x246F4, new Element[] {
-				new Element(ArrayField.blank, 4, DataType.Int),
-				new Element(ArrayField.xBox, 4, DataType.Float),
-				new Element(ArrayField.yBox, 4, DataType.Float),
-				new Element(ArrayField.zBox, 4, DataType.Float),
-				new Element(ArrayField.boxAngle, 4, DataType.Float),
-				new Element(ArrayField.boxRank, 4, DataType.Int),
-				new Element(ArrayField.boxDropTable, 2, DataType.Int),
-				new Element(ArrayField.boxMapID, 2, DataType.Int)
+				new StaticElement(32, 0),
+				new Element(ArrayField.xBox, 32, DataType.Float),
+				new Element(ArrayField.yBox, 32, DataType.Float),
+				new Element(ArrayField.zBox, 32, DataType.Float),
+				new Element(ArrayField.boxAngle, 32, DataType.Float),
+				new Element(ArrayField.boxRank, 32, DataType.Int),
+				new Element(ArrayField.boxDropTable, 16, DataType.Int),
+				new Element(ArrayField.boxMapID, 16, DataType.Int)
 		}));
 
 		// OPTD
@@ -208,11 +222,28 @@ public class SaveFile {
 	/**
 	 *  Gets the byte data of a <code>Pointer</code> object
 	 *  @param p - the <code>Pointer<code> object
-	 *  @return - byte array representing the raw byte data from p
+	 *  @return - byte array representing the raw data from p
 	 */
 	byte[] getRawData(Pointer p) {
 		int[] location = p.getLocation();
-		return getBytesAt(location[0], location[1]);
+		byte[] rawData = getBytesAt(location[0], location[1]);
+		
+		// Truncate to startBit if needed
+		for (int i = p.startBit + 1; i < 8; i++) {
+			rawData[0] &= ~(1 << i); // Clear bit at i
+		}
+		
+		// Shift right by endBit
+		for (int i = 0; i < p.endBit; i++) {
+			// Iterate through rawData backwards
+			for (int b = rawData.length - 1; b >= 0; b--) {
+				rawData[b] >>= 1; // shift right by 1
+			    rawData[b] &= ~(0b10000000); // right shifting a 'negative' byte keeps the MSB 1, clear this bit
+				if (b != 0) rawData[b] |= (rawData[b-1] & 0b1) << 7; // copy LSB from previous bytes into this byte's MSB (if b != 0)
+			}
+		}
+		
+		return rawData;
 	}
 	
 	/**
@@ -293,6 +324,19 @@ public class SaveFile {
 		if (SaveFile.DataMap.get(arr) instanceof Data) return null;
 		return getArrayAt((Array) SaveFile.DataMap.get(arr), index, internalColName);
 	}
+	
+	/**
+	 * Checks if the given index of an Array is all 0's, to determine whether to set/clear StaticElement's in the save file
+	 * @param arr Array object to check
+	 * @param index the index to check
+	 * @return true if all Elements of arr are 0, otherwise false
+	 */
+	public boolean isArrayIndexNull(Array arr, int index) {
+		for (ArrayField internalColName : arr.getColNames()) {
+			if (!this.getData(arr.get(index, internalColName)).equals(0)) return false;
+		}
+		return true;
+	}
 
 	/**
 	 * 	Sets a <code>Data</code> object to the specified value, throwing an exception if the specified value is not the correct type
@@ -342,10 +386,24 @@ public class SaveFile {
 			break;
 		}
 
-
-		// put this array of bytes into the saveFile at location specified in data
-		setBytesAt(data.start, result);
-
+		// Define masks for use with bitfields
+		byte startMask = 0;
+		byte endMask = 0;
+		
+		for (int i = data.startBit + 1; i < 8; i++) startMask |= (1 << i); // calculate startMask
+		for (int i = data.endBit - 1; i >= 0; i--) endMask |= (1 << i); // calculate endMask
+		
+		// shift result left by endBit
+		for (int i = data.endBit; i > 0; i--) {
+			// Iterate through result
+			for (int b = 0; b < result.length; b++) {
+				result[b] <<= 1; // shift left by 1
+				if (b != result.length-1) result[b] |= ((result[b+1] & 0x80) >> 7); // copy MSB from next byte to LSB of this byte, if b != result.length-1
+			}
+		}
+		
+		// put this array of bytes into the saveFile at location specified in data	
+		setBytesAt(data.start, result, startMask, endMask);
 	}
 	
 	/**
@@ -394,12 +452,16 @@ public class SaveFile {
 
 	/**
 	 * 	Sets a byte of the save file
-	 *  @param x - location of byte
-	 *  @param b - new byte to set
+	 *  @param x location of byte
+	 *  @param b new byte to set
+	 *  @param mask bitmask of what bits to modify (0) and what bits to conserve their value (1); the bitmask AND'ed to the current value
 	 */
-	private void setByteAt(int x, byte b) {
-		if (saveFile[x] != b) dirty = true;
-		saveFile[x] = b;
+	private void setByteAt(int x, byte b, byte mask) {
+		byte newValue = (byte) ((saveFile[x] & mask) | (b & ~mask));
+		if (saveFile[x] != newValue) {
+			dirty = true;
+			saveFile[x] = newValue;
+		}
 	}
 
 	/**
@@ -409,8 +471,19 @@ public class SaveFile {
 	 */
 	private void setBytesAt(int x, byte[] b) {
 		for (int i = 0; i < b.length; i++) {
-			this.setByteAt(x+i, b[i]);
+			this.setByteAt(x+i, b[i], (byte) 0);
 		}
+	}
+	
+	private void setBytesAt(int x, byte[] b, byte startMask, byte endMask) {
+		if (b.length == 0) return;
+		if (b.length == 1) startMask |= endMask; // If there is only 1 byte, then combine (OR) the start and end mask
+		
+		this.setByteAt(x, b[0], startMask); // set first byte
+		for (int i = 1; i < b.length - 1; i++) { // set middle bytes
+			this.setByteAt(x+i, b[i], (byte) 0);
+		}
+		if (b.length > 1) this.setByteAt(x+b.length-1, b[b.length-1], endMask); // set last byte, if there is more than 1 byte
 	}
 	
 	/**
