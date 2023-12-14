@@ -7,7 +7,7 @@ package Controller;
  */
 public enum ArrayField {
 	// ITEM
-	gemID1, gemInventorySlot, gemUnk1, gemValue, gemRank, gemUnk2, gemID2, // gems
+	gemID1, gemUnk1, gemInventorySlot, gemUnk2, gemValue, gemRank, gemUnk3, gemID2, // gems
 	
 	// MINE
 	mineCooldown, numHarvests, minelistID, mapID,
