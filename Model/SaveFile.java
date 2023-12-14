@@ -117,7 +117,7 @@ public class SaveFile {
 		put(SaveField.cameraDistance, new Data(0x11F3C, 0x11F40, DataType.Float));
 
 		// ITEM
-		put(SaveField.money, new Data(0x2404A, 0x2404C, DataType.Int));
+		put(SaveField.money, new Data(0x24048, 0x2404C, DataType.Int));
 		put(SaveField.gemArray, new Array(0x206D8, 0x21998, new Element[] {
 				new StaticElement(16, 0xEA33), // Item ID from ITM_itemlist that doesn't affect gem attributes (just needs to be a gem type item)
 				new Element(ArrayField.gemID1, 11, DataType.Int),
