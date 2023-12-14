@@ -16,7 +16,7 @@ public class Element {
 	/**
 	 * Element Constructor
 	 * @param name the name of the field from SaveFile.DataMap
-	 * @param size the number of bytes this field takes up in the save file
+	 * @param size the number of bits (yes, bits) this field takes up in the save file
 	 * @param type the data type of this field
 	 */
 	public Element(ArrayField name, int size, DataType type) {
@@ -26,7 +26,7 @@ public class Element {
 	}
 	
 	/**
-	 * @return the size, in bytes, of this object
+	 * @return the size, in bits, of this object
 	 */
 	public int size() {
 		return this.size;
