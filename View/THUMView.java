@@ -31,7 +31,7 @@ public class THUMView extends JPanel {
 
 		THUMLevel = new JTextField();
 		THUMLevel.setColumns(4);
-		gui.setTextField(SaveField.level, THUMLevel, gui.uint2);
+		gui.setTextField(SaveField.level, THUMLevel, gui.uint16);
 		THUMLevelPanel.add(THUMLevel, "growx,aligny top");
 
 		JPanel THUMNamePanel = new JPanel();
@@ -52,7 +52,7 @@ public class THUMView extends JPanel {
 		THUMPlayTimeHours = new JTextField();
 		THUMPlayTimeHours.setHorizontalAlignment(SwingConstants.TRAILING);
 		THUMPlayTimeHours.setColumns(4);
-		gui.setTextField(SaveField.playTimeHours, THUMPlayTimeHours, gui.uint2);
+		gui.setTextField(SaveField.playTimeHours, THUMPlayTimeHours, gui.uint16);
 		THUMPlayTimePanel.add(THUMPlayTimeHours, "growx,aligny top");
 
 		JLabel lblNewLabel_3 = new JLabel(":");
@@ -61,7 +61,7 @@ public class THUMView extends JPanel {
 
 		THUMPlayTimeMinutes = new JTextField();
 		THUMPlayTimeMinutes.setColumns(4);
-		gui.setTextField(SaveField.playTimeMins, THUMPlayTimeMinutes, gui.uint2);
+		gui.setTextField(SaveField.playTimeMins, THUMPlayTimeMinutes, gui.uint16);
 		THUMPlayTimePanel.add(THUMPlayTimeMinutes, "growx,aligny top");
 
 
@@ -73,7 +73,7 @@ public class THUMView extends JPanel {
 		THUMSaveTimeDay = new JTextField();
 		THUMSaveTimeDay.setHorizontalAlignment(SwingConstants.TRAILING);
 		THUMSaveTimeDay.setColumns(3);
-		gui.setTextField(SaveField.saveTimeDay, THUMSaveTimeDay, gui.uint1);
+		gui.setTextField(SaveField.saveTimeDay, THUMSaveTimeDay, gui.uint8);
 		THUMSaveTimePanel.add(THUMSaveTimeDay, "growx,aligny top");
 
 		JLabel lblNewLabel_5 = new JLabel(" / ");
@@ -83,7 +83,7 @@ public class THUMView extends JPanel {
 		THUMSaveTimeMonth = new JTextField();
 		THUMSaveTimeMonth.setHorizontalAlignment(SwingConstants.TRAILING);
 		THUMSaveTimeMonth.setColumns(3);
-		gui.setTextField(SaveField.saveTimeMonth, THUMSaveTimeMonth, gui.uint2);
+		gui.setTextField(SaveField.saveTimeMonth, THUMSaveTimeMonth, gui.uint16);
 		THUMSaveTimePanel.add(THUMSaveTimeMonth, "growx,aligny top");
 
 		JLabel lblNewLabel_5_1 = new JLabel(" / ");
@@ -92,7 +92,7 @@ public class THUMView extends JPanel {
 
 		THUMSaveTimeYear = new JTextField();
 		THUMSaveTimeYear.setColumns(5);
-		gui.setTextField(SaveField.saveTimeYear, THUMSaveTimeYear, gui.uint2);
+		gui.setTextField(SaveField.saveTimeYear, THUMSaveTimeYear, gui.uint16);
 		THUMSaveTimePanel.add(THUMSaveTimeYear, "growx,aligny top");
 
 		JLabel lblNewLabel_5_2 = new JLabel("     ");
@@ -101,7 +101,7 @@ public class THUMView extends JPanel {
 		THUMSaveTimeHour = new JTextField();
 		THUMSaveTimeHour.setHorizontalAlignment(SwingConstants.TRAILING);
 		THUMSaveTimeHour.setColumns(3);
-		gui.setTextField(SaveField.saveTimeHour, THUMSaveTimeHour, gui.uint1);
+		gui.setTextField(SaveField.saveTimeHour, THUMSaveTimeHour, gui.uint8);
 		THUMSaveTimePanel.add(THUMSaveTimeHour, "growx,aligny top");
 
 		JLabel lblNewLabel_5_3 = new JLabel(":");
@@ -110,7 +110,7 @@ public class THUMView extends JPanel {
 
 		THUMSaveTimeMinute = new JTextField();
 		THUMSaveTimeMinute.setColumns(3);
-		gui.setTextField(SaveField.saveTimeMinute, THUMSaveTimeMinute, gui.uint1);
+		gui.setTextField(SaveField.saveTimeMinute, THUMSaveTimeMinute, gui.uint8);
 		THUMSaveTimePanel.add(THUMSaveTimeMinute, "growx,aligny top");
 
 		JPanel THUMNGPanel = new JPanel();

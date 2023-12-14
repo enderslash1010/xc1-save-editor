@@ -43,21 +43,21 @@ public class MINEView extends JPanel {
 		TableColumn mineIDColumn = MINETable.getColumnModel().getColumn(1); 
 		JTextField mineIDTextField = new JTextField();
 		AbstractDocument doc = (AbstractDocument) (mineIDTextField).getDocument();
-		doc.setDocumentFilter(gui.uint1); // set document filter
+		doc.setDocumentFilter(gui.uint8); // set document filter
 		mineIDColumn.setCellEditor(new DefaultCellEditor(mineIDTextField));
 		
 		// set numHarvests to uint1
 		TableColumn numHarvestsColumn = MINETable.getColumnModel().getColumn(2);
 		JTextField numHarvestsTextField = new JTextField();
 		doc = (AbstractDocument) numHarvestsTextField.getDocument();
-		doc.setDocumentFilter(gui.uint1);
+		doc.setDocumentFilter(gui.uint8);
 		numHarvestsColumn.setCellEditor(new DefaultCellEditor(numHarvestsTextField));
 		
 		// set mineCooldown to uint2
 		TableColumn cooldownColumn = MINETable.getColumnModel().getColumn(3);
 		JTextField cooldownTextField = new JTextField();
 		doc = (AbstractDocument) cooldownTextField.getDocument();
-		doc.setDocumentFilter(gui.uint2);
+		doc.setDocumentFilter(gui.uint16);
 		cooldownColumn.setCellEditor(new DefaultCellEditor(cooldownTextField));
 		
 		gui.setArray(SaveField.mineArray, new ArrayField[] {ArrayField.mapID, ArrayField.minelistID, ArrayField.numHarvests, ArrayField.mineCooldown}, MINETable);
