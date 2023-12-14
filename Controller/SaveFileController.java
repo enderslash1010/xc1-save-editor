@@ -76,7 +76,6 @@ public class SaveFileController implements ViewListener {
 			catch (NullPointerException e2) {
 				System.out.print("Reloading saved value: ");
 			}
-			
 
 			// once the value is saved into the Model, retrieve the value from the model to show in View component (or if convertedVal is null, reload the saved value)
 			viewEventOccurred(new ViewEvent(this, ViewEvent.EventType.GET_DATA, null, saveField, null, null, null));
@@ -84,6 +83,7 @@ public class SaveFileController implements ViewListener {
 			break;
 		case SET_ARRAY_DATA:
 			SaveField arrName = e.getSaveField();
+			Array arr = (Array) SaveFile.DataMap.get(arrName);
 			int index = e.getIndex();
 			ArrayField colName = e.getArrayField();
 			value = e.getValue();
@@ -92,11 +92,11 @@ public class SaveFileController implements ViewListener {
 			value = viewToModel(colName, value);
 
 			// convert to correct type
-			data = ((Array) SaveFile.DataMap.get(arrName)).get(index, colName);
+			data = arr.get(index, colName);
 			convertedValue = convertToType(data, value);
 
 			try {
-				saveFile.setArrayData(arrName, index, colName, convertedValue);
+				saveFile.setData(data, convertedValue);
 			} catch (IllegalArgumentException e1) {
 				e1.printStackTrace();
 			}
@@ -104,6 +104,17 @@ public class SaveFileController implements ViewListener {
 				System.out.print("Reloading saved value: ");
 			}
 
+			// Determine whether to set/clear StaticElements
+			boolean isIndexNull = saveFile.isArrayIndexNull(arr, index);
+			if (isIndexNull) { // clear StaticElements
+				Data[] statics = arr.getStatics(index);
+				for (Data d : statics) saveFile.setData(d, 0);
+			}
+			else { // set StaticElements
+				HashMap<Data, Integer> staticVals = arr.getStaticValues(index);
+				for (Data d : staticVals.keySet()) saveFile.setData(d, staticVals.get(d));
+			}
+			
 			// once the value is saved into the Model, retrieve the value from the model to show in View component
 			viewEventOccurred(new ViewEvent(this, ViewEvent.EventType.GET_ARRAY_DATA, null, arrName, colName, index, null));
 
