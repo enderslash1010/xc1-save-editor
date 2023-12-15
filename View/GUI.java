@@ -102,6 +102,8 @@ public class GUI extends JFrame {
 	public IntFilter int32 = new IntFilter(32);
 	
 	public UIntFilter uint3 = new UIntFilter(3);
+	public UIntFilter uint5 = new UIntFilter(5);
+	public UIntFilter uint7 = new UIntFilter(7);
 	public UIntFilter uint8 = new UIntFilter(8);
 	public UIntFilter uint11 = new UIntFilter(11);
 	public UIntFilter uint12 = new UIntFilter(12);
