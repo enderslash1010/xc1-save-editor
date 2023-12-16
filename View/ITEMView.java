@@ -1,5 +1,6 @@
 package View;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -36,28 +37,127 @@ public class ITEMView extends JPanel {
 		ITEMMoney.setColumns(10);
 		gui.setTextField(SaveField.money, ITEMMoney, gui.int32);
 		
-		String[] gemColumnNames = new String[] {"Gem ID 1", "Gem ID 2", "Rank", "Value", "Inventory Slot", "Unknown 1", "Unknown 2", "Unknown 3"};
+		String[] gemColumnNames = new String[] {"Gem ID (Name)", "Gem ID (Description)", "Rank", "Value", "Inventory Slot", "Unknown 1", "Unknown 2", "Unknown 3"};
 		gemTable = new JTable();
 		gemTable.setModel(new DefaultTableModel(gemColumnNames, 300));
 		
-		// set gemID1 to uint11
-		TableColumn gemID1Column = gemTable.getColumnModel().getColumn(0);
-		JTextField gemID1TextField = new JTextField();
-		AbstractDocument doc = (AbstractDocument) gemID1TextField.getDocument();
-		doc.setDocumentFilter(gui.uint11);
-		gemID1Column.setCellEditor(new DefaultCellEditor(gemID1TextField));
+		final String[] gemNames = {
+				"None",
+				"Strength Up",
+				"Chill Defence",
+				"Sleep Resist",
+				"Slow Resist",
+				"Bind Resist",
+				"Buff Time Plus",
+				"Weapon Power",
+				"Strength Down",
+				"Blaze Plus",
+				"Blaze Attack",
+				"Spike",
+				"Revival HP Up",
+				"Initial Tension",
+				"Aggro Up",
+				"EXP Up",
+				"Weaken", // Unused
+				"HP Up",
+				"Poison Defence",
+				"Spike Defence",
+				"Paralysis Resist",
+				"Debuff Resist",
+				"Recovery Up",
+				"Aura Heal",
+				"Damage Heal",
+				"Arts Heal",
+				"HP Steal",
+				"Unbeatable",
+				"AP Up",
+				"Aquatic Cloak",
+				"Auto-Heal Up",
+				"Terrain Defence",
+				"HP Weaken", // Unused
+				"Ether Up",
+				"Double Attack",
+				"Daze Resist",
+				"Pierce Resist",
+				"Daze Plus",
+				"Phys Def Down",
+				"Paralysis",
+				"Lightning Attack",
+				"Electric Plus",
+				"Back Atk Plus",
+				"First Attack Plus",
+				"Daze Up",
+				"Cast Quicken", // Unused
+				"Tension Swing",
+				"Daze Tension",
+				"Ether Weaken", // Unused
+				"Ether Def Up",
+				"Blaze Defence",
+				"Lock-On Resist",
+				"Confuse Resist",
+				"Critical Resist", // Unused
+				"Ether Protect",
+				"Slow",
+				"Bind",
+				"Ether Def Down",
+				"Chill Plus",
+				"Chill Attack",
+				"Auto-Atk Stealth",
+				"Arts Stealth",
+				"Talent Boost",
+				"Heat Sink",
+				"Ether Smash", // Unused
+				"Agility Up",
+				"Topple Resist",
+				"Good Footing",
+				"Arts Seal Resist",
+				"Accuracy Up", // Unused
+				"Haste",
+				"Topple Plus",
+				"Bleed Attack",
+				"Bleed Plus",
+				"Topple Up",
+				"Agility Down",
+				"Break",
+				"Quick Step",
+				"Fall Defence",
+				"Aerial Cloak",
+				"Agility Weaken", // Unused
+				"Muscle Up",
+				"Attack Stability",
+				"Attack Plus",
+				"Critical Up",
+				"Bleed Defence",
+				"Divine Protect",
+				"Physical Protect",
+				"Night Vision",
+				"Debuff Plus",
+				"Armour Power", // Unused
+				"Ether Down",
+				"Poison Plus",
+				"Poison Attack",
+				"Aggro Down",
+				"Earth Cloak",
+				"Muscle Waste", // Unused
+				"Unbeatable",
+				"Impurity" // Unused
+		};
 		
-		// set gemID2 to uint12
+		// set gemID1 to JComboBox
+		TableColumn gemID1Column = gemTable.getColumnModel().getColumn(0);
+		JComboBox<String> gemID1ComboBox = new JComboBox<String>(gemNames);
+		gemID1Column.setCellEditor(new DefaultCellEditor(gemID1ComboBox));
+		
+		// set gemID2 to JComboBox
 		TableColumn gemID2Column = gemTable.getColumnModel().getColumn(1);
-		JTextField gemID2TextField = new JTextField();
-		doc = (AbstractDocument) gemID2TextField.getDocument();
-		doc.setDocumentFilter(gui.uint12);
-		gemID2Column.setCellEditor(new DefaultCellEditor(gemID2TextField));
+		gemID2Column.setMinWidth(100);
+		JComboBox<String> gemID2ComboBox = new JComboBox<String>(gemNames);
+		gemID2Column.setCellEditor(new DefaultCellEditor(gemID2ComboBox));
 		
 		// set rank to uint3
 		TableColumn gemRankColumn = gemTable.getColumnModel().getColumn(2);
 		JTextField gemRankTextField = new JTextField();
-		doc = (AbstractDocument) gemRankTextField.getDocument();
+		AbstractDocument doc = (AbstractDocument) gemRankTextField.getDocument();
 		doc.setDocumentFilter(gui.uint3);
 		gemRankColumn.setCellEditor(new DefaultCellEditor(gemRankTextField));
 		

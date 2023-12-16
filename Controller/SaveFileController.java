@@ -405,6 +405,108 @@ public class SaveFileController implements ViewListener {
 		put("Slumber", "12");
 		put("Rebirth", "14");
 	}});
+	
+	final HashBiMap<String, String> gemNames = HashBiMap.create(new HashMap<String, String>() {{
+		put("None", "0");
+		put("Strength Up", "1");
+		put("Chill Defence", "2");
+		put("Sleep Resist", "3");
+		put("Slow Resist", "4");
+		put("Bind Resist", "5");
+		put("Buff Time Plus", "6");
+		put("Weapon Power", "7");
+		put("Strength Down", "8");
+		put("Blaze Plus", "9");
+		put("Blaze Attack", "10");
+		put("Spike", "11");
+		put("Revival HP Up", "12");
+		put("Initial Tension", "13");
+		put("Aggro Up", "14");
+		put("EXP Up", "15");
+		put("Weaken", "16"); // Unused
+		put("HP Up", "17");
+		put("Poison Defence", "18");
+		put("Spike Defence", "19");
+		put("Paralysis Resist", "20");
+		put("Debuff Resist", "21");
+		put("Recovery Up", "22");
+		put("Aura Heal", "23");
+		put("Damage Heal", "24");
+		put("Arts Heal", "25");
+		put("HP Steal", "26");
+		put("Unbeatable", "27");
+		put("AP Up", "28");
+		put("Aquatic Cloak", "29");
+		put("Auto-Heal Up", "30");
+		put("Terrain Defence", "31");
+		put("HP Weaken", "32"); // Unused
+		put("Ether Up", "33");
+		put("Double Attack", "34");
+		put("Daze Resist", "35");
+		put("Pierce Resist", "36");
+		put("Daze Plus", "37");
+		put("Phys Def Down", "38");
+		put("Paralysis", "39");
+		put("Lightning Attack", "40");
+		put("Electric Plus", "41");
+		put("Back Atk Plus", "42");
+		put("First Attack Plus", "43");
+		put("Daze Up", "44");
+		put("Cast Quicken", "45"); // Unused
+		put("Tension Swing", "46");
+		put("Daze Tension", "47");
+		put("Ether Weaken", "48"); // Unused
+		put("Ether Def Up", "49");
+		put("Blaze Defence", "50");
+		put("Lock-On Resist", "51");
+		put("Confuse Resist", "52");
+		put("Critical Resist", "53"); // Unused
+		put("Ether Protect", "54");
+		put("Slow", "55");
+		put("Bind", "56");
+		put("Ether Def Down", "57");
+		put("Chill Plus", "58");
+		put("Chill Attack", "59");
+		put("Auto-Atk Stealth", "60");
+		put("Arts Stealth", "61");
+		put("Talent Boost", "62");
+		put("Heat Sink", "63");
+		put("Ether Smash", "64"); // Unused
+		put("Agility Up", "65");
+		put("Topple Resist", "66");
+		put("Good Footing", "67");
+		put("Arts Seal Resist", "68");
+		put("Accuracy Up", "69"); // Unused
+		put("Haste", "70");
+		put("Topple Plus", "71");
+		put("Bleed Attack", "72");
+		put("Bleed Plus", "73");
+		put("Topple Up", "74");
+		put("Agility Down", "75");
+		put("Break", "76");
+		put("Quick Step", "77");
+		put("Fall Defence", "78");
+		put("Aerial Cloak", "79");
+		put("Agility Weaken", "80"); // Unused
+		put("Muscle Up", "81");
+		put("Attack Stability", "82");
+		put("Attack Plus", "83");
+		put("Critical Up", "84");
+		put("Bleed Defence", "85");
+		put("Divine Protect", "86");
+		put("Physical Protect", "87");
+		put("Night Vision", "88");
+		put("Debuff Plus", "89");
+		put("Armour Power", "90"); // Unused
+		put("Ether Down", "91");
+		put("Poison Plus", "92");
+		put("Poison Attack", "93");
+		put("Aggro Down", "94");
+		put("Earth Cloak", "95");
+		put("Muscle Waste", "96"); // Unused
+		put("Unbeatable", "97");
+		put("Impurity", "98"); // Unused
+	}});
 
 	/**
 	 * Translates model values to view (user-facing) values
@@ -477,6 +579,9 @@ public class SaveFileController implements ViewListener {
 			break;
 		case boxRank:
 			viewVal = boxRankMap.inverse().get(modelVal.toString());
+			break;
+		case gemID1: case gemID2:
+			viewVal = gemNames.inverse().get(modelVal.toString());
 			break;
 		}
 		return viewVal;
@@ -552,6 +657,9 @@ public class SaveFileController implements ViewListener {
 			break;
 		case boxRank:
 			modelVal = boxRankMap.get(viewVal);
+			break;
+		case gemID1: case gemID2:
+			modelVal = gemNames.get(viewVal.toString());
 			break;
 		}
 		return modelVal;
