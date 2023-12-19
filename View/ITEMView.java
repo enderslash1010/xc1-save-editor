@@ -20,7 +20,7 @@ public class ITEMView extends JPanel {
 	GUI gui;
 	
 	private JTextField ITEMMoney;
-	private JTable gemTable;
+	private JTable gemTable, weaponTable;
 	
 	public ITEMView(GUI gui) {
 		this.gui = gui;
@@ -36,6 +36,67 @@ public class ITEMView extends JPanel {
 		ITEMMoney.setText("");
 		ITEMMoney.setColumns(10);
 		gui.setTextField(SaveField.money, ITEMMoney, gui.int32);
+		
+		// weapon array
+		// TODO: decide weaponGemxValue by the gem at weaponGemxIndex in gemArray
+		String[] weaponColumnNames = {"Weapon ID 1", "Weapon ID 2", "Number of Gem Slots", "Gem 1 Index", "Gem 2 Index", "Gem 3 Index", "Inventory Slot"};
+		weaponTable = new JTable();
+		weaponTable.setModel(new DefaultTableModel(weaponColumnNames, 150));
+		
+		// set weaponID1 to uint12
+		TableColumn weaponID1Column = weaponTable.getColumnModel().getColumn(0);
+		JTextField weaponID1TextField = new JTextField();
+		AbstractDocument doc = (AbstractDocument) weaponID1TextField.getDocument();
+		doc.setDocumentFilter(gui.uint12);
+		weaponID1Column.setCellEditor(new DefaultCellEditor(weaponID1TextField));
+		
+		// set weaponID2 to uint11
+		TableColumn weaponID2Column = weaponTable.getColumnModel().getColumn(1);
+		JTextField weaponID2TextField = new JTextField();
+		doc = (AbstractDocument) weaponID2TextField.getDocument();
+		doc.setDocumentFilter(gui.uint11);
+		weaponID2Column.setCellEditor(new DefaultCellEditor(weaponID2TextField));
+		
+		// set weaponNumGemSlots to uint8
+		TableColumn weaponNumGemSlotsColumn = weaponTable.getColumnModel().getColumn(2);
+		JTextField weaponNumGemSlotsTextField = new JTextField();
+		doc = (AbstractDocument) weaponNumGemSlotsTextField.getDocument();
+		doc.setDocumentFilter(gui.uint8);
+		weaponNumGemSlotsColumn.setCellEditor(new DefaultCellEditor(weaponNumGemSlotsTextField));
+		
+		// set weaponGem1Index to uint16
+		TableColumn weaponGem1IndexColumn = weaponTable.getColumnModel().getColumn(3);
+		JTextField weaponGem1IndexTextField = new JTextField();
+		doc = (AbstractDocument) weaponGem1IndexTextField.getDocument();
+		doc.setDocumentFilter(gui.uint16);
+		weaponGem1IndexColumn.setCellEditor(new DefaultCellEditor(weaponGem1IndexTextField));
+		
+		// set weaponGem2Index to uint16
+		TableColumn weaponGem2IndexColumn = weaponTable.getColumnModel().getColumn(4);
+		JTextField weaponGem2IndexTextField = new JTextField();
+		doc = (AbstractDocument) weaponGem2IndexTextField.getDocument();
+		doc.setDocumentFilter(gui.uint16);
+		weaponGem2IndexColumn.setCellEditor(new DefaultCellEditor(weaponGem2IndexTextField));
+		
+		// set weaponGem3Index to uint16
+		TableColumn weaponGem3IndexColumn = weaponTable.getColumnModel().getColumn(5);
+		JTextField weaponGem3IndexTextField = new JTextField();
+		doc = (AbstractDocument) weaponGem3IndexTextField.getDocument();
+		doc.setDocumentFilter(gui.uint16);
+		weaponGem3IndexColumn.setCellEditor(new DefaultCellEditor(weaponGem3IndexTextField));
+		
+		// set weaponInventorySlot to uint8
+		TableColumn weaponInventorySlotColumn = weaponTable.getColumnModel().getColumn(6);
+		JTextField weaponInventorySlotTextField = new JTextField();
+		doc = (AbstractDocument) weaponInventorySlotTextField.getDocument();
+		doc.setDocumentFilter(gui.uint8);
+		weaponInventorySlotColumn.setCellEditor(new DefaultCellEditor(weaponInventorySlotTextField));
+		
+		gui.setArray(SaveField.weaponArray, new ArrayField[] {ArrayField.weaponID1, ArrayField.weaponID2, ArrayField.weaponNumGemSlots, ArrayField.weaponGem1Index, ArrayField.weaponGem2Index, ArrayField.weaponGem3Index, ArrayField.weaponInventorySlot}, weaponTable);
+		
+		JScrollPane weaponScrollPane = new JScrollPane(weaponTable);
+		this.add(weaponScrollPane, "cell 0 1,growx,aligny top,spanx 2");
+		
 		
 		String[] gemColumnNames = new String[] {"Gem ID (Name)", "Gem ID (Description)", "Rank", "Value", "Inventory Slot", "Unknown 1", "Unknown 2", "Unknown 3"};
 		gemTable = new JTable();
@@ -157,7 +218,7 @@ public class ITEMView extends JPanel {
 		// set rank to uint3
 		TableColumn gemRankColumn = gemTable.getColumnModel().getColumn(2);
 		JTextField gemRankTextField = new JTextField();
-		AbstractDocument doc = (AbstractDocument) gemRankTextField.getDocument();
+		doc = (AbstractDocument) gemRankTextField.getDocument();
 		doc.setDocumentFilter(gui.uint3);
 		gemRankColumn.setCellEditor(new DefaultCellEditor(gemRankTextField));
 		
@@ -199,7 +260,7 @@ public class ITEMView extends JPanel {
 		gui.setArray(SaveField.gemArray, new ArrayField[] {ArrayField.gemID1, ArrayField.gemID2, ArrayField.gemRank, ArrayField.gemValue, ArrayField.gemInventorySlot, ArrayField.gemUnk1, ArrayField.gemUnk2, ArrayField.gemUnk3}, gemTable);
 		
 		JScrollPane gemScrollPane = new JScrollPane(gemTable);
-		this.add(gemScrollPane, "cell 0 1,growx,aligny top,spanx 2");
+		this.add(gemScrollPane, "cell 0 2,growx,aligny top,spanx 2");
 	}
 	
 }

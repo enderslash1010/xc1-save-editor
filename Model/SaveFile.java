@@ -118,6 +118,27 @@ public class SaveFile {
 
 		// ITEM
 		put(SaveField.money, new Data(0x24048, 0x2404C, DataType.Int));
+		put(SaveField.weaponArray, new Array(0x1C4EC, 0x1E364, new Element[] {
+				new Element(ArrayField.weaponID1, 12, DataType.Int),
+				new StaticElement(4, 2),
+				new Element(ArrayField.weaponID2, 11, DataType.Int),
+				new StaticElement(5, 0),
+				new StaticElement(8, 0),
+				new Element(ArrayField.weaponInventorySlot, 8, DataType.Int),
+				new StaticElement(8, 1),
+				new StaticElement(8, 0),
+				new Element(ArrayField.weaponGem1Value, 64, DataType.Int),
+				new Element(ArrayField.weaponGem2Value, 64, DataType.Int),
+				new Element(ArrayField.weaponGem3Value, 64, DataType.Int),
+				new Element(ArrayField.weaponGem4Value, 64, DataType.Int),
+				new Element(ArrayField.weaponGem1Index, 16, DataType.Int),
+				new Element(ArrayField.weaponGem2Index, 16, DataType.Int),
+				new Element(ArrayField.weaponGem3Index, 16, DataType.Int),
+				new Element(ArrayField.weaponGem4Index, 16, DataType.Int),
+				new Element(ArrayField.weaponNumGemSlots, 8, DataType.Int),
+				new StaticElement(8, 6),
+				new StaticElement(16, 0),
+		}));
 		put(SaveField.gemArray, new Array(0x206D8, 0x21998, new Element[] {
 				new StaticElement(16, 0xEA33), // Item ID from ITM_itemlist that doesn't affect gem attributes (just needs to be a gem type item)
 				new Element(ArrayField.gemID1, 11, DataType.Int),
