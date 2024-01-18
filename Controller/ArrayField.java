@@ -7,7 +7,7 @@ package Controller;
  */
 public enum ArrayField {
 	// ITEM
-	weaponID1, weaponID2, weaponInventorySlot, weaponGem1Value, weaponGem2Value, weaponGem3Value, weaponGem4Value, weaponGem1Index, weaponGem2Index, weaponGem3Index, weaponGem4Index, weaponNumGemSlots, // weapons
+	weaponID1, weaponID2, weaponInventorySlot, weaponGem1Value, weaponGem2Value, weaponGem3Value, weaponGem1Index, weaponGem2Index, weaponGem3Index, weaponNumGemSlots, // weapons
 	
 	// gemID1 -> gemID for name, gemID2 -> gemID for description
 	gemID1, gemUnk1, gemInventorySlot, gemUnk2, gemValue, gemRank, gemUnk3, gemID2, // gems
