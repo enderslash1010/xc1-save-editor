@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.Set;
+
 import com.google.common.collect.HashBiMap;
 
 import Controller.ArrayField;
@@ -118,6 +120,27 @@ public class SaveFile {
 
 		// ITEM
 		put(SaveField.money, new Data(0x24048, 0x2404C, DataType.Int));
+		put(SaveField.weaponArray, new Array(0x1C4EC, 0x1E364, new Element[] {
+				new Element(ArrayField.weaponID1, 12, DataType.Int),
+				new StaticElement(4, 2),
+				new Element(ArrayField.weaponID2, 11, DataType.Int),
+				new StaticElement(5, 0),
+				new StaticElement(8, 0),
+				new Element(ArrayField.weaponInventorySlot, 8, DataType.Int),
+				new StaticElement(8, 1),
+				new StaticElement(8, 0),
+				new Element(ArrayField.weaponGem1Value, 64, DataType.Int),
+				new Element(ArrayField.weaponGem2Value, 64, DataType.Int),
+				new Element(ArrayField.weaponGem3Value, 64, DataType.Int),
+				new StaticElement(64, 0),
+				new Element(ArrayField.weaponGem1Index, 16, DataType.Int),
+				new Element(ArrayField.weaponGem2Index, 16, DataType.Int),
+				new Element(ArrayField.weaponGem3Index, 16, DataType.Int),
+				new StaticElement(16, 0xFFFF),
+				new Element(ArrayField.weaponNumGemSlots, 8, DataType.Int),
+				new StaticElement(8, 6),
+				new StaticElement(16, 0),
+		}));
 		put(SaveField.gemArray, new Array(0x206D8, 0x21998, new Element[] {
 				new StaticElement(16, 0xEA33), // Item ID from ITM_itemlist that doesn't affect gem attributes (just needs to be a gem type item)
 				new Element(ArrayField.gemID1, 11, DataType.Int),
@@ -337,6 +360,30 @@ public class SaveFile {
 		}
 		return true;
 	}
+	public boolean isArrayIndexNull(SaveField arr, int index) {
+		return isArrayIndexNull((Array) SaveFile.DataMap.get(arr), index);
+	}
+	
+	/**
+	 * Checks if the given index of an Array is all 0's, ignoring specified columns
+	 * Used to determine whether to clear ArrayField's not exposed to the View
+	 * @param arr Array object to check
+	 * @param index the index to check
+	 * @param exclude array of columns (ArrayFields) to ignore/exclude
+	 * @return true if all Elements, excluding the specificed columns, of arr are 0, otherwise false
+	 */
+	public boolean isArrayIndexNullPartial(Array arr, int index, ArrayField[] exclude) {
+		Set<ArrayField> excludeSet = Set.of(exclude);
+		
+		for (ArrayField internalColName : arr.getColNames()) {
+			if (excludeSet.contains(internalColName)) continue;
+			if (!this.getData(arr.get(index, internalColName)).equals(0)) return false;
+		}
+		return true;
+	}
+	public boolean isArrayIndexNullPartial(SaveField arr, int index, ArrayField[] exclude) {
+		return isArrayIndexNullPartial((Array) SaveFile.DataMap.get(arr), index, exclude);
+	}
 
 	/**
 	 * 	Sets a <code>Data</code> object to the specified value, throwing an exception if the specified value is not the correct type
@@ -484,6 +531,17 @@ public class SaveFile {
 			this.setByteAt(x+i, b[i], (byte) 0);
 		}
 		if (b.length > 1) this.setByteAt(x+b.length-1, b[b.length-1], endMask); // set last byte, if there is more than 1 byte
+	}
+	
+	/**
+	 * Copies bytes from origin to destination Data objects
+	 * The number of bytes copied is determined by destination size 
+	 * @param origin Data object to copy from, may use bytes after this object if the destination Data obj is larger in size
+	 * @param dest Data object to copy to, ensured that all bytes in this object are modified
+	 */
+	public void copyBytes(Data origin, Data dest) {
+		byte[] bytesToCopy = getBytesAt(origin.start, origin.start + dest.size());
+		setBytesAt(dest.start, bytesToCopy);
 	}
 	
 	/**

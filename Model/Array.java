@@ -94,9 +94,10 @@ public class Array extends Pointer {
 	 * Gets a <code>Data</code> object for the nth index and the specified column index
 	 * @param n the index in the Array
 	 * @param colIndex the column index in the Array
-	 * @return a <code>Data</code> object at the specified location
+	 * @return a <code>Data</code> object at the specified location; null if n is out of bounds
 	 */
 	public Data get(int n, int colIndex) {
+		if (n >= this.numEntries) return null;
 		int start = this.start + (entrySize*n);
 		
 		// calculate number of bits from start of index to colIndex

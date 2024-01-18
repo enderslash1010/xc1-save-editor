@@ -55,7 +55,6 @@ public class SaveFileController implements ViewListener {
 			loadArrayValue(e.getSaveField(), e.getIndex(), e.getArrayField());
 			this.gettingArrayData = false;
 			break;
-		// TODO: may be able to combine SET_DATA and SET_ARRAY_DATA
 		case SET_DATA: // sends value of field in gui to save in model
 			SaveField saveField = e.getSaveField();
 			Data data = (Data) SaveFile.DataMap.get(saveField);
@@ -97,13 +96,14 @@ public class SaveFileController implements ViewListener {
 
 			try {
 				saveFile.setData(data, convertedValue);
+				if (arrName == SaveField.weaponArray) handleWeaponTable(colName, index, value);
 			} catch (IllegalArgumentException e1) {
 				e1.printStackTrace();
 			}
 			catch (NullPointerException e2) {
 				System.out.print("Reloading saved value: ");
 			}
-
+			
 			// Determine whether to set/clear StaticElements
 			boolean isIndexNull = saveFile.isArrayIndexNull(arr, index);
 			if (isIndexNull) { // clear StaticElements
@@ -119,6 +119,71 @@ public class SaveFileController implements ViewListener {
 			viewEventOccurred(new ViewEvent(this, ViewEvent.EventType.GET_ARRAY_DATA, null, arrName, colName, index, null));
 
 			break;
+		case SET_COPY_ARRAY_DATA:
+			// copy origin -> dest, and reload dest to show in View
+			SaveField originArrName = e.getSaveField(), destArrName = e.getDestSaveField();
+			Array originArr = (Array) SaveFile.DataMap.get(originArrName), destArr = (Array) SaveFile.DataMap.get(destArrName);;
+			ArrayField originCol = e.getArrayField(), destCol = e.getDestArrayField();
+			int originIndex = e.getIndex(), destIndex = e.getDestIndex();
+			
+			// Get Data obj for both arrays
+			Data originData = originArr.get(originIndex, originCol);
+			Data destData = destArr.get(destIndex, destCol);
+			
+			saveFile.copyBytes(originData, destData);
+			
+			// reload destination element to show in View
+			viewEventOccurred(new ViewEvent(this, ViewEvent.EventType.GET_ARRAY_DATA, null, destArrName, destCol, destIndex, null));
+			
+			break;
+		}
+	}
+	
+	// Handles the quirky behavior of the weapon table, from the side affect of hiding weaponGemxValue from View
+	private void handleWeaponTable(ArrayField colName, int index, String value) throws NumberFormatException {
+		switch (colName) {
+		// When weaponGemIndex updates -> update weaponGemValue to gem at new index
+		case weaponGem1Index:
+			if (Integer.parseInt(value) < gui.ITEMPanel.getGemTableNumRows()) viewEventOccurred(new ViewEvent(this, SaveField.gemArray, ArrayField.gemUnk2, Integer.parseInt(value), SaveField.weaponArray, ArrayField.weaponGem1Value, index));
+			else viewEventOccurred(new ViewEvent(this, ViewEvent.EventType.SET_ARRAY_DATA, null, SaveField.weaponArray, ArrayField.weaponGem1Value, index, "0")); // If the index into the gemArray is out-of-bounds
+			break;
+		case weaponGem2Index:
+			if (Integer.parseInt(value) < gui.ITEMPanel.getGemTableNumRows()) viewEventOccurred(new ViewEvent(this, SaveField.gemArray, ArrayField.gemUnk2, Integer.parseInt(value), SaveField.weaponArray, ArrayField.weaponGem2Value, index));
+			else viewEventOccurred(new ViewEvent(this, ViewEvent.EventType.SET_ARRAY_DATA, null, SaveField.weaponArray, ArrayField.weaponGem2Value, index, "0")); // If the index into the gemArray is out-of-bounds
+			break;
+		case weaponGem3Index:
+			if (Integer.parseInt(value) < gui.ITEMPanel.getGemTableNumRows()) viewEventOccurred(new ViewEvent(this, SaveField.gemArray, ArrayField.gemUnk2, Integer.parseInt(value), SaveField.weaponArray, ArrayField.weaponGem3Value, index));
+			else viewEventOccurred(new ViewEvent(this, ViewEvent.EventType.SET_ARRAY_DATA, null, SaveField.weaponArray, ArrayField.weaponGem3Value, index, "0")); // If the index into the gemArray is out-of-bounds
+			break;
+			
+		// When gemUnk2/gemValue/gemRank/gemUnk3/gemID2 updates -> if any weapons have the same index, update weaponGemValue
+		case gemUnk2:
+		case gemValue:
+		case gemRank:
+		case gemUnk3:
+		case gemID2:
+			for (int i = 0; i < gui.ITEMPanel.getWeaponTableNumRows(); i++) {
+				if (saveFile.isArrayIndexNull(SaveField.weaponArray, i)) continue; // ignore null weapon rows
+				
+				int gemIndexFromWeapon = (int) saveFile.getArrayAt(SaveField.weaponArray, i, ArrayField.weaponGem1Index);
+				if (gemIndexFromWeapon == index) viewEventOccurred(new ViewEvent(this, SaveField.gemArray, ArrayField.gemUnk2, index, SaveField.weaponArray, ArrayField.weaponGem1Value, i));
+				
+				gemIndexFromWeapon = (int) saveFile.getArrayAt(SaveField.weaponArray, i, ArrayField.weaponGem2Index);
+				if (gemIndexFromWeapon == index) viewEventOccurred(new ViewEvent(this, SaveField.gemArray, ArrayField.gemUnk2, index, SaveField.weaponArray, ArrayField.weaponGem2Value, i));
+				
+				gemIndexFromWeapon = (int) saveFile.getArrayAt(SaveField.weaponArray, i, ArrayField.weaponGem3Index);
+				if (gemIndexFromWeapon == index) viewEventOccurred(new ViewEvent(this, SaveField.gemArray, ArrayField.gemUnk2, index, SaveField.weaponArray, ArrayField.weaponGem3Value, i));
+			}
+			break;
+			
+		default:
+		}
+		
+		// Make index of weaponArray fully 'null' if all visible fields are 0
+		if (saveFile.isArrayIndexNullPartial(SaveField.weaponArray, index, new ArrayField[] {ArrayField.weaponGem1Value, ArrayField.weaponGem2Value, ArrayField.weaponGem3Value})) {
+			saveFile.setArrayData(SaveField.weaponArray, index, ArrayField.weaponGem1Value, 0);
+			saveFile.setArrayData(SaveField.weaponArray, index, ArrayField.weaponGem2Value, 0);
+			saveFile.setArrayData(SaveField.weaponArray, index, ArrayField.weaponGem3Value, 0);
 		}
 	}
 

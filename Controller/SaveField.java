@@ -39,6 +39,7 @@ public enum SaveField {
 	
 	// ITEM
 	money,
+	weaponArray,
 	gemArray,
 	
 	// WTHR
