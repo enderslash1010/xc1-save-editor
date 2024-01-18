@@ -64,7 +64,7 @@ public class GUI extends JFrame {
 	private TIMEView TIMEPanel;
 	private PCPMView PCPMPanel;
 	private CAMDView CAMDPanel;
-	private ITEMView ITEMPanel;
+	public ITEMView ITEMPanel;
 	private WTHRView WTHRPanel;
 	//private SNDSView SNDSPanel;
 	private MINEView MINEPanel;
@@ -388,7 +388,7 @@ public class GUI extends JFrame {
 
 			});
 		}
-		else {
+		else { // adds default JComboBox action listener
 
 			cb.addActionListener(new ActionListener() {
 
@@ -460,6 +460,8 @@ public class GUI extends JFrame {
 
 		// map column names
 		for (int i = 0; i < columnMaps.length; i++) {
+			if (columnMaps[i] == null) continue; // If column is not mapped to an ArrayField, continue
+			
 			HashBiMap<String, ArrayField> map;
 			if (columnMap.containsKey(arrName)) { // add to existing HashBiMap
 				map = columnMap.get(arrName);
@@ -472,17 +474,17 @@ public class GUI extends JFrame {
 		}
 
 		jc.getModel().addTableModelListener(new TableModelListener() {
-
 			@Override
 			public void tableChanged(TableModelEvent e) {
 				int row = e.getFirstRow();
-				int col = e.getColumn();
+				int col = e.getColumn(); 
+				
+				if (columnMaps[col] == null) return; // ignore columns not mapped to ArrayField
 
 				// column number determines the dataName, row number determines the index
-				if (jc.getModel().getValueAt(row, col) == null) return;
+				if (jc.getModel().getValueAt(row, col) == null) return; // TODO: why is this here?
 				fireViewEvent(ViewEvent.EventType.SET_ARRAY_DATA, arrName, columnMaps[col], row, jc.getModel().getValueAt(row, col).toString());
 			}
-
 		});
 	}
 
