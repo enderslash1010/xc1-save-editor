@@ -15,8 +15,11 @@ public class ViewEvent extends EventObject {
 	private EventType type;
 
 	private SaveField sf;
-
 	private ArrayField af;
+	
+	private SaveField destSf;
+	private ArrayField destAf;
+	private Integer destIndex;
 
 	private String fileLocation;
 
@@ -25,16 +28,17 @@ public class ViewEvent extends EventObject {
 	private String value;
 
 	public enum EventType {
-		OPEN_FILE, // param is file location
-		SAVE_FILE, // param null
-		GET_DATA, // param is a SaveField
-		SET_DATA, // param is "saveField:value"
-		SET_ARRAY_DATA, // param is "saveField(array):index:arrayField:value"
-		GET_ARRAY_DATA, // param is "saveField(array):index:arrayField"
+		OPEN_FILE,
+		SAVE_FILE,
+		GET_DATA,
+		SET_DATA,
+		SET_ARRAY_DATA,
+		GET_ARRAY_DATA,
+		SET_COPY_ARRAY_DATA, // copies array data from one array to another
 	}
 
 	/**
-	 * ViewEvent constructor with param parameter (for event OPEN_FILE, SET_DATA)
+	 * ViewEvent constructor
 	 * @param source the object that created this <code>ViewEvent</code>
 	 * @param type the type of <code>ViewEvent</code> described by the constants of this class
 	 * @param fileLocation the location of the file to be opened; or null if not applicable to the type
@@ -65,6 +69,8 @@ public class ViewEvent extends EventObject {
 		case SET_DATA:
 			if (sf == null || value == null) throw new IllegalArgumentException();
 			break;
+		case SET_COPY_ARRAY_DATA:
+			throw new IllegalArgumentException();
 		}
 		
 		this.type = type;
@@ -73,6 +79,18 @@ public class ViewEvent extends EventObject {
 		this.af = af;
 		this.index = index;
 		this.value = value;
+	}
+	
+	// ViewEvent constructor for SET_COPY_ARRAY_DATA
+	public ViewEvent(Object source, SaveField originSf, ArrayField originAf, Integer originIndex, SaveField destSf, ArrayField destAf, Integer destIndex) {
+		super(source);
+		this.type = EventType.SET_COPY_ARRAY_DATA;
+		this.sf = originSf;
+		this.af = originAf;
+		this.destSf = destSf;
+		this.destAf = destAf;
+		this.destIndex = destIndex;
+		this.index = originIndex;
 	}
 
 	/**
@@ -90,6 +108,18 @@ public class ViewEvent extends EventObject {
 	 * Used in conjunction with an index to uniquely identify an <code>Array</code> element
 	 */
 	public ArrayField getArrayField() { return this.af; }
+	
+	/**
+	 * @return the <code>SaveField</code> to copy to; null if not applicable
+	 * Used only with SET_COPY_ARRAY_DATA
+	 */
+	public SaveField getDestSaveField() { return this.destSf; }
+	
+	/**
+	 * @return the <code>Array</code> column name to copy to; null if not applicable
+	 * Used only with SET_COPY_ARRAY_DATA
+	 */
+	public ArrayField getDestArrayField() { return this.destAf; }
 
 	/**
 	 * @return the file location of the file to open, used only with EventType.OPEN_FILE
@@ -101,6 +131,12 @@ public class ViewEvent extends EventObject {
 	 * Used in conjunction with an ArrayField to uniquely identify an <code>Array</code> element
 	 */
 	public Integer getIndex() { return this.index; }
+	
+	/**
+	 * @return the <code>Array</code> index (or row) this <code>ViewEvent</code> wants to copy to; or null if not applicable
+	 * Used only with SET_COPY_ARRAY_DATA
+	 */
+	public Integer getDestIndex() { return this.destIndex; }
 
 	/**
 	 * @return the value to set a save field to; or null if not applicable
