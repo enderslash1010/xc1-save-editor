@@ -1,3 +1,5 @@
+Moved to https://github.com/enderslash1010/xc1-save-editor-cpp
+
 # xc1-save-editor
 Save Editor for Xenoblade Chronicles for the Wii  
 For NTSC/PAL, might not work with JP version
